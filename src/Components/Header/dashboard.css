@@ -104,7 +104,11 @@
     margin-left: 80px;
   }
 
-
+.project-name{
+  
+  font-size: calc(0.9rem + .6vw);
+ 
+}
 /* Card Styles */
 .project-card {
     flex: 1 1 calc(33.333% - 20px); 

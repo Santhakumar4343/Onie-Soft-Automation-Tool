@@ -2,10 +2,17 @@ import { useState } from "react";
 import Header from "./Header";
 import "./dashboard.css";
 import { Modal } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [projectModal, setProjectModal] = useState(false);
   const [searchText,setSearchText] =useState("")
+  const navigate=useNavigate();
+  
+  const handleProjectClick=()=>{
+    navigate("/testcases")
+  }
+
   const [projectData, setProjectData] = useState({
     projectName: "",
   });
@@ -63,6 +70,7 @@ const Dashboard = () => {
    )
   return (
     <div>
+      
       <Header />
       <div className="body-container">
         <div className="search-container">
@@ -79,8 +87,8 @@ const Dashboard = () => {
         </div>
         <div className="cards-container">
           {filteredProjects.map((project, index) => (
-            <div className="project-card" key={index}>
-              <h3 >{project.projectName}</h3>
+            <div className="project-card" key={index} onClick={handleProjectClick}>
+              <h3 className="project-name" >{project.projectName}</h3>
             </div>
           ))}
         </div>
