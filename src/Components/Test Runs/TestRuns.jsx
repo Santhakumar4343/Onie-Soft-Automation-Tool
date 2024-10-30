@@ -83,7 +83,7 @@ const TestRuns=()=> {
     <div>
     <div className="body-container">
     <div className="search-container">
-      <button className="project-btn" onClick={handleTestRun}>
+      <button className="project-btn" onClick={handleTestRun} style={{height:"35px"}}>
         Create Test Run
       </button>
       <input

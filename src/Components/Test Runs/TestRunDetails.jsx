@@ -172,16 +172,39 @@ function TestCaseTable() {
       }
     });
   };
-
+const handleTestRun=()=>{
+    Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to Test Run?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#4f0e83",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Run The Test Run!",
+        customClass: {
+          confirmButton: "custom-confirm-button",
+          cancelButton: "custom-cancel-button"
+        }
+      }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire("Added!", "Test Run Run Successfully.", "success");
+      }
+    });
+}
   return (
     <div className="RunDetails-Container">
         <div className="TestRun">
       
-      <button onClick={handleAddToTestRun} disabled={selectedCases.length === 0} style={{borderRadius:"20px" ,backgroundColor:"#4f0e83",color:"white",width:"10%",maxHeight:"50px"}}>
+        <button onClick={ handleTestRun}  style={{borderRadius:"20px" ,backgroundColor:"#4f0e83",color:"white",width:"10%",maxHeight:"50px"}}>
+         Run Test Run 
+      </button>
+      <button onClick={handleAddToTestRun} disabled={selectedCases.length === 0} style={{borderRadius:"20px" ,backgroundColor:"#4f0e83",color:"white",width:"10%",height:"35px"}}>
         Add to Test Run 
       </button>
+      
+      
       </div>
-      <div >
+      <div  style={{ maxHeight: "450px", overflowY: "auto" }}>
       <table  className="table table-bordered table-hover mt-4" style={{textAlign:"center"}}>
         <thead>
           <tr>
