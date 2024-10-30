@@ -73,7 +73,7 @@ const Projects=()=> {
     <div>
     <div className="body-container">
     <div className="search-container">
-      <button className="project-btn" onClick={handleProject}>
+      <button className="project-btn" onClick={handleProject} style={{height:"35px"}}>
         Add Project
       </button>
       <input

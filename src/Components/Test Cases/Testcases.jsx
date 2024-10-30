@@ -6,6 +6,7 @@ import PaginationComponent from "../../PaginationComponent";
 import { RiPencilFill } from "react-icons/ri";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from "react-router-dom";
+import "./TestCases.css"
 const Testcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
@@ -237,7 +238,21 @@ const Testcases = () => {
         Test Cases for {projectName}
       </h3>
       </div>
-    
+      <div className="testCase-btn mb-3">
+      <button onClick={handleTestRun} 
+         style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"10%",}}
+        className="mt-3 " >
+         Test Runs
+        </button>
+        <button
+          style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"12%",}}
+          onClick={() => setShowModal(true)}
+          className="mt-3"
+        >
+          Add Test Case
+        </button>
+       
+      </div>
       <div
         style={{
           position: "sticky",
@@ -281,24 +296,11 @@ const Testcases = () => {
       </div>
 
       
-      <div className="d-flex">
-        <button
-          style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"12%",}}
-          onClick={() => setShowModal(true)}
-          className="mt-4"
-        >
-          Add Test Case
-        </button>
-        <button onClick={handleTestRun} 
-         style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"10%",}}
-        className="mt-4 ms-auto" >
-         Test Run
-        </button>
-      </div>
+     
 
-      {/* Test Cases Table */}
+      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
       <table className="table table-bordered table-hover mt-3"  style={{textAlign:"center"}}>
-        <thead>
+        <thead style={{ position: "sticky", top: 0, backgroundColor: "#f8f9fa", zIndex: 100 ,color:"#4f0e83"}}>
           <tr>
             <th>Test Case Id</th>
             <th>Test Case Name</th>
@@ -325,7 +327,7 @@ const Testcases = () => {
           ))}
         </tbody>
       </table>
-
+      </div>
       {/* Modal Popup */}
       <Modal show={showModal} onHide={handleClose} centered backdrop="static">
         <Modal.Header closeButton>
