@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { Modal, Button } from "react-bootstrap";
 import PaginationComponent from "../../PaginationComponent";
 import { RiPencilFill } from "react-icons/ri";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate } from "react-router-dom";
 const Testcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const navigate=useNavigate();
   const [testCases, setTestCases] = useState([
     {
       projectId: "4",
@@ -222,17 +225,19 @@ const Testcases = () => {
       ele.createdBy.includes(searchQuery) ||
       ele.updatedAt.includes(searchQuery)
   );
-
+  const handleTestRun=()=>{
+    navigate("/testRuns");
+  }
   return (
     <div className="container mt-4">
       <div  style={{ position: "sticky", top: "0", zIndex: "100" }}>
-      <h2
+      <h3
         className="text-center mb-4"
       >
         Test Cases for {projectName}
-      </h2>
+      </h3>
       </div>
-      {/* Search and Pagination Controls */}
+    
       <div
         style={{
           position: "sticky",
@@ -264,33 +269,35 @@ const Testcases = () => {
               onChange={handleSearchInput}
               placeholder="Search by Ticket Number, Employee, or Status..."
             />
-            <button
+            {/* <button
               type="button"
               className="btn btn-outline-secondary ml-2"
               onClick={() => handleSearchInput({ target: { value: "" } })}
             >
               Clear
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
 
-      {/* Add Button (Right-Aligned) */}
+      
       <div className="d-flex">
-        <Button
-          variant="success"
+        <button
+          style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"12%",}}
           onClick={() => setShowModal(true)}
           className="mt-4"
         >
           Add Test Case
-        </Button>
-        <Button onClick={() => setShowModal(true)} className="mt-4 ms-auto">
-          Add Test Run
-        </Button>
+        </button>
+        <button onClick={handleTestRun} 
+         style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"10%",}}
+        className="mt-4 ms-auto" >
+         Test Run
+        </button>
       </div>
 
       {/* Test Cases Table */}
-      <table className="table table-bordered table-hover mt-3">
+      <table className="table table-bordered table-hover mt-3"  style={{textAlign:"center"}}>
         <thead>
           <tr>
             <th>Test Case Id</th>
@@ -322,12 +329,12 @@ const Testcases = () => {
       {/* Modal Popup */}
       <Modal show={showModal} onHide={handleClose} centered backdrop="static">
         <Modal.Header closeButton>
-          <Modal.Title>Add Test Case</Modal.Title>
+          <Modal.Title style={{textAlign:"center"}}>Add Test Case</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
             <div className="mb-3">
-              <label htmlFor="testCaseName">Test Case Name</label>
+           
               <input
                 type="text"
                 name="testCaseName"
@@ -348,7 +355,7 @@ const Testcases = () => {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="customId">Custom ID</label>
+            
               <input
                 type="text"
                 name="customId"
@@ -367,7 +374,7 @@ const Testcases = () => {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="author">Author</label>
+            
               <input
                 type="text"
                 name="author"
@@ -385,7 +392,7 @@ const Testcases = () => {
               )}
             </div>
 
-            <Button type="submit" variant="primary" className="w-100">
+            <Button type="submit"   style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"50%",marginLeft:"70px"}}>
               Submit
             </Button>
           </form>
