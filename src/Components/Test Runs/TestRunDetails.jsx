@@ -191,6 +191,7 @@ const handleTestRun=()=>{
       }
     });
 }
+ 
   return (
     <div className="RunDetails-Container">
         <div className="TestRun">
@@ -204,9 +205,45 @@ const handleTestRun=()=>{
       
       
       </div>
-      <div  style={{ maxHeight: "450px", overflowY: "auto" }}>
+      <div
+        style={{
+          maxHeight: "540px",
+          overflowY: "auto",
+          marginLeft:"70px",
+          marginRight:"70px"
+        }}
+      >
+        <style>
+          {`
+      /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
+      div::-webkit-scrollbar {
+        width: 2px;
+       
+      }
+      div::-webkit-scrollbar-thumb {
+        background-color: #4f0e83;
+        border-radius: 4px;
+      }
+      div::-webkit-scrollbar-track {
+        background-color: #e0e0e0;
+      }
+
+      /* Scrollbar styling for Firefox */
+      div {
+        scrollbar-width: thin; 
+        scrollbar-color: #4f0e83 #e0e0e0;   
+      }
+    `}
+        </style>
       <table  className="table table-bordered table-hover mt-4" style={{textAlign:"center"}}>
-        <thead>
+        <thead style={{
+              position: "sticky",
+              top: 0,
+              backgroundColor: "#f8f9fa",
+              zIndex: 2000,
+              color: "#4f0e83",
+              
+            }}>
           <tr>
             <th>
               <input
@@ -216,7 +253,7 @@ const handleTestRun=()=>{
               />
             </th>
             <th>Project ID</th>
-            <th>Test Case ID</th>
+           
             <th>Test Case Name</th>
             <th>Custom ID</th>
             <th>Author</th>
@@ -235,7 +272,7 @@ const handleTestRun=()=>{
                 />
               </td>
               <td>{testCase.projectId}</td>
-              <td>{testCase.testCaseId}</td>
+              
               <td>{testCase.testCaseName}</td>
               <td>{testCase.customId}</td>
               <td>{testCase.author}</td>

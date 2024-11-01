@@ -4,7 +4,7 @@
     
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    
     background-color: #f9f9f9;
     padding: 20px;
     box-sizing: border-box;
@@ -13,8 +13,9 @@
   .TestRun {
     display: flex;
     flex-direction:row-reverse ;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     gap: 20px;
+    margin-right: 90px;
     
   }
   

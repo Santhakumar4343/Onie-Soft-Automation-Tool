@@ -1,18 +1,18 @@
-import  { useState } from "react";
+import { useState } from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { Modal, Button } from "react-bootstrap";
 import PaginationComponent from "../../PaginationComponent";
 import { RiPencilFill } from "react-icons/ri";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
-import "./TestCases.css"
+import "./TestCases.css";
 const Testcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const [testCases, setTestCases] = useState([
     {
       projectId: "4",
@@ -226,19 +226,17 @@ const Testcases = () => {
       ele.createdBy.includes(searchQuery) ||
       ele.updatedAt.includes(searchQuery)
   );
-  const handleTestRun=()=>{
+  const handleTestRun = () => {
     navigate("/testRuns");
-  }
+  };
   return (
     <div className="container mt-4">
-      <div  style={{ position: "sticky", top: "0", zIndex: "100" }}>
-      <h3
-        className="text-center mb-4"
-      >
-        Test Cases for {projectName}
-      </h3>
+      <div style={{ position: "sticky", top: "0", zIndex: "100" }}>
+        <h3 className="text-center mb-4" style={{ color: "#4f0e83", boxShadow:"grey"}}>
+          Test Cases for {projectName}
+        </h3>
       </div>
-      <div className="testCase-btn mb-3">
+      {/* <div className="testCase-btn mb-3">
       <button onClick={handleTestRun} 
          style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"10%",}}
         className="mt-3 " >
@@ -252,22 +250,27 @@ const Testcases = () => {
           Add Test Case
         </button>
        
-      </div>
+      </div> */}
       <div
         style={{
           position: "sticky",
           top: "0",
           zIndex: "100",
-          backgroundColor: "#f8f9fa",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          backgroundColor: "white",
+          padding: "10px 15px",
         }}
       >
-        <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex justify-content-between align-items-center">
           <select
             className="form-control"
             value={pageSize}
             onChange={handlePageSizeChange}
-            style={{ width: "150px", appearance: "auto" }}
+            style={{
+              width: "150px",
+              appearance: "auto",
+              marginRight: "10px",
+              fontSize: "14px",
+            }}
           >
             {[5, 10, 15, 20].map((size) => (
               <option key={size} value={size}>
@@ -276,67 +279,139 @@ const Testcases = () => {
             ))}
           </select>
 
-          <div className="d-flex flex-grow-1 mx-3">
+          <div
+            className="flex-grow-1 mx-3"
+            style={{ position: "relative", borderRadius: "20px" }}
+          >
             <input
               type="text"
-              className="form-control"
               value={searchQuery}
               onChange={handleSearchInput}
-              placeholder="Search by Ticket Number, Employee, or Status..."
+              placeholder="Search by Test Case Name, Author......"
+              style={{
+                fontSize: "14px",
+                padding: "8px 10px",
+                borderRadius: "20px",
+                width: "100%",
+              }}
             />
-            {/* <button
-              type="button"
-              className="btn btn-outline-secondary ml-2"
-              onClick={() => handleSearchInput({ target: { value: "" } })}
-            >
-              Clear
-            </button> */}
           </div>
+
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              color: "white",
+              backgroundColor: "#4f0e83",
+              borderRadius: "20px",
+              padding: "8px 15px",
+              fontSize: "14px",
+              marginRight: "10px",
+              width: "120px",
+              height: "40px",
+            }}
+            className="btn"
+          >
+            Add Test Case
+          </button>
+
+          <button
+            onClick={handleTestRun}
+            style={{
+              color: "white",
+              backgroundColor: "#4f0e83",
+              borderRadius: "20px",
+              padding: "8px 15px",
+              fontSize: "14px",
+              width: "120px",
+              height: "40px",
+            }}
+            className="btn"
+          >
+            Test Runs
+          </button>
         </div>
       </div>
 
-      
-     
+      <div
+        style={{
+          maxHeight: "490px",
+          overflowY: "auto",
+        }}
+      >
+        <style>
+          {`
+      /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
+      div::-webkit-scrollbar {
+        width: 2px;
+      }
+      div::-webkit-scrollbar-thumb {
+        background-color: #4f0e83;
+        border-radius: 4px;
+      }
+      div::-webkit-scrollbar-track {
+        background-color: #e0e0e0;
+      }
 
-      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-      <table className="table table-bordered table-hover mt-3"  style={{textAlign:"center"}}>
-        <thead style={{ position: "sticky", top: 0, backgroundColor: "#f8f9fa", zIndex: 100 ,color:"#4f0e83"}}>
-          <tr>
-            <th>Test Case Id</th>
-            <th>Test Case Name</th>
-            <th>Custom ID</th>
-            <th>Author</th>
-            <th>Created By</th>
-            <th>Updated At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredTestCases.map((item, index) => (
-            <tr key={index}>
-              <td>{item.testCaseId}</td>
-              <td>{item.testCaseName}</td>
-              <td>{item.customId}</td>
-              <td>{item.author}</td>
-              <td>{item.createdBy}</td>
-              <td>{item.updatedAt}</td>
-              <td>
-                <RiPencilFill onClick={() => handleEdit(item.testCaseId)} title="Edit TestCase" />
-              </td>
+      /* Scrollbar styling for Firefox */
+      div {
+        scrollbar-width: thin; 
+        scrollbar-color: #4f0e83 #e0e0e0; /* Thumb and track colors */
+      }
+    `}
+        </style>
+        <table
+          className="table table-bordered table-hover mt-3"
+          style={{ textAlign: "center" }}
+        >
+          <thead
+            style={{
+              position: "sticky",
+              top: 0,
+              backgroundColor: "#f8f9fa",
+              zIndex: 100,
+              color: "#4f0e83",
+            }}
+          >
+            <tr>
+              <th>Test Case Id</th>
+              <th>Test Case Name</th>
+              <th>Custom ID</th>
+              <th>Author</th>
+              <th>Created By</th>
+              <th>Updated At</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredTestCases.map((item, index) => (
+              <tr key={index}>
+                <td>{item.testCaseId}</td>
+                <td>{item.testCaseName}</td>
+                <td>{item.customId}</td>
+                <td>{item.author}</td>
+                <td>{item.createdBy}</td>
+                <td>{item.updatedAt}</td>
+                <td>
+                  <RiPencilFill
+                    onClick={() => handleEdit(item.testCaseId)}
+                    title="Edit TestCase"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       {/* Modal Popup */}
       <Modal show={showModal} onHide={handleClose} centered backdrop="static">
         <Modal.Header closeButton>
-          <Modal.Title style={{textAlign:"center"}}>Add Test Case</Modal.Title>
+          <Modal.Title style={{ textAlign: "center" }}>
+            Add Test Case
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
             <div className="mb-3">
-           
               <input
                 type="text"
                 name="testCaseName"
@@ -357,7 +432,6 @@ const Testcases = () => {
             </div>
 
             <div className="mb-3">
-            
               <input
                 type="text"
                 name="customId"
@@ -376,7 +450,6 @@ const Testcases = () => {
             </div>
 
             <div className="mb-3">
-            
               <input
                 type="text"
                 name="author"
@@ -394,19 +467,28 @@ const Testcases = () => {
               )}
             </div>
 
-            <Button type="submit"   style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"50%",marginLeft:"70px"}}>
+            <Button
+              type="submit"
+              style={{
+                color: "white",
+                backgroundColor: "#4f0e83",
+                borderRadius: "20px",
+                width: "50%",
+                marginLeft: "70px",
+              }}
+            >
               Submit
             </Button>
           </form>
         </Modal.Body>
       </Modal>
-      <PaginationComponent
+      {/* <PaginationComponent
         currentPage={currentPage}
         totalPages={totalPages}
         handlePageChange={handlePageChange}
         handlePreviousPage={handlePreviousPage}
         handleNextPage={handleNextPage}
-      />
+      /> */}
     </div>
   );
 };
