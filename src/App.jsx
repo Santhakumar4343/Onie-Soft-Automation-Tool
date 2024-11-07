@@ -1,14 +1,20 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import Dashboard from "./Components/Header/Dashboard";
+
 
 import { ToastContainer } from "react-toastify";
+import Login from "./Components/Login/Login";
+import AdminDashboard from "./Components/Admin/AdminDashboard";
+import PrivateRoute from "./assets/PrivateRoutes";
+import Testcases from "./Components/Test Cases/Testcases";
+import TestRuns from "./Components/Test Runs/TestRuns";
+import TestRunDetails from "./Components/Test Runs/TestRunDetails";
 
 
 function App() {
   return (
     <div className="app">
-      <ToastContainer
+       <ToastContainer
         position="bottom-right"
         autoClose={3000}
         hideProgressBar={true}
@@ -20,10 +26,10 @@ function App() {
         pauseOnHover
         theme="colored"
       />
-     
-      <Routes>
-        <Route path="/*" element={<Dashboard />} />
-      </Routes>
+     <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard/*" element={<PrivateRoute element={<AdminDashboard />} />} />
+        </Routes> 
     </div>
   );
 }

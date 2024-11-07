@@ -1,8 +1,9 @@
 import  { useState } from "react";
 import "./TestRunDetails.css"
-import { toast } from "react-toastify";
+
 import Swal from "sweetalert2";
-function TestCaseTable() {
+
+function TestRunDetails() {
   const [testCases, setTestCases] = useState([
     {
       projectId: "4",
@@ -187,19 +188,20 @@ const handleTestRun=()=>{
         }
       }).then((result) => {
       if (result.isConfirmed) {
-        Swal.fire("Added!", "Test Run Run Successfully.", "success");
+        Swal.fire("Executed!", "Test Run Executed Successfully.", "success");
       }
     });
 }
  
   return (
-    <div className="RunDetails-Container">
+    <div className="container">
+      
         <div className="TestRun">
       
-        <button onClick={ handleTestRun}  style={{borderRadius:"20px" ,backgroundColor:"#4f0e83",color:"white",width:"10%",maxHeight:"50px"}}>
-         Run Test Run 
+        <button onClick={ handleTestRun}  style={{borderRadius:"20px" ,backgroundColor:"#4f0e83",color:"white",width:"14%",maxHeight:"50px"}}>
+         Execute Test Run 
       </button>
-      <button onClick={handleAddToTestRun} disabled={selectedCases.length === 0} style={{borderRadius:"20px" ,backgroundColor:"#4f0e83",color:"white",width:"10%",height:"35px"}}>
+      <button onClick={handleAddToTestRun} disabled={selectedCases.length === 0} style={{borderRadius:"20px" ,backgroundColor:"#4f0e83",color:"white",width:"14%",height:"35px"}}>
         Add to Test Run 
       </button>
       
@@ -207,10 +209,9 @@ const handleTestRun=()=>{
       </div>
       <div
         style={{
-          maxHeight: "540px",
+          maxHeight: "620px",
           overflowY: "auto",
-          marginLeft:"70px",
-          marginRight:"70px"
+          
         }}
       >
         <style>
@@ -240,7 +241,7 @@ const handleTestRun=()=>{
               position: "sticky",
               top: 0,
               backgroundColor: "#f8f9fa",
-              zIndex: 2000,
+              zIndex: 100,
               color: "#4f0e83",
               
             }}>
@@ -255,10 +256,10 @@ const handleTestRun=()=>{
             <th>Project ID</th>
            
             <th>Test Case Name</th>
-            <th>Custom ID</th>
+            <th>Automation ID</th>
             <th>Author</th>
-            <th>Created By</th>
-            <th>Updated At</th>
+            <th>Created Date</th>
+            <th>Updated Date</th>
           </tr>
         </thead>
         <tbody>
@@ -287,4 +288,4 @@ const handleTestRun=()=>{
   );
 }
 
-export default TestCaseTable;
+export default TestRunDetails;
