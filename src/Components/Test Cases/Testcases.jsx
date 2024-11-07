@@ -7,6 +7,8 @@ import { RiPencilFill } from "react-icons/ri";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import "./TestCases.css";
+import AdminDashboard from "../Admin/AdminDashboard";
+import Sidebar from "../Admin/Sidebar";
 const Testcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
@@ -227,30 +229,21 @@ const Testcases = () => {
       ele.updatedAt.includes(searchQuery)
   );
   const handleTestRun = () => {
-    navigate("/testRuns");
+    navigate("/dashboard/testruns");
   };
   return (
-    <div className="container mt-4">
+    <div className=" container-fluid ">
+    
+     
+    
+    
+    <div className="content" >
       <div style={{ position: "sticky", top: "0", zIndex: "100" }}>
-        <h3 className="text-center mb-4" style={{ color: "#4f0e83", boxShadow:"grey"}}>
+        <h3 className="text-center mb-4" style={{ color: "#4f0e83", boxShadow: "grey" }}>
           Test Cases for {projectName}
         </h3>
       </div>
-      {/* <div className="testCase-btn mb-3">
-      <button onClick={handleTestRun} 
-         style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"10%",}}
-        className="mt-3 " >
-         Test Runs
-        </button>
-        <button
-          style={{color:"white",backgroundColor:"#4f0e83",borderRadius:"20px",width:"12%",}}
-          onClick={() => setShowModal(true)}
-          className="mt-3"
-        >
-          Add Test Case
-        </button>
-       
-      </div> */}
+  
       <div
         style={{
           position: "sticky",
@@ -278,7 +271,7 @@ const Testcases = () => {
               </option>
             ))}
           </select>
-
+  
           <div
             className="flex-grow-1 mx-3"
             style={{ position: "relative", borderRadius: "20px" }}
@@ -288,15 +281,10 @@ const Testcases = () => {
               value={searchQuery}
               onChange={handleSearchInput}
               placeholder="Search by Test Case Name, Author......"
-              style={{
-                fontSize: "14px",
-                padding: "8px 10px",
-                borderRadius: "20px",
-                width: "100%",
-              }}
+             className="form-control w-50"
             />
           </div>
-
+  
           <button
             onClick={() => setShowModal(true)}
             style={{
@@ -306,14 +294,14 @@ const Testcases = () => {
               padding: "8px 15px",
               fontSize: "14px",
               marginRight: "10px",
-              width: "120px",
+              width: "130px",
               height: "40px",
             }}
             className="btn"
           >
             Add Test Case
           </button>
-
+  
           <button
             onClick={handleTestRun}
             style={{
@@ -322,27 +310,28 @@ const Testcases = () => {
               borderRadius: "20px",
               padding: "8px 15px",
               fontSize: "14px",
-              width: "120px",
+              width: "130px",
               height: "40px",
             }}
             className="btn"
           >
-            Test Runs
+            View Test Runs
           </button>
         </div>
       </div>
-
+  
       <div
         style={{
-          maxHeight: "490px",
+          maxHeight: "550px",
           overflowY: "auto",
         }}
       >
-        <style>
+            <style>
           {`
       /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
       div::-webkit-scrollbar {
         width: 2px;
+       
       }
       div::-webkit-scrollbar-thumb {
         background-color: #4f0e83;
@@ -355,7 +344,7 @@ const Testcases = () => {
       /* Scrollbar styling for Firefox */
       div {
         scrollbar-width: thin; 
-        scrollbar-color: #4f0e83 #e0e0e0; /* Thumb and track colors */
+        scrollbar-color: #4f0e83 #e0e0e0;   
       }
     `}
         </style>
@@ -373,12 +362,12 @@ const Testcases = () => {
             }}
           >
             <tr>
-              <th>Test Case Id</th>
+              <th>Test Case ID</th>
               <th>Test Case Name</th>
-              <th>Custom ID</th>
+              <th>Automation ID</th>
               <th>Author</th>
-              <th>Created By</th>
-              <th>Updated At</th>
+              <th>Created Date</th>
+              <th>Updated Date</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -402,6 +391,7 @@ const Testcases = () => {
           </tbody>
         </table>
       </div>
+  
       {/* Modal Popup */}
       <Modal show={showModal} onHide={handleClose} centered backdrop="static">
         <Modal.Header closeButton>
@@ -422,7 +412,7 @@ const Testcases = () => {
                     ? "is-invalid"
                     : ""
                 }`}
-                placeholder="Enter Test Case Name"
+                placeholder="Test Case Name"
               />
               {formik.touched.testCaseName && formik.errors.testCaseName && (
                 <div className="invalid-feedback">
@@ -442,7 +432,7 @@ const Testcases = () => {
                     ? "is-invalid"
                     : ""
                 }`}
-                placeholder="Enter Custom ID"
+                placeholder="Automation ID"
               />
               {formik.touched.customId && formik.errors.customId && (
                 <div className="invalid-feedback">{formik.errors.customId}</div>
@@ -460,7 +450,7 @@ const Testcases = () => {
                     ? "is-invalid"
                     : ""
                 }`}
-                placeholder="Enter Author Name"
+                placeholder="Author Name"
               />
               {formik.touched.author && formik.errors.author && (
                 <div className="invalid-feedback">{formik.errors.author}</div>
@@ -474,7 +464,7 @@ const Testcases = () => {
                 backgroundColor: "#4f0e83",
                 borderRadius: "20px",
                 width: "50%",
-                marginLeft: "70px",
+                marginLeft: "120px",
               }}
             >
               Submit
@@ -482,14 +472,9 @@ const Testcases = () => {
           </form>
         </Modal.Body>
       </Modal>
-      {/* <PaginationComponent
-        currentPage={currentPage}
-        totalPages={totalPages}
-        handlePageChange={handlePageChange}
-        handlePreviousPage={handlePreviousPage}
-        handleNextPage={handleNextPage}
-      /> */}
     </div>
+  </div>
+  
   );
 };
 

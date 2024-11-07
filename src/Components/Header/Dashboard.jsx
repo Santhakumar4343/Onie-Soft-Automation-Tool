@@ -9,17 +9,8 @@ import "./dashboard.css";
 import { Route, Routes } from "react-router-dom";
 
 const Dashboard = () => {
-  
- 
-
- 
-
-  
-  
- 
   return (
     <div>
-      
       <Header />
       <Routes>
         <Route path="/" element={<Projects/>}> </Route>
