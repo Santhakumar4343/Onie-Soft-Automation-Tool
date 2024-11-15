@@ -102,7 +102,7 @@ const Users = () => {
                 </InputGroup>
             </div>
 
-            <Table striped bordered hover>
+            <Table className='table table-hover'>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -127,7 +127,7 @@ const Users = () => {
                                 <td>{user.empRole}</td>
                                 <td>{user.empDepartment}</td>
                                 <td>
-                                    <EditIcon className="text-primary me-3" style={{ cursor: 'pointer' }} onClick={() => handleEditUser(user)} />
+                                    <EditIcon className=" me-3"  style={{ cursor: 'pointer',color:"#4f0e83" }} onClick={() => handleEditUser(user)} />
                                     <DeleteIcon className="text-danger" style={{ cursor: 'pointer' }} onClick={() => handleDeleteUser(user.id)} />
                                 </td>
                             </tr>
@@ -138,7 +138,7 @@ const Users = () => {
             {/* Modal for Adding/Editing User */}
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{editingUser ? "Edit User" : "Add New User"}</Modal.Title>
+                    <Modal.Title>{editingUser ? "Update  User" : "Add New User"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>

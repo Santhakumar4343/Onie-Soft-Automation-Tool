@@ -1,13 +1,25 @@
 import { Modal } from "@mui/material";
+import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { API_URL } from "../API/Api";
+import Swal from "sweetalert2";
 
 
 const TestRuns = () => {
   const [searchText, setSearchText] = useState("");
   const [testRunModal, setTestRunModal] = useState(false);
   const navigate = useNavigate();
-  const [testRunData, setTestData] = useState({ testRunName: "" });
+  const user=JSON.parse(sessionStorage.getItem('user'));
+  console.log(user.empId)
+  const location=useLocation();
+
+  const {project}=location.state||{};
+
+  const [testRunData, setTestData] = useState({
+     testRunName: "" ,
+     createdBy :user.empId
+    });
   const [testRuns, setTestRuns] = useState([
     {
       projectId: "4",
@@ -42,7 +54,28 @@ const TestRuns = () => {
 
   const handleTestRunSubmit = (e) => {
     e.preventDefault();
-    alert("Test Run Submitted");
+     
+    axios.post(`${API_URL}/testrun/v1/createtestrun/${project.id}`,testRunData,{
+      headers:{
+        "Content-Type":"application/json"
+      }
+    }).then(response=>{
+      Swal.fire({
+      icon:"success",
+      title:"Test Run Saved",
+      text:"Test Run Created Successfully!"
+      })
+      console.log(response)
+      setTestRunModal(false)
+    }).catch(err=>{
+      Swal.fire({
+        icon:"error",
+        title:"Oops...",
+        text:"something went wrong could not create Test Run!!"
+      })
+      console.log(err)
+      setTestRunModal(false)
+    })
   };
 
   const handleTestRunChange = (e) => {
@@ -55,7 +88,9 @@ const TestRuns = () => {
 
   return (
     <div className="d-flex">
-      <div className="container mt-4">
+     
+      <div className="container ">
+      <h2 className="text-center mb-2" style={{color:"#4f0e83"}}>Test Runs</h2>
         <div className="d-flex justify-content-between mb-3">
           <button
             className="btn btn-primary"
@@ -74,7 +109,8 @@ const TestRuns = () => {
             type="text"
             value={searchText}
             placeholder="Search by Test Run Name"
-            className="form-control w-50"
+            className="form-control "
+            style={{width:"40%"}}
             onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
@@ -85,11 +121,11 @@ const TestRuns = () => {
               <div
                 className="card shadow-sm h-100"
                 onClick={handleTestRunClick}
-                style={{ backgroundColor:"#118f8d",cursor:"pointer",borderRadius:"10px" }}
+                style={{ backgroundColor:"rgb(79 103 228)",cursor:"pointer",borderRadius:"10px" }}
               >
-                <div className="card-body text-center" >
+                <div className="card-body text-center " style={{color:"white"}} >
                   <h5 className="card-title">{testRun.testRunName}</h5>
-                  <p className="card-text text-muted">
+                  <p className="card-text " style={{color:"white"}} >
                     Created: {testRun.createdBy} <br />
                     Updated: {testRun.updatedAt}
                   </p>
