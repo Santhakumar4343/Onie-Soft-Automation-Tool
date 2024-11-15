@@ -21,7 +21,7 @@ const AdminDashboard = () => {
       <div className="col-10 p-3">
         <Routes>
           <Route path="/" element={<Projects />} />
-          <Route path="/testcases" element={<Testcases />} />
+          <Route path="/testcases/*" element={<Testcases />} />
           <Route path="/testruns" element={<TestRuns />} />
           <Route path="/testrunDetails" element={<TestRunDetails />} />
           <Route path="/users" element={<Users/>}></Route>
