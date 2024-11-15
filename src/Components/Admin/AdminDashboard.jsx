@@ -9,6 +9,7 @@ import TestRuns from '../Test Runs/TestRuns';
 import TestRunDetails from '../Test Runs/TestRunDetails';
 import Projects from '../Projects/Projects';
 import Users from '../Users/Users';
+import Company from '../Company/Company';
 
 const AdminDashboard = () => {
   return (
@@ -25,6 +26,7 @@ const AdminDashboard = () => {
           <Route path="/testruns" element={<TestRuns />} />
           <Route path="/testrunDetails" element={<TestRunDetails />} />
           <Route path="/users" element={<Users/>}></Route>
+          <Route path="/company" element={<Company/>}></Route>
         </Routes>
       </div>
     </div>

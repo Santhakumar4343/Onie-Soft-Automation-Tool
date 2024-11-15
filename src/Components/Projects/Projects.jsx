@@ -1,31 +1,35 @@
 import { Modal } from "@mui/material";
 import axios from "axios";
+import { assignProjects } from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../API/Api";
 import Swal from "sweetalert2";
-
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
-import GroupIcon from '@mui/icons-material/Group';
+import { getAllRegister } from "../API/Api";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import GroupIcon from "@mui/icons-material/Group";
+import { errorNotify, notify } from "../../NotificationUtil";
 const Projects = () => {
   const [projectModal, setProjectModal] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [userIds, setUserIds] = useState([]);
   const [projectData, setProjectData] = useState({
     projectName: "",
   });
   const [users, setUsers] = useState([]);
-  const jwt_token=sessionStorage.getItem("jwt_token")
+  const [projectId,setProjectId]=useState("");
+  const jwt_token = sessionStorage.getItem("jwt_token");
   useEffect(() => {
-    axios
-      .get(`${API_URL}/register/v1/getallreg`)
+    getAllRegister()
       .then((response) => {
         setUsers(response.data);
       })
       .catch((err) => console.log(err));
   }, []);
-  const handleShow = () => {
+  const handleShow = (id) => {
+   setProjectId(id);
     setShowModal(true);
   };
   const handleClose = () => {
@@ -33,10 +37,10 @@ const Projects = () => {
   };
   useEffect(() => {
     axios
-      .get(`${API_URL}/projects/v1/getAllProjects`,{
-        headers:{
-          "Authorization":`Bearer ${jwt_token}`
-        }
+      .get(`${API_URL}/projects/v1/getAllProjects`, {
+        headers: {
+          Authorization: `Bearer ${jwt_token}`,
+        },
       })
       .then((response) => setProjects(response.data))
       .catch((err) => console.log(err));
@@ -93,10 +97,48 @@ const Projects = () => {
   const handleProjectClick = (project) => {
     navigate(`/dashboard/testcases/${project.id}`, { state: { project } });
   };
+  const handleUserSelect = (e) => {
+    const selectedIds = Array.from(
+      e.target.selectedOptions,
+      (option) => option.value
+    );
+    setUserIds(selectedIds); 
+  };
+  const handleCancel = () => {
+    setProjectId("")
+    setUserIds([]); // reset selection on cancel
+    setShowModal(false);
+  };
 
+  const handleRemoveUser = (id) => {
+    setUserIds(userIds.filter((userId) => userId !== id)); // remove user ID from the array
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    // Prepare the data to be sent
+    const formData = {
+      projectId: projectId,
+      registerIds: userIds, // Ensure `userIds` is an array of selected IDs
+    };
+  
+    try {
+      const result = await assignProjects(formData);
+      notify("Users Assigned SuccessFully");
+    } catch (error) {
+      console.error("Error assigning users:", error);
+      errorNotify("Something Went Wrong");
+    } finally {
+      setShowModal(false);
+      setProjectId("")
+      setUserIds([]); // reset selection on cancel
+    }
+  };
   return (
     <div className="container-fluid ">
-      <h2 className="text-center" style={{color:"#4f0e83"}}>Projects</h2>
+      <h2 className="text-center" style={{ color: "#4f0e83" }}>
+        Projects
+      </h2>
       <div className="d-flex justify-content-between mb-4">
         <button
           onClick={handleProject}
@@ -115,7 +157,7 @@ const Projects = () => {
           value={searchText}
           placeholder="Search by Project Name"
           className="form-control "
-          style={{width:"40%"}}
+          style={{ width: "40%" }}
           onChange={(e) => setSearchText(e.target.value)}
         />
       </div>
@@ -138,20 +180,24 @@ const Projects = () => {
                   {project.projectName}
                 </h5>
               </div>
-              <div className="card-footer d-flex justify-content-center align-items-center" style={{gap:"20px"}}>
-           
-               < PersonAddIcon className="w-40 "
-                  style={{ color:"white",fontSize:"30"}}
-                  onClick={handleShow}/>
-                 < PersonRemoveIcon  style={{ color:"white",fontSize:"30" }}/>
-                 <GroupIcon   style={{ color:"white",fontSize:"30" }}/>
+              <div
+                className="card-footer d-flex justify-content-center align-items-center"
+                style={{ gap: "20px" }}
+              >
+                <PersonAddIcon
+                  className="w-40 "
+                  style={{ color: "white", fontSize: "30" }}
+                  onClick={()=>handleShow(project.id)}
+                />
+                <PersonRemoveIcon style={{ color: "white", fontSize: "30" }} />
+                <GroupIcon style={{ color: "white", fontSize: "30" }} />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <Modal open={showModal} onClose={() => setShowModal(false)}>
+      <Modal open={showModal} onClose={handleCancel}>
         <div
           style={{
             display: "flex",
@@ -163,49 +209,44 @@ const Projects = () => {
           <div
             className="modal-content p-4"
             style={{
-              maxWidth: "500px",
+              maxWidth: "600px",
+              height: "600px",
               width: "100%",
               backgroundColor: "white",
               borderRadius: "20px",
             }}
           >
             <h4 className="modal-title text-center">Assign User</h4>
-            <form onSubmit={""} className="mt-4">
+            <form onSubmit={handleSubmit} className="mt-4">
               <div className="form-group">
                 <select
                   id="userSelect"
                   className="form-control"
-                  onChange={(e) => {
-                    const selectedUser = users.find(
-                      (user) => user.empName === e.target.value
-                    );
-                    console.log("Selected user:", selectedUser);
-                  }}
+                  multiple
+                  value={userIds} // bind to the selected user IDs
+                  onChange={handleUserSelect} // update userIds on change
                 >
-                  <option value="" disabled selected>
-                    -- Select a User --
+                  <option value="" disabled>
+                    -- Select Users --
                   </option>
                   {users.map((user) => (
-                    <option key={user.id} value={user.empName}>
+                    <option key={user.id} value={user.id}>
                       {user.empName}
                     </option>
                   ))}
                 </select>
               </div>
-
               <div className="text-center">
                 <button
-                  type="submit"
-                  className="btn btn-primary mt-3 "
+                  type="button"
+                  className="btn btn-primary mt-3"
                   style={{
                     borderRadius: "20px",
                     background: "#4f0e83",
                     marginRight: "20px",
                     width: "150px",
                   }}
-                  onClick={() => {
-                    setShowModal(false);
-                  }}
+                  onClick={handleCancel} // reset and close modal
                 >
                   Cancel
                 </button>
@@ -221,11 +262,51 @@ const Projects = () => {
                   Assign User
                 </button>
               </div>
+              {/* Display selected users */}
+              <div className="selected-users mt-3">
+                <h5>Selected Users:</h5>
+                <ul>
+                  {userIds.map((userId) => {
+                    const selectedUser = users.find(
+                      (user) => user.id === Number(userId)
+                     
+                    );
+                    return (
+                      <li
+                        key={userId}
+                        style={{
+                          display: "flex",
+                          justifyContent: "flex-start", // Align the content to the left
+                          alignItems: "center",
+                          gap: "8px", // Add a small gap between the username and the delete button
+                        }}
+                      >
+                        <span>
+                          {selectedUser
+                            ? selectedUser.empName
+                            : "User not found"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveUser(userId)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "red",
+                            cursor: "pointer",
+                          }}
+                        >
+                          &#10005; {/* 'X' symbol */}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             </form>
           </div>
         </div>
       </Modal>
-
       <Modal open={projectModal} onClose={() => setProjectModal(false)}>
         <div
           style={{
