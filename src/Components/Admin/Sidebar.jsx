@@ -33,6 +33,14 @@ const Sidebar = () => {
             Users
           </a>
         </li>
+        <li className="nav-item">
+          <a
+            href="/dashboard/company"
+            className={location.pathname === "/dashboard/company" ? "active" : ""}
+          >
+            Company
+          </a>
+        </li>
       </ul>
     </div>
   );
