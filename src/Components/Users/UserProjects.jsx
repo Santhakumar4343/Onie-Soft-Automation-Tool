@@ -1,6 +1,6 @@
 import { Modal } from "@mui/material";
 import axios from "axios";
-import { addProject, assignProjects, getAllProject } from "../API/Api";
+import { assignProjects, getAllProject, getAllUserProjects } from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../API/Api";
@@ -10,16 +10,13 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import GroupIcon from "@mui/icons-material/Group";
 import { errorNotify, notify } from "../../NotificationUtil";
-const Projects = () => {
+const UserProjects = () => {
   const [projectModal, setProjectModal] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [userIds, setUserIds] = useState([]);
-  const user= JSON.parse(sessionStorage.getItem("user"))
-   const branchId=user.branchId;
   const [projectData, setProjectData] = useState({
     projectName: "",
-    branchId:branchId
   });
   const [users, setUsers] = useState([]);
   const [projectId,setProjectId]=useState("");
@@ -39,7 +36,7 @@ const Projects = () => {
     setShowModal(false);
   };
   useEffect(() => {
-       getAllProject()
+    getAllUserProjects()
       .then((response) => setProjects(response.data))
       .catch((err) => console.log(err));
   }, []);
@@ -51,7 +48,12 @@ const Projects = () => {
 
   const handleProjectSubmit = (e) => {
     e.preventDefault();
-    addProject(projectData)
+    axios
+      .post(`${API_URL}/projects/v1/save`, projectData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
       .then((response) => {
         // Show success alert when request is successful
         Swal.fire({
@@ -71,7 +73,7 @@ const Projects = () => {
         console.log(err);
       });
     setProjectModal(false);
-    setProjectData({ projectName: "",branchId});
+    setProjectData({ projectName: "" });
   };
 
   const handleProjectChange = (e) => {
@@ -88,7 +90,7 @@ const Projects = () => {
 
   const navigate = useNavigate();
   const handleProjectClick = (project) => {
-    navigate(`/dashboard/testcases/${project.id}`, { state: { project } });
+    navigate(`/userDashboard/testcases/${project.id}`, { state: { project } });
   };
   const handleUserSelect = (e) => {
     const selectedIds = Array.from(
@@ -99,7 +101,7 @@ const Projects = () => {
   };
   const handleCancel = () => {
     setProjectId("")
-    setUserIds([]); // reset selection on cancel
+    setUserIds([]); 
     setShowModal(false);
   };
 
@@ -367,4 +369,4 @@ const Projects = () => {
   );
 };
 
-export default Projects;
+export default UserProjects;

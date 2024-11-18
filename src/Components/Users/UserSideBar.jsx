@@ -1,8 +1,8 @@
 import { useLocation } from "react-router-dom";
 import Logo from "../../assets/oniesoft.png";
-import "./AdminDashboard.css";
+import "./UserDashboard.css";
 
-const Sidebar = () => {
+const UserSidebar = () => {
   const location = useLocation();
 
   return (
@@ -19,18 +19,10 @@ const Sidebar = () => {
       <ul className="nav flex-column">
         <li className="nav-item">
           <a
-            href="/dashboard"
-            className={location.pathname === "/dashboard" ? "active" : ""}
+            href="/userDashboard"
+            className={location.pathname === "/userDashboard" ? "active" : ""}
           >
             Projects
-          </a>
-        </li>
-        <li className="nav-item">
-          <a
-            href="/dashboard/users"
-            className={location.pathname === "/dashboard/users" ? "active" : ""}
-          >
-            Users
           </a>
         </li>
         
@@ -39,4 +31,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default UserSidebar;

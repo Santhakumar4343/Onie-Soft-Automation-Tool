@@ -6,9 +6,10 @@ import { ToastContainer } from "react-toastify";
 import Login from "./Components/Login/Login";
 import AdminDashboard from "./Components/Admin/AdminDashboard";
 import PrivateRoute from "./assets/PrivateRoutes";
-import Testcases from "./Components/Test Cases/Testcases";
-import TestRuns from "./Components/Test Runs/TestRuns";
-import TestRunDetails from "./Components/Test Runs/TestRunDetails";
+import SuperAdminDashboard from "./Components/SuperAdmin/SuperAdminDashBoard";
+import UserDashboard from "./Components/Users/UserDashboard";
+
+
 
 
 function App() {
@@ -29,6 +30,8 @@ function App() {
      <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard/*" element={<PrivateRoute element={<AdminDashboard />} />} />
+        <Route path="/AdminDashboard/*" element={<PrivateRoute element={<SuperAdminDashboard />} />} />
+        <Route path="/userDashboard/*" element={<PrivateRoute element={<UserDashboard />} />} />
         </Routes> 
     </div>
   );

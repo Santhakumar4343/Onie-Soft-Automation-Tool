@@ -1,33 +1,54 @@
 import  { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TestLogo from "../../assets/TestLogo.png";
+
 import TestLogo1 from "../../assets/softwaretesting1.jpg";
-import axios from 'axios';
+
 import Logo from "../../assets/oniesoft.png";
+import { postUserLogin } from '../API/Api';
 const Login = () => {
-  const [empId, setEmpId] = useState('');
+  const [empEmail, setEmpId] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
+  
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     try {
-      const response = await axios.post('http://localhost:8088/login/v1/authenticate', {
-        empId,
-        password
-      });
-
+      const data = {
+        empEmail: empEmail,
+        password: password,
+      };
+  
+      const response = await postUserLogin(data);
+      console.log(response.data);
+  
       if (response.data.jwt) {
+        // Save JWT and user details in session storage
         sessionStorage.setItem('jwt_token', response.data.jwt);
-        sessionStorage.setItem('user',JSON.stringify(response.data.register))
-        navigate('/dashboard');
+        sessionStorage.setItem('user', JSON.stringify(response.data.register));
+  
+        // Navigate based on user role
+        const userRole = response.data.register.empRole;
+        if (userRole === "SuperAdmin") {
+          navigate('/adminDashboard');
+        } else if (userRole === "Admin") {
+          navigate('/dashboard');
+        } else if (userRole === "User") {
+          navigate('/userDashboard');
+        } else {
+          console.error("Unexpected user role:", userRole);
+          alert("Unexpected role, please contact support.");
+        }
+      } else {
+        console.error("JWT not found in response:", response);
+        alert("Login failed: Invalid response from server.");
       }
     } catch (error) {
       console.error('Login failed:', error);
       alert('Invalid credentials, please try again.');
     }
   };
+  
 
   return (
     <div className="container-fluid d-flex justify-content-center align-items-center vh-100" style={{ backgroundImage: "linear-gradient(-100deg, #4f0e83 5%, #6bfffa 80%)", position: "relative" }}>
@@ -52,7 +73,7 @@ const Login = () => {
             type="text"
             className="form-control w-100 mb-3"
             placeholder="Employee ID"
-            value={empId}
+            value={empEmail}
             onChange={(e) => setEmpId(e.target.value)}
           />
           <input
