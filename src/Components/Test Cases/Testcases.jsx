@@ -10,10 +10,10 @@ import "./TestCases.css";
 import AdminDashboard from "../Admin/AdminDashboard";
 import Sidebar from "../Admin/Sidebar";
 import axios from "axios";
-import { API_URL } from "../API/Api";
+import { addTestcase, API_URL, getTestcaseByProjectId } from "../API/Api";
 import Swal from "sweetalert2";
 import moment from "moment";
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from "@mui/icons-material/Edit";
 const Testcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
@@ -27,8 +27,7 @@ const Testcases = () => {
   const [showModal, setShowModal] = useState(false); // Modal state
 
   useEffect(() => {
-    axios
-      .get(`${API_URL}/testcases/v1/getForProject/${project.id}`)
+    getTestcaseByProjectId(project.id)
       .then((response) => {
         setTestCases(response.data);
         console.log(response.data);
@@ -53,32 +52,18 @@ const Testcases = () => {
     }),
     onSubmit: async (values) => {
       try {
-        const response = await axios.post(
-          `${API_URL}/testcases/v1/save/${project.id}`,
-          values,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-    
+        const response = await addTestcase(project.id, values);
+
         Swal.fire({
           icon: "success",
           title: "Test Case Saved",
           text: "Your Test Case was created successfully!",
         });
-    
-       
+
         formik.resetForm();
         setShowModal(false);
-    
-        
+
         console.log(response);
-    
-        
-        
-    
       } catch (err) {
         console.error(err);
         Swal.fire({
@@ -87,8 +72,7 @@ const Testcases = () => {
           text: "Something went wrong! Could not create the Test Case.",
         });
       }
-    }
-    
+    },
   });
 
   const handleClose = () => {
@@ -122,7 +106,7 @@ const Testcases = () => {
       testcase.author.toLowerCase().includes(searchQuery)
   );
   const handleTestRun = () => {
-    navigate("/dashboard/testruns",{state:{project}});
+    navigate("/dashboard/testruns", { state: { project } });
   };
   return (
     <div className=" container-fluid ">
@@ -177,7 +161,7 @@ const Testcases = () => {
               />
             </div>
 
-            <button
+            {/* <button
               onClick={() => setShowModal(true)}
               style={{
                 color: "white",
@@ -192,7 +176,7 @@ const Testcases = () => {
               className="btn"
             >
               Add Test Case
-            </button>
+            </button> */}
 
             <button
               onClick={handleTestRun}
@@ -262,7 +246,7 @@ const Testcases = () => {
                 <th>Author</th>
                 <th>Created Date</th>
                 <th>Updated Date</th>
-                <th>Actions</th>
+                {/* <th>Actions</th> */}
               </tr>
             </thead>
             <tbody>
@@ -282,12 +266,12 @@ const Testcases = () => {
                     {moment(item.updatedAt).format("DD-MM-YYYY (HH:mm:ss)")}
                   </td>
 
-                  <td>
+                  {/* <td>
                     <EditIcon
                       onClick={() => handleEdit(item.testCaseId)}
                       title="Edit TestCase"
                     />
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import Swal from "sweetalert2";
 import { CreateCompany, getAllCompany } from "../API/Api";
+import { useNavigate } from "react-router-dom";
 
 const Companies = () => {
   const [projectModal, setProjectModal] = useState(false);
@@ -13,6 +14,12 @@ const Companies = () => {
     cmpId: "",
   });
 
+  const navigate=useNavigate();
+
+  const handleCompanyClick=(company)=>{
+     navigate("/adminDashboard/departments",{state:{company}})
+    
+  }
   const handleProject = () => {
     setProjectModal(true);
   };
@@ -96,7 +103,13 @@ const Companies = () => {
               className="card shadow-sm project-card d-flex"
               style={{ backgroundColor: "rgb(79 103 228)", cursor: "pointer" }}
             >
-              <div className="card-body">
+              <div className="card-body" onClick={()=>{handleCompanyClick(company)}}>
+              <h5
+                  className="card-title text-center"
+                  style={{ color: "white" }}
+                >
+                  {company.cmpId}
+                </h5>
                 <h5
                   className="card-title text-center"
                   style={{ color: "white" }}
@@ -129,6 +142,18 @@ const Companies = () => {
           >
             <h4 className="modal-title text-center">Add Company</h4>
             <form onSubmit={handleProjectSubmit} className="mt-4">
+
+            <div className="form-group">
+                <input
+                  type="text"
+                  name="cmpId"
+                  className="form-control w-80 mb-3"
+                  placeholder="Company Id"
+                  onChange={handleProjectChange}
+                  value={companyData.cmpId}
+                  required
+                />
+              </div>
               <div className="form-group">
                 <input
                   type="text"
@@ -140,6 +165,7 @@ const Companies = () => {
                   required
                 />
               </div>
+              
               <div className="text-center">
                 <button
                   type="button"

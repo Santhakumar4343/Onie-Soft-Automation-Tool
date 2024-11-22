@@ -13,32 +13,34 @@ import {
   API_URL,
   getAllBranches,
   getAllRegister,
+  getRegisterForBranch,
   updateRegister,
 } from "../API/Api";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useLocation } from "react-router-dom";
 
 const Admins = () => {
   const [show, setShow] = useState(false);
   const [admins, setAdmins] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingAdmin, setEditingAdmin] = useState(null);
-  const [branches, setBranches] = useState([]);
 
-  useEffect(() => {
-    getAllBranches()
-      .then((response) => setBranches(response.data))
-      .catch((err) => console.log(err));
-  }, []);
+   const [loading,isLoading]=useState(false);
+   const location=useLocation();
+   const branchId=location.state?.branch?.id||{};
+   console.log(branchId)
+ 
   const [formData, setFormData] = useState({
     empId: "",
     empName: "",
     empEmail: "",
     empMob: "",
-    empRole: "Admin",
+    
     empDepartment: "",
     status: true,
     password: "",
+    
   });
 
   const handleShow = () => setShow(true);
@@ -63,26 +65,47 @@ const Admins = () => {
   };
 
   useEffect(() => {
-    getAllRegister()
+    getRegisterForBranch(branchId)
       .then((response) => setAdmins(response.data))
       .catch((err) => console.log(err));
-  }, []);
+  }, [branchId]);
 
   const handleSaveUser = async () => {
     try {
-      if (editingAdmin) {
-        const { password, ...updatedData } = formData;
-        await updateRegister(password ? formData : updatedData);
-      } else {
-        await addRegister(formData);
-      }
-      handleClose();
-      const updatedadmins = await getAllRegister();
-      setAdmins(updatedadmins.data);
+        isLoading(true); 
+
+        let payload;
+
+        if (editingAdmin) {
+            
+            const { password, ...updatedData } = formData; // Exclude password if not provided
+            payload = password ? formData : updatedData;
+            await updateRegister(payload);
+        } else {
+            // If creating a new admin
+            payload = {
+                empId: formData.empId,
+                empName: formData.empName,
+                empEmail: formData.empEmail,
+                empMob: formData.empMob,
+                empRole: "Admin",
+                empDepartment: formData.empDepartment,
+                status: formData.status,
+                password: formData.password,
+                branchId: branchId,
+            };
+            await addRegister(payload);
+        }
+
+        isLoading(false); // Hide loading indicator
+        handleClose(); // Close modal or form
+        const updatedAdmins = await getRegisterForBranch(branchId); // Refresh the list
+        setAdmins(updatedAdmins.data);
     } catch (error) {
-      console.error("Failed to save user", error);
+        isLoading(false); // Hide loading indicator in case of an error
+        console.error("Failed to save user", error);
     }
-  };
+};
 
   const handleEditUser = (user) => {
     setEditingAdmin(user);
@@ -106,10 +129,10 @@ const Admins = () => {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
-
+   const onlyAdmins=admins.filter(admin=>admin.empRole.toLowerCase()==="admin")
   return (
     <div className="container">
-      <h2 className="mb-3" style={{color:"#4f0890", textAlign:"center" }}>Admins</h2>
+      <h2 className="mb-3" style={{color:"#4f0890", textAlign:"center" }}>{location.state?.branch?.branchName} Admins</h2>
       <div className="d-flex justify-content-between mb-3">
         <Button
           variant="primary"
@@ -147,7 +170,7 @@ const Admins = () => {
           </tr>
         </thead>
         <tbody>
-          {admins
+          {onlyAdmins
             .filter((user) =>
               user.empName.toLowerCase().includes(searchTerm.toLowerCase())
             )
@@ -177,7 +200,7 @@ const Admins = () => {
         </tbody>
       </Table>
 
-      {/* Modal for Adding/Editing User */}
+      
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -241,23 +264,6 @@ const Admins = () => {
                 required={!editingAdmin}
               />
             </Form.Group>
-            
-            <div className="form-group">
-              <select
-                className="form-control"
-                name="branchId"
-                value={formData.branchId || ""}
-                onChange={handleInputChange}
-                required
-              >
-                <option>---select Branch---</option>
-                {branches.map((branch) => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.branchName}
-                  </option>
-                ))}
-              </select>
-            </div>
           </Form>
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-center align-items-center">
@@ -277,15 +283,24 @@ const Admins = () => {
           <Button
             variant="primary"
             onClick={handleSaveUser}
+            disabled={loading}
             style={{
               height: "40px",
               color: "white",
               backgroundColor: "#4f0e83",
-              width: "25%",
+              width: "35%",
               borderRadius: "20px",
+              opacity: loading ? 0.6 : 1,
             }}
-          >
-            {editingAdmin ? "Update Admin" : "Save Admin"}
+          >   
+          {loading ? (
+            <span>
+              <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 
+              {editingAdmin ? " Updating..." : " Saving..."}
+            </span>
+          ) : (
+            editingAdmin ? "Update Admin" : "Save Admin"
+          )}
           </Button>
         </Modal.Footer>
       </Modal>

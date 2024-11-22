@@ -1,146 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "../Test Runs/TestRunDetails.css";
 
 import Swal from "sweetalert2";
+import { addTestCasestoTestRun, edittestrun,  } from "../API/Api";
+import moment from "moment";
 
 function UserTestRunDetails() {
-  const [testCases, setTestCases] = useState([
-    {
-      projectId: "4",
-      testCaseId: "TC001",
-      testCaseName: "Password Reset Test",
-      customId: "TC03",
-      author: "Alice",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/24",
-    },
-    {
-      projectId: "4",
-      testCaseId: "TC002",
-      testCaseName: "Login Functionality Test",
-      customId: "TC04",
-      author: "Bob",
-      createdBy: "28/10/24",
-      updatedAt: "28/10/24",
-    },
-    {
-      projectId: "4",
-      testCaseId: "TC003",
-      testCaseName: "Signup Functionality Test",
-      customId: "TC05",
-      author: "Charlie",
-      createdBy: "27/10/24",
-      updatedAt: "27/10/24",
-    },
-    {
-      projectId: "1",
-      testCaseId: "1",
-      testCaseName: "Login Test",
-      customId: "TC01",
-      author: "Alice",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "2",
-      testCaseId: "2",
-      testCaseName: "Signup Test",
-      customId: "TC02",
-      author: "Bob",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "3",
-      testCaseId: "3",
-      testCaseName: "Password Reset Test",
-      customId: "TC03",
-      author: "Charlie",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "1",
-      testCaseId: "4",
-      testCaseName: "Login Test",
-      customId: "TC01",
-      author: "Alice",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "2",
-      testCaseId: "5",
-      testCaseName: "Signup Test",
-      customId: "TC02",
-      author: "Bob",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "3",
-      testCaseId: "6",
-      testCaseName: "Password Reset Test",
-      customId: "TC03",
-      author: "Charlie",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "1",
-      testCaseId: "7",
-      testCaseName: "Login Test",
-      customId: "TC01",
-      author: "Alice",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "2",
-      testCaseId: "8",
-      testCaseName: "Signup Test",
-      customId: "TC02",
-      author: "Bob",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "3",
-      testCaseId: "9",
-      testCaseName: "Password Reset Test",
-      customId: "TC03",
-      author: "Charlie",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "1",
-      testCaseId: "10",
-      testCaseName: "Login Test",
-      customId: "TC01",
-      author: "Alice",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-    {
-      projectId: "2",
-      testCaseId: "11",
-      testCaseName: "Signup Test",
-      customId: "TC02",
-      author: "Bob",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/28",
-    },
-  ]);
+
+  
+const location=useLocation();
+
+const project=location.state?.project||{};
+const testRun=location.state?.testRun||{};
+console.log(testRun.id);
+  const [testCases, setTestCases] = useState([]);
+
+  useEffect(()=>{
+    edittestrun(testRun.id,project.id).then(response=>setTestCases(response.data)).catch(err=>console.log(err))
+  },[testRun.id,project.id])
 
   const [selectedCases, setSelectedCases] = useState([]);
 
   // Handle individual row selection
-  const handleCheckboxChange = (testCaseId) => {
+  const handleCheckboxChange = (id) => {
     setSelectedCases((prevSelected) =>
-      prevSelected.includes(testCaseId)
-        ? prevSelected.filter((id) => id !== testCaseId)
-        : [...prevSelected, testCaseId]
+      prevSelected.includes(id)
+        ? prevSelected.filter((id) => id !== id)
+        : [...prevSelected, id]
     );
   };
 
@@ -148,11 +35,16 @@ function UserTestRunDetails() {
     if (selectedCases.length === testCases.length) {
       setSelectedCases([]);
     } else {
-      setSelectedCases(testCases.map((testCase) => testCase.testCaseId)); // Select all
+      setSelectedCases(testCases.map((testCase) => testCase.id)); // Select all
     }
   };
 
   const handleAddToTestRun = () => {
+    if (selectedCases.length === 0) {
+      Swal.fire("Error", "No test cases selected!", "error");
+      return;
+    }
+  
     Swal.fire({
       title: "Are you sure?",
       text: "Do you want to add these test cases to the Test Run?",
@@ -167,18 +59,38 @@ function UserTestRunDetails() {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.fire(
-          "Added!",
-          "Selected test cases have been added to the Test Run.",
-          "success"
-        );
+        // Prepare payload for API
+        const payload = {
+          testRunId: testRun.id,
+          testRunName: testRun.testRunName || "Default Test Run Name", 
+          testCaseId: selectedCases,
+        };
+  
+        addTestCasestoTestRun(payload)
+          .then((response) => {
+            if(response.status===200||response.status===201){
+            Swal.fire(
+              "Added!",
+              "Selected test cases have been added to the Test Run.",
+              "success"
+            );
+            window.location.reload()
+            setSelectedCases([]);}
+            else{
+  Swal.fire("Error", "Failed to add test cases to the Test Run.", "error");
+            }
+          })
+          .catch((error) => {
+            console.error("Error adding test cases to the test run:", error);
+          
+          });
       }
     });
   };
   const handleTestRun = () => {
     Swal.fire({
       title: "Are you sure?",
-      text: "Do you want to Test Run?",
+      text: "Do you want to  Execute Test Run?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#4f0e83",
@@ -199,7 +111,7 @@ function UserTestRunDetails() {
     <div className="container">
       <h2 style={{color:"#4f0e83",textAlign:"center"}}>Test Run </h2>
       <div className="TestRun">
-        <button
+        {/* <button
           onClick={handleTestRun}
           style={{
             borderRadius: "20px",
@@ -210,7 +122,7 @@ function UserTestRunDetails() {
           }}
         >
           Execute Test Run
-        </button>
+        </button> */}
         <button
           onClick={handleAddToTestRun}
           disabled={selectedCases.length === 0}
@@ -274,7 +186,7 @@ function UserTestRunDetails() {
                   onChange={handleSelectAll}
                 />
               </th>
-              <th>Project ID</th>
+             
 
               <th>Test Case Name</th>
               <th>Automation ID</th>
@@ -289,16 +201,16 @@ function UserTestRunDetails() {
                 <td>
                   <input
                     type="checkbox"
-                    checked={selectedCases.includes(testCase.testCaseId)}
-                    onChange={() => handleCheckboxChange(testCase.testCaseId)}
+                    checked={selectedCases.includes(testCase.id)}
+                    onChange={() => handleCheckboxChange(testCase.id)}
                   />
                 </td>
-                <td>{testCase.projectId}</td>
+                
 
                 <td>{testCase.testCaseName}</td>
-                <td>{testCase.customId}</td>
+                <td>{testCase.automationId}</td>
                 <td>{testCase.author}</td>
-                <td>{testCase.createdBy}</td>
+                <td>{moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}</td>
                 <td>{testCase.updatedAt}</td>
               </tr>
             ))}

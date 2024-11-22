@@ -3,22 +3,27 @@ import { useLocation } from "react-router-dom";
 import "../Test Runs/TestRunDetails.css";
 
 import Swal from "sweetalert2";
-import { addTestCasestoTestRun, edittestrun,  } from "../API/Api";
+import {
+  addTestCasestoTestRun,
+  executeTestRun,
+  getTestcaseByProjectId,
+  getTestCasesByTestRunId,
+} from "../API/Api";
 import moment from "moment";
 
-function TestRunDetails() {
+function UserTestRunView() {
+  const location = useLocation();
 
-  
-const location=useLocation();
-
-const project=location.state?.project||{};
-const testRun=location.state?.testRun||{};
-console.log(testRun.id);
+  const project = location.state?.project || {};
+  const testRun = location.state?.testRun || {};
+  console.log(testRun.id);
   const [testCases, setTestCases] = useState([]);
 
-  useEffect(()=>{
-    edittestrun(testRun.id,project.id).then(response=>setTestCases(response.data)).catch(err=>console.log(err))
-  },[testRun.id,project.id])
+  useEffect(() => {
+    getTestCasesByTestRunId(testRun.id)
+      .then((response) => setTestCases(response.data))
+      .catch((err) => console.log(err));
+  }, [testRun.id]);
 
   const [selectedCases, setSelectedCases] = useState([]);
 
@@ -44,7 +49,7 @@ console.log(testRun.id);
       Swal.fire("Error", "No test cases selected!", "error");
       return;
     }
-  
+
     Swal.fire({
       title: "Are you sure?",
       text: "Do you want to add these test cases to the Test Run?",
@@ -59,30 +64,31 @@ console.log(testRun.id);
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        // Prepare payload for API
         const payload = {
           testRunId: testRun.id,
-          testRunName: testRun.testRunName || "Default Test Run Name", 
+          testRunName: testRun.testRunName || "Default Test Run Name",
           testCaseId: selectedCases,
         };
-  
+
         addTestCasestoTestRun(payload)
           .then((response) => {
-            if(response.status===200||response.status===201){
-            Swal.fire(
-              "Added!",
-              "Selected test cases have been added to the Test Run.",
-              "success"
-            );
-            window.location.reload()
-            setSelectedCases([]);}
-            else{
-  Swal.fire("Error", "Failed to add test cases to the Test Run.", "error");
+            if (response.status === 200 || response.status === 201) {
+              Swal.fire(
+                "Added!",
+                "Selected test cases have been added to the Test Run.",
+                "success"
+              );
+              setSelectedCases([]);
+            } else {
+              Swal.fire(
+                "Error",
+                "Failed to add test cases to the Test Run.",
+                "error"
+              );
             }
           })
           .catch((error) => {
             console.error("Error adding test cases to the test run:", error);
-          
           });
       }
     });
@@ -102,16 +108,41 @@ console.log(testRun.id);
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.fire("Executed!", "Test Run Executed Successfully.", "success");
+        executeTestRun(testRun.id)
+          .then((response) => {
+            const { status } = response;
+
+            if (status === 200 || status === 201) {
+              Swal.fire({
+                title: "Executed!",
+                text: "Test Run Executed Successfully.",
+                icon: "success",
+              });
+            } else {
+              Swal.fire({
+                title: "Oops...!",
+                text: "Something Went Wrong.",
+                icon: "error",
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error executing test run:", error);
+            Swal.fire({
+              title: "Error!",
+              text: "An unexpected error occurred. Please try again later.",
+              icon: "error",
+            });
+          });
       }
     });
   };
 
   return (
     <div className="container">
-      <h2 style={{color:"#4f0e83",textAlign:"center"}}>Test Run </h2>
+      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>Test Run </h2>
       <div className="TestRun">
-        {/* <button
+        <button
           onClick={handleTestRun}
           style={{
             borderRadius: "20px",
@@ -122,8 +153,8 @@ console.log(testRun.id);
           }}
         >
           Execute Test Run
-        </button> */}
-        <button
+        </button>
+        {/* <button
           onClick={handleAddToTestRun}
           disabled={selectedCases.length === 0}
           style={{
@@ -135,7 +166,7 @@ console.log(testRun.id);
           }}
         >
           Add to Test Run
-        </button>
+        </button> */}
       </div>
       <div
         style={{
@@ -179,17 +210,17 @@ console.log(testRun.id);
             }}
           >
             <tr>
-              <th>
+              {/* <th>
                 <input
                   type="checkbox"
                   checked={selectedCases.length === testCases.length}
                   onChange={handleSelectAll}
                 />
-              </th>
-             
+              </th> */}
 
               <th>Test Case Name</th>
               <th>Automation ID</th>
+              <th>Status</th>
               <th>Author</th>
               <th>Created Date</th>
               <th>Updated Date</th>
@@ -198,19 +229,21 @@ console.log(testRun.id);
           <tbody>
             {testCases.map((testCase, index) => (
               <tr key={index}>
-                <td>
+                {/* <td>
                   <input
                     type="checkbox"
                     checked={selectedCases.includes(testCase.id)}
                     onChange={() => handleCheckboxChange(testCase.id)}
                   />
-                </td>
-                
+                </td> */}
 
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
+                <td>{testCase.status}</td>
                 <td>{testCase.author}</td>
-                <td>{moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}</td>
+                <td>
+                  {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}
+                </td>
                 <td>{testCase.updatedAt}</td>
               </tr>
             ))}
@@ -221,4 +254,4 @@ console.log(testRun.id);
   );
 }
 
-export default TestRunDetails;
+export default UserTestRunView;

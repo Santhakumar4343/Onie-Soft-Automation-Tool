@@ -10,6 +10,7 @@ import Admins from '../Admin/Admins';
 import Departments from './Departments';
 import Companies from './Companies';
 import './superAdminDashboard.css';
+import View from './View';
 const SuperAdminDashboard = () => {
   return (
     <div className="d-flex">
@@ -20,9 +21,10 @@ const SuperAdminDashboard = () => {
      
       <div className="col-10 p-3">
         <Routes>
-          <Route path="/" element={<Admins />} />
+          <Route path="/" element={<Companies/>} />
           <Route path="/departments" element={<Departments/>}></Route>
-          <Route path="/companies" element={<Companies/>}></Route>
+          <Route path="/admins" element={<Admins/>}></Route>
+          <Route path="/view" element={<View/>}></Route>
         </Routes>
       </div>
     </div>

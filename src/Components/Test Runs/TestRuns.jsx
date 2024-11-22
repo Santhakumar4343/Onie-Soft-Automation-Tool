@@ -1,10 +1,12 @@
 import { Modal } from "@mui/material";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { API_URL } from "../API/Api";
+import { API_URL, getTestRunByProjectId } from "../API/Api";
 import Swal from "sweetalert2";
-
+import moment from "moment";
+import EditIcon from '@mui/icons-material/Edit';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 
 const TestRuns = () => {
   const [searchText, setSearchText] = useState("");
@@ -20,38 +22,21 @@ const TestRuns = () => {
      testRunName: "" ,
      createdBy :user.empId
     });
-  const [testRuns, setTestRuns] = useState([
-    {
-      projectId: "4",
-      testRunId: "TC001",
-      testRunName: "TestRun 1",
-      createdBy: "29/10/24",
-      updatedAt: "29/10/24",
-    },
-    {
-      projectId: "4",
-      testRunId: "TC002",
-      testRunName: "Test Run 2",
-      createdBy: "28/10/24",
-      updatedAt: "28/10/24",
-    },
-    {
-      projectId: "4",
-      testRunId: "TC003",
-      testRunName: "Test Run 3",
-      createdBy: "27/10/24",
-      updatedAt: "27/10/24",
-    },
-  ]);
+    const [testRuns, setTestRuns] = useState([]);
 
-  const handleTestRun = () => setTestRunModal(true);
+  useEffect(()=>{
+    getTestRunByProjectId(project.id).then(response=>setTestRuns(response.data)
+  ).catch(err=>console.log(err))
+  },[project.id])
+
+  
 
   const filteredTestRuns = testRuns.filter((testRun) =>
     testRun.testRunName.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleTestRunClick = () => navigate("/dashboard/testRunDetails");
-
+  const handleTestRunClick = (testRun) => navigate("/dashboard/testRunDetails",{state: {project,testRun}});
+  const handleTestRunView= (testRun) => navigate("/dashboard/testRunView",{state:{project,testRun}});
   const handleTestRunSubmit = (e) => {
     e.preventDefault();
      
@@ -91,8 +76,8 @@ const TestRuns = () => {
      
       <div className="container ">
       <h2 className="text-center mb-2" style={{color:"#4f0e83"}}>Test Runs</h2>
-        <div className="d-flex justify-content-between mb-3">
-          <button
+        <div className="d-flex justify-content-end mb-3">
+          {/* <button
             className="btn btn-primary"
             style={{
               height: "40px",
@@ -104,7 +89,7 @@ const TestRuns = () => {
             onClick={handleTestRun}
           >
             Create Test Run
-          </button>
+          </button> */}
           <input
             type="text"
             value={searchText}
@@ -115,25 +100,39 @@ const TestRuns = () => {
           />
         </div>
 
-        <div className="row">
-          {filteredTestRuns.map((testRun, index) => (
-            <div className="col-md-4 mb-3" key={index}>
-              <div
-                className="card shadow-sm h-100"
-                onClick={handleTestRunClick}
-                style={{ backgroundColor:"rgb(79 103 228)",cursor:"pointer",borderRadius:"10px" }}
-              >
-                <div className="card-body text-center " style={{color:"white"}} >
-                  <h5 className="card-title">{testRun.testRunName}</h5>
-                  <p className="card-text " style={{color:"white"}} >
-                    Created: {testRun.createdBy} <br />
-                    Updated: {testRun.updatedAt}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <div className="table-responsive">
+  <table className="table table-bordered table-hover">
+    <thead className="thead-dark">
+      <tr>
+        <th>#</th>
+        <th>Test Run Name</th>
+        <th>Created By</th>
+        <th>Created At</th>
+        <th>Updated At</th>
+        <th>Test Cases</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredTestRuns.map((testRun, index) => (
+        <tr 
+          key={index} 
+          
+          style={{ cursor: "pointer", backgroundColor: "rgb(79, 103, 228)", color: "white" }}
+        >
+          <td>{index + 1}</td>
+          <td>{testRun.testRunName}</td>
+          <td>{testRun.createdBy}</td>
+          <td>{moment(testRun.createdAt).format("DD MMM YYYY, HH:mm:ss")}</td>
+          <td>{moment(testRun.updatedAt).format("DD MMM YYYY, HH:mm:ss")}</td>
+          <div>
+           <td><EditIcon  className="me-2" style={{ cursor: "pointer", color: "#4f0e83" }} onClick={() => handleTestRunClick(testRun)} /></td>
+           <td><RemoveRedEyeIcon  style={{ cursor: "pointer", color: "#4f0e83" }} onClick={() => handleTestRunView(testRun)}/></td>
+          </div>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
       </div>
 
       <Modal open={testRunModal} onClose={() => setTestRunModal(false)}>
