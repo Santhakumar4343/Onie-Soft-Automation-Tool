@@ -1,12 +1,12 @@
 
 
-.sidebar {
+.usersidebar {
     height: 100vh;
     padding-top: 20px;
     position: sticky;
     top: 0;
     
-    background-color: #6bfffac7;
+    background-color: #6bfffac7 !important;
   }
   
   .profile-section {

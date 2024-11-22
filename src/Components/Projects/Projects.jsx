@@ -1,11 +1,11 @@
 import { Modal } from "@mui/material";
-import axios from "axios";
-import { addProject, assignProjects, getAllProject } from "../API/Api";
+
+import { addProject, assignProjects, getAllProject, getBranchById, getProjectsByBranchId, unMapRegisters } from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_URL } from "../API/Api";
+
 import Swal from "sweetalert2";
-import { getAllRegister } from "../API/Api";
+
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import GroupIcon from "@mui/icons-material/Group";
@@ -19,18 +19,27 @@ const Projects = () => {
    const branchId=user.branchId;
   const [projectData, setProjectData] = useState({
     projectName: "",
+    projectDir:"",
     branchId:branchId
   });
   const [users, setUsers] = useState([]);
   const [projectId,setProjectId]=useState("");
-  const jwt_token = sessionStorage.getItem("jwt_token");
+ 
+  const [branchName,setBranchName]=useState();
+  useEffect(()=>{
+    getBranchById(user.branchId).then(response=> setBranchName(response.data.branchName))
+  },[user.branchId])
+  
   useEffect(() => {
-    getAllRegister()
-      .then((response) => {
-        setUsers(response.data);
-      })
-      .catch((err) => console.log(err));
-  }, []);
+    
+    if (projectId) {
+      unMapRegisters(projectId, branchId)
+        .then((response) => {
+          setUsers(response.data);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [projectId,branchId]);
   const handleShow = (id) => {
    setProjectId(id);
     setShowModal(true);
@@ -39,10 +48,10 @@ const Projects = () => {
     setShowModal(false);
   };
   useEffect(() => {
-       getAllProject()
+    getProjectsByBranchId(branchId)
       .then((response) => setProjects(response.data))
       .catch((err) => console.log(err));
-  }, []);
+  }, [branchId]);
   const [projects, setProjects] = useState([]);
 
   const handleProject = () => {
@@ -60,6 +69,7 @@ const Projects = () => {
           text: "Your project has been Created successfully!",
         });
         console.log(response);
+        location.reload()
       })
       .catch((err) => {
         // Show error alert when request fails
@@ -95,8 +105,9 @@ const Projects = () => {
       e.target.selectedOptions,
       (option) => option.value
     );
-    setUserIds(selectedIds); 
+    setUserIds((prevIds) => Array.from(new Set([...prevIds, ...selectedIds])));
   };
+  
   const handleCancel = () => {
     setProjectId("")
     setUserIds([]); // reset selection on cancel
@@ -130,7 +141,7 @@ const Projects = () => {
   return (
     <div className="container-fluid ">
       <h2 className="text-center" style={{ color: "#4f0e83" }}>
-        Projects
+       {branchName} Projects
       </h2>
       <div className="d-flex justify-content-between mb-4">
         <button
@@ -180,7 +191,8 @@ const Projects = () => {
                 <PersonAddIcon
                   className="w-40 "
                   style={{ color: "white", fontSize: "30" }}
-                  onClick={()=>handleShow(project.id)}
+                  onClick={() => handleShow(project.id)}
+                  
                 />
                 <PersonRemoveIcon style={{ color: "white", fontSize: "30" }} />
                 <GroupIcon style={{ color: "white", fontSize: "30" }} />
@@ -222,7 +234,7 @@ const Projects = () => {
                   <option value="" disabled>
                     -- Select Users --
                   </option>
-                  {users.map((user) => (
+                  {users.filter(user=>user.empRole.toLowerCase()==="user").map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.empName}
                     </option>
@@ -328,6 +340,17 @@ const Projects = () => {
                   placeholder="Project Name"
                   onChange={handleProjectChange}
                   value={projectData.projectName}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="projectDir"
+                  className="form-control w-80 mb-3"
+                  placeholder="Project Directory"
+                  onChange={handleProjectChange}
+                  value={projectData.projectDir}
                   required
                 />
               </div>

@@ -2,51 +2,68 @@ import { Modal } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import Swal from "sweetalert2";
-import { createBranch,  getAllBranches, getAllCompany } from "../API/Api";
-
+import { createBranch, getAllBranchesByCompany } from "../API/Api";
+import { useLocation, useNavigate } from "react-router-dom";
+import VisibilityIcon from '@mui/icons-material/Visibility';
 const Deparments = () => {
   const [projectModal, setProjectModal] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [branches, setBranches] = useState([]);
-  const [companies,setCompanies]=useState([]);
+  
+  const location = useLocation();
+const cmpId = location.state?.company.id || {};
+
+console.log(cmpId)
+  const navigate=useNavigate();
   const [branchData, setBranchData] = useState({
     branchName: "",
     branchId: "",
-    cmpId: "",
+    
   });
 
-   useEffect(()=>{
-    getAllCompany().then(response=>setCompanies(response.data)).catch(err=> console.log(err));
-   },[])
+  const handleBranchClick=(branch)=>{
+    navigate("/adminDashboard/admins" ,{state:{branch}})
+  }
+   
   const handleProject = () => {
     setProjectModal(true);
   };
 
   useEffect(() => {
-    getAllBranches()
+    getAllBranchesByCompany(cmpId)
       .then((response) => {
         setBranches(response.data);
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [cmpId]);
 
   const handleProjectSubmit = (e) => {
+    const data={
+      branchName: branchData.branchName,
+      branchId: branchData.branchId,
+      cmpId:cmpId
+    };
     e.preventDefault();
-    createBranch(branchData)
+    createBranch(data)
       .then((response) => {
-       
+      if(response.status===201||response.status===201){
         Swal.fire({
           icon: "success",
           title: "Branch Saved",
           text: "Your Branch has been Created successfully!",
         });
-      })
-      .catch((err) => {
+        location.reload()
+      }
+      else{
         Swal.fire({
           icon: "error",
           title: "Oops...",
           text: "Something went wrong! Could not create the Branch.",
         });
+      }
+      })
+      .catch((err) => {
+       
         console.log(err);
       });
     setProjectModal(false);
@@ -68,7 +85,7 @@ const Deparments = () => {
   return (
     <div className="container-fluid">
       <h2 className="text-center" style={{ color: "#4f0e83" }}>
-        Branches
+       {location.state?.company?.cmpName} Branches
       </h2>
       <div className="d-flex justify-content-between mb-4">
         <button
@@ -93,25 +110,34 @@ const Deparments = () => {
         />
       </div>
 
-      <div className="row">
-        {filteredBranches.map((company, index) => (
-          <div className="col-md-4 mb-5" key={index}>
-            <div
-              className="card shadow-sm project-card d-flex"
-              style={{ backgroundColor: "rgb(79 103 228)", cursor: "pointer" }}
+      <div className="table-responsive">
+  <table className="table  table-hover ">
+    <thead >
+      <tr>
+        <th>Branch ID</th>
+        <th>Branch Name</th>
+        <th>View Admins</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredBranches.map((branch, index) => (
+        <tr key={index}>
+          <td>{branch.branchId}</td>
+          <td>{branch.branchName}</td>
+          <td>
+            <VisibilityIcon
+              style={{cursor:"pointer"}}
+              onClick={() => handleBranchClick(branch)}
             >
-              <div className="card-body">
-                <h5
-                  className="card-title text-center"
-                  style={{ color: "white" }}
-                >
-                  {company.branchName}
-                </h5>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+             
+            </VisibilityIcon>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
 
       <Modal open={projectModal} onClose={() => setProjectModal(false)}>
         <div
@@ -155,24 +181,6 @@ const Deparments = () => {
                   value={branchData.branchName}
                   required
                 />
-              </div>
-
-
-              <div className="form-group">
-
-                <select className="form-control"
-                name="cmpId"
-                value={branchData.cmpId || ""}
-                onChange={handleProjectChange}
-                required>
-
-                  <option>---select company---</option>
-                  {
-                    companies.map(company=>(
-                      <option key={company.id}  value={company.id}>{company.cmpName}</option>
-                    ))
-                  }
-                </select>
               </div>
               
               <div className="text-center">

@@ -3,100 +3,112 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { Modal, Button } from "react-bootstrap";
 
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../Test Cases/Testcases.css";
 
 import axios from "axios";
-import { API_URL } from "../API/Api";
+import { addTestcase, API_URL, getTestcaseByProjectId, updateTestcase } from "../API/Api";
 import Swal from "sweetalert2";
 import moment from "moment";
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from "@mui/icons-material/Edit";
 const UserTestcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [editTestCase,setEditTestCase]=useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { project } = location.state || {};
 
   const [testCases, setTestCases] = useState([]);
-  const [showModal, setShowModal] = useState(false); // Modal state
-
+  const [showModal, setShowModal] = useState(false);
   useEffect(() => {
-    axios
-      .get(`${API_URL}/testcases/v1/getForProject/${project.id}`)
+    getTestcaseByProjectId(project.id)
       .then((response) => {
         setTestCases(response.data);
         console.log(response.data);
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [project.id]);
   const formik = useFormik({
     initialValues: {
       projectId: project.id,
       testCaseName: "",
       automationId: "",
       author: "",
-      status: "",
       feature: "",
     },
     validationSchema: Yup.object({
       testCaseName: Yup.string().required("Test Case Name is required"),
       automationId: Yup.string().required("Custom ID is required"),
       author: Yup.string().required("Author is required"),
-      status: Yup.string().required("Status is required"),
+
       feature: Yup.string().required("Feature is required"),
     }),
     onSubmit: async (values) => {
-      try {
-        const response = await axios.post(
-          `${API_URL}/testcases/v1/save/${project.id}`,
-          values,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
+      if (editTestCase) {
+        // Edit mode
+        try {
+          const response =  updateTestcase(editTestCase.id) 
+          if (response.status === 200) {
+            Swal.fire({
+              icon: "success",
+              title: "Updated",
+              text: "Test case updated successfully!",
+            });
+
+          }   
+          window.location.reload()
+        } catch (error) {
+          Swal.fire({
+            icon: "error",
+            title: "Failed",
+            text: "Could not update the test case!",
+          });
+        }
+      } else {
+        
+        try {
+          const response = await addTestcase(project.id, values);
+          if (response.status === 200 || response.status === 201) {
+            Swal.fire({
+              icon: "success",
+              title: "Created",
+              text: "Test case created successfully!",
+            });
           }
-        );
-    
-        Swal.fire({
-          icon: "success",
-          title: "Test Case Saved",
-          text: "Your Test Case was created successfully!",
-        });
-    
-       
-        formik.resetForm();
-        setShowModal(false);
-    
-        
-        console.log(response);
-    
-        
-        
-    
-      } catch (err) {
-        console.error(err);
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Something went wrong! Could not create the Test Case.",
-        });
+  window.location.reload()
+        } catch (error) {
+          console.log (error)
+          Swal.fire({
+            icon: "error",
+            title: "Failed",
+            text: "Could not create the test case!",
+          });
+        }
       }
-    }
     
-  });
+      // Refresh and close modal
+      formik.resetForm();
+      setShowModal(false);
+      setEditTestCase(null);
+    }});
 
   const handleClose = () => {
     setShowModal(false);
     formik.resetForm();
   };
-  const handleEdit = (id) => {
-    const filterData = testCases.filter((ele) => ele.testCaseId === id);
-    console.log(filterData);
+  const handleEdit = (testCase) => {
+    setEditTestCase(testCase);
+    formik.setValues({
+      testCaseName: testCase.testCaseName,
+      automationId: testCase.automationId,
+      author: testCase.author,
+      feature: testCase.feature,
+    });
+    setShowModal(true);
   };
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -121,7 +133,7 @@ const UserTestcases = () => {
       testcase.author.toLowerCase().includes(searchQuery)
   );
   const handleTestRun = () => {
-    navigate("/dashboard/testruns",{state:{project}});
+    navigate("/userDashboard/testruns", { state: { project } });
   };
   return (
     <div className=" container-fluid ">
@@ -131,7 +143,7 @@ const UserTestcases = () => {
             className="text-center mb-4"
             style={{ color: "#4f0e83", boxShadow: "grey" }}
           >
-            Test Cases for {project.projectName}
+            Test Cases for - {project.projectName}
           </h2>
         </div>
 
@@ -256,7 +268,7 @@ const UserTestcases = () => {
                 <th>Test Case ID</th>
                 <th>Automation ID</th>
                 <th>Test Case Name</th>
-                <th>Status</th>
+
                 <th>Feature</th>
                 <th>Author</th>
                 <th>Created Date</th>
@@ -265,25 +277,26 @@ const UserTestcases = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredTestCases.map((item, index) => (
+              {filteredTestCases.map((testCase, index) => (
                 <tr key={index}>
-                  <td>{item.id}</td>
-                  <td>{item.automationId}</td>
-                  <td>{item.testCaseName}</td>
-                  <td>{item.status}</td>
-                  <td>{item.feature}</td>
-                  <td>{item.author}</td>
+                  <td>{testCase.id}</td>
+                  <td>{testCase.automationId}</td>
+                  <td>{testCase.testCaseName}</td>
+
+                  <td>{testCase.feature}</td>
+                  <td>{testCase.author}</td>
 
                   <td>
-                    {moment(item.createdAt).format("DD-MM-YYYY (HH:mm:ss)")}
+                    {moment(testCase.createdAt).format("DD-MM-YYYY (HH:mm:ss)")}
                   </td>
                   <td>
-                    {moment(item.updatedAt).format("DD-MM-YYYY (HH:mm:ss)")}
+                    {moment(testCase.updatedAt).format("DD-MM-YYYY (HH:mm:ss)")}
                   </td>
 
                   <td>
                     <EditIcon
-                      onClick={() => handleEdit(item.testCaseId)}
+                      onClick={() => handleEdit(testCase)}
+                      style={{ cursor: "pointer", color: "#4f0e83" }}
                       title="Edit TestCase"
                     />
                   </td>
@@ -296,9 +309,9 @@ const UserTestcases = () => {
         {/* Modal Popup */}
         <Modal show={showModal} onHide={handleClose} centered backdrop="static">
           <Modal.Header closeButton>
-            <Modal.Title style={{ textAlign: "center" }}>
-              Add Test Case
-            </Modal.Title>
+          <Modal.Title>
+      {editTestCase ? "Edit Test Case" : "Add Test Case"}
+    </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <form onSubmit={formik.handleSubmit}>
@@ -357,23 +370,6 @@ const UserTestcases = () => {
                 />
                 {formik.touched.author && formik.errors.author && (
                   <div className="invalid-feedback">{formik.errors.author}</div>
-                )}
-              </div>
-              <div className="mb-3">
-                <input
-                  type="text"
-                  name="status"
-                  value={formik.values.status}
-                  onChange={formik.handleChange}
-                  className={`form-control ${
-                    formik.touched.status && formik.errors.status
-                      ? "is-invalid"
-                      : ""
-                  }`}
-                  placeholder="Status"
-                />
-                {formik.touched.status && formik.errors.status && (
-                  <div className="invalid-feedback">{formik.errors.status}</div>
                 )}
               </div>
 

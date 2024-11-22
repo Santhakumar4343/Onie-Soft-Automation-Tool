@@ -29,7 +29,7 @@ const Login = () => {
   
         // Navigate based on user role
         const userRole = response.data.register.empRole;
-        if (userRole === "SuperAdmin") {
+        if (userRole === "SuperADMIN") {
           navigate('/adminDashboard');
         } else if (userRole === "Admin") {
           navigate('/dashboard');

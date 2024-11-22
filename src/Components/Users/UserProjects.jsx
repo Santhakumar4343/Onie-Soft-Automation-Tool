@@ -1,6 +1,6 @@
 import { Modal } from "@mui/material";
 import axios from "axios";
-import { assignProjects, getAllProject, getAllUserProjects } from "../API/Api";
+import { assignProjects, getAllProject, getAllUserProjects, getAssignedUserProjects } from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../API/Api";
@@ -20,7 +20,7 @@ const UserProjects = () => {
   });
   const [users, setUsers] = useState([]);
   const [projectId,setProjectId]=useState("");
-  const jwt_token = sessionStorage.getItem("jwt_token");
+   const user=JSON.parse(sessionStorage.getItem("user"));
   useEffect(() => {
     getAllRegister()
       .then((response) => {
@@ -36,7 +36,7 @@ const UserProjects = () => {
     setShowModal(false);
   };
   useEffect(() => {
-    getAllUserProjects()
+    getAssignedUserProjects(user.id)
       .then((response) => setProjects(response.data))
       .catch((err) => console.log(err));
   }, []);
@@ -134,8 +134,8 @@ const UserProjects = () => {
       <h2 className="text-center" style={{ color: "#4f0e83" }}>
         Projects
       </h2>
-      <div className="d-flex justify-content-between mb-4">
-        <button
+      <div className="d-flex justify-content-end mb-4">
+        {/* <button
           onClick={handleProject}
           style={{
             height: "40px",
@@ -146,7 +146,7 @@ const UserProjects = () => {
           }}
         >
           Add Project
-        </button>
+        </button> */}
         <input
           type="text"
           value={searchText}
@@ -175,7 +175,7 @@ const UserProjects = () => {
                   {project.projectName}
                 </h5>
               </div>
-              <div
+              {/* <div
                 className="card-footer d-flex justify-content-center align-items-center"
                 style={{ gap: "20px" }}
               >
@@ -186,7 +186,7 @@ const UserProjects = () => {
                 />
                 <PersonRemoveIcon style={{ color: "white", fontSize: "30" }} />
                 <GroupIcon style={{ color: "white", fontSize: "30" }} />
-              </div>
+              </div> */}
             </div>
           </div>
         ))}

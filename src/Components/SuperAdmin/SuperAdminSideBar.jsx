@@ -20,28 +20,28 @@ const SuperAdminSidebar = () => {
        
         <li className="nav-item">
           <a
-            href="/adminDashboard/companies"
-            className={location.pathname === "/adminDashboard/companies" ? "active" : ""}
+            href="/adminDashboard"
+            className={location.pathname === "/adminDashboard" ? "active" : ""}
           >
             Companies
           </a>
         </li>
         <li className="nav-item">
           <a
-            href="/adminDashboard/departments"
-            className={location.pathname === "/adminDashboard/departments" ? "active" : ""}
+            href="/adminDashboard/view"
+            className={location.pathname === "/adminDashboard/view" ? "active" : ""}
           >
-            Branches
+            View
           </a>
         </li>
-        <li className="nav-item">
+        {/* <li className="nav-item">
           <a
-            href="/adminDashboard"
-            className={location.pathname === "/adminDashboard" ? "active" : ""}
+            href="/adminDashboard/admins"
+            className={location.pathname === "/adminDashboard/admins" ? "active" : ""}
           >
             Admins
           </a>
-        </li>
+        </li> */}
       </ul>
     </div>
   );
