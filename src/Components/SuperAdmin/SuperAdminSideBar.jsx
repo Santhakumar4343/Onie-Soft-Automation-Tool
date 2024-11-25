@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import Logo from "../../assets/oniesoft.png";
-import './superAdminDashboard.css';
+import './SuperAdminDashboard.css';
 
 const SuperAdminSidebar = () => {
   const location = useLocation();

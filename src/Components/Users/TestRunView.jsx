@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import {
   addTestCasestoTestRun,
   executeTestRun,
-  getTestcaseByProjectId,
+ 
   getTestCasesByTestRunId,
 } from "../API/Api";
 import moment from "moment";
