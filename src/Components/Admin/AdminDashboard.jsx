@@ -6,11 +6,11 @@ import Sidebar from './Sidebar';
 import { Route, Routes } from 'react-router-dom';
 import Testcases from '../TestCases/Testcases';
 import TestRuns from '../TestRuns/TestRuns';
-import TestRunDetails from '../Test Runs/TestRunDetails';
+import TestRunDetails from '../TestRuns/TestRunDetails';
 import Projects from '../Projects/Projects';
 import Users from '../Users/Users';
 import Company from '../Company/Company';
-import TestRunView from '../Test Runs/TestRunView';
+import TestRunView from '../TestRuns/TestRunView';
 
 const AdminDashboard = () => {
   return (

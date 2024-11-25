@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import "../Test Runs/TestRunDetails.css";
+import "../TestRuns/TestRunDetails.css";
 
 import Swal from "sweetalert2";
 import {
   addTestCasestoTestRun,
   executeTestRun,
-  getTestcaseByProjectId,
+ 
   getTestCasesByTestRunId,
 } from "../API/Api";
 import moment from "moment";

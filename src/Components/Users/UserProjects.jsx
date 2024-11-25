@@ -1,14 +1,12 @@
 import { Modal } from "@mui/material";
 import axios from "axios";
-import { assignProjects, getAllProject, getAllUserProjects, getAssignedUserProjects } from "../API/Api";
+import { assignProjects, getAssignedUserProjects } from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../API/Api";
 import Swal from "sweetalert2";
 import { getAllRegister } from "../API/Api";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
-import GroupIcon from "@mui/icons-material/Group";
+
 import { errorNotify, notify } from "../../NotificationUtil";
 const UserProjects = () => {
   const [projectModal, setProjectModal] = useState(false);

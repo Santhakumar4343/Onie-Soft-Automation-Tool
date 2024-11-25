@@ -9,7 +9,7 @@ import SuperAdminSidebar from './SuperAdminSideBar';
 import Admins from '../Admin/Admins';
 import Departments from './Departments';
 import Companies from './Companies';
-import './Superadmindashboard.css';
+import './SuperAdminDashboard.css';
 import View from './View';
 const SuperAdminDashboard = () => {
   return (
