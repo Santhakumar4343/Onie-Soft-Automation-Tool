@@ -5,7 +5,7 @@ import { Modal, Button } from "react-bootstrap";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useLocation, useNavigate } from "react-router-dom";
-import "../Test Cases/Testcases.css";
+import "../TestCases/Testcases.css";
 
 import axios from "axios";
 import { addTestcase, API_URL, getTestcaseByProjectId, updateTestcase } from "../API/Api";
