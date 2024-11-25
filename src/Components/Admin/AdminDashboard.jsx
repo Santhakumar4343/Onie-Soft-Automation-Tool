@@ -4,8 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Sidebar from './Sidebar';
 
 import { Route, Routes } from 'react-router-dom';
-import Testcases from '../Test Cases/Testcases';
-import TestRuns from '../Test Runs/TestRuns';
+import Testcases from '../TestCases/Testcases';
+import TestRuns from '../TestRuns/TestRuns';
 import TestRunDetails from '../Test Runs/TestRunDetails';
 import Projects from '../Projects/Projects';
 import Users from '../Users/Users';
