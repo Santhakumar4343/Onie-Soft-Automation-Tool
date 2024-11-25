@@ -17,23 +17,23 @@ const SuperAdminSidebar = () => {
         />
       </div>
       <ul className="nav flex-column">
-       
+      <li className="nav-item">
+          <a
+            href="/adminDashboard/"
+            className={location.pathname === "/adminDashboard/" ? "active" : ""}
+          >
+            Dashboard
+          </a>
+        </li>
         <li className="nav-item">
           <a
-            href="/adminDashboard"
-            className={location.pathname === "/adminDashboard" ? "active" : ""}
+            href="/adminDashboard/companies"
+            className={location.pathname === "/adminDashboard/companies" ? "active" : ""}
           >
             Companies
           </a>
         </li>
-        <li className="nav-item">
-          <a
-            href="/adminDashboard/view"
-            className={location.pathname === "/adminDashboard/view" ? "active" : ""}
-          >
-            View
-          </a>
-        </li>
+       
         {/* <li className="nav-item">
           <a
             href="/adminDashboard/admins"

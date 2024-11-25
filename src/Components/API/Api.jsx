@@ -91,9 +91,9 @@ export const addProject = (data) => {
   const headers = getApiHeaders();
   return Api.post("/projects/v1/save", data, headers);
 };
-export const updateProject = (id, data) => {
+export const updateProject = ( data) => {
   const headers = getApiHeaders();
-  return Api.put(`/projects/v1/update/${id}`, data, headers);
+  return Api.put(`/projects/v1/update`, data, headers);
 };
 export const getProjectById = (id) => {
   const headers = getApiHeaders();

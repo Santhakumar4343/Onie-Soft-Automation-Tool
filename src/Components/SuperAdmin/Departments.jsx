@@ -52,7 +52,7 @@ console.log(cmpId)
           title: "Branch Saved",
           text: "Your Branch has been Created successfully!",
         });
-        location.reload()
+        window.location.reload()
       }
       else{
         Swal.fire({

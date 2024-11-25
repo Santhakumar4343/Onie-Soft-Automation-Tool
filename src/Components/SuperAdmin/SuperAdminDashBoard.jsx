@@ -21,10 +21,11 @@ const SuperAdminDashboard = () => {
      
       <div className="col-10 p-3">
         <Routes>
-          <Route path="/" element={<Companies/>} />
+        <Route path="/" element={<View/>}></Route>
+          <Route path="/companies" element={<Companies/>} />
           <Route path="/departments" element={<Departments/>}></Route>
           <Route path="/admins" element={<Admins/>}></Route>
-          <Route path="/view" element={<View/>}></Route>
+          
         </Routes>
       </div>
     </div>
