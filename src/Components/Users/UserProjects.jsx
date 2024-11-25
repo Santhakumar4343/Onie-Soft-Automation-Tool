@@ -39,7 +39,7 @@ const UserProjects = () => {
     getAssignedUserProjects(user.id)
       .then((response) => setProjects(response.data))
       .catch((err) => console.log(err));
-  }, []);
+  }, [user.id]);
   const [projects, setProjects] = useState([]);
 
   const handleProject = () => {

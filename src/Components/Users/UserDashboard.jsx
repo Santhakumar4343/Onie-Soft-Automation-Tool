@@ -10,6 +10,7 @@ import UserTestcases from './UserTestCases';
 import UserTestRuns from './UserTestRuns';
 import UserTestRunDetails from './UserTestRunDetails';
 import UserTestRunView from './TestRunView';
+import Config from './Config';
 
 
 const UserDashboard = () => {
@@ -27,6 +28,7 @@ const UserDashboard = () => {
           <Route path="/testruns" element={<UserTestRuns />} />
           <Route path="/testrunDetails" element={<UserTestRunDetails />} />
           <Route path="/testrunView" element={<UserTestRunView />} />
+          <Route path="/config" element={<Config />} />
         </Routes>
       </div>
     </div>

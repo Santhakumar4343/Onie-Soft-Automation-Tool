@@ -25,6 +25,14 @@ const UserSidebar = () => {
             Projects
           </a>
         </li>
+        <li className="nav-item">
+          <a
+            href="/userDashboard/config"
+            className={location.pathname === "/userDashboard/config" ? "active" : ""}
+          >
+            Config
+          </a>
+        </li>
         
       </ul>
     </div>
