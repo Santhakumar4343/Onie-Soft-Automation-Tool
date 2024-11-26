@@ -256,7 +256,7 @@ const Projects = () => {
                   style={{ color: "white", fontSize: "30" }}
                   onClick={() => handleShowRemove(project.id)}
                 />
-                <GroupIcon style={{ color: "white", fontSize: "30" }} />
+               
               </div>
             </div>
           </div>
