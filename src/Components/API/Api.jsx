@@ -1,8 +1,8 @@
-export const API_URL = "http://18.60.35.136:8088";
+export const API_URL = "http://localhost:8088";
 
 import axios from "axios";
 
-const API_BASE_URL = "http://18.60.35.136:8088";
+const API_BASE_URL = "http://localhost:8088";
 
 const Api = axios.create({
   baseURL: API_BASE_URL,
@@ -173,8 +173,8 @@ export const getUnmapedTestCasesByTestRunId = (id) => {
   return Api.get(`/testrun/v1/testrun/v1/edittestrun/${id}`, headers);
 };
 export const executeTestRun = (id) => {
-  const headers = getApiHeaders();
-  return Api.get(`/testrun/v1/run/${id}`, headers);
+  
+  return Api.post(`/testrun/v1/run/${id}`);
 };
 // Company Api's
 
@@ -231,6 +231,14 @@ export const getUnmapedProjectsByRegisterId = (id) => {
   return Api.get(`/projectusers/v1/editassignproject/${id}`, headers);
 };
 
+export const getProjectUsers = (id) => {
+  const headers = getApiHeaders();
+  return Api.get(`/projectusers/v1/getassignregisters/${id}`, headers);
+};
+export const unAssignUsers = (projectId,registerId) => {
+  const headers = getApiHeaders();
+  return Api.delete(`/projectusers/v1/unassign?projectId=${projectId}&registerId=${registerId}`, headers);
+};
 export const getProjectsByBranchId = (id) => {
   const headers = getApiHeaders();
   return Api.get(`/projects/v1/getprojectsbybranchid/${id}`, headers);
