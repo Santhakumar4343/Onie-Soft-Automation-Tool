@@ -9,6 +9,14 @@ export default defineConfig({
     port: 5173, 
     hmr: {
       overlay: false,
-    },     
+    }, 
+    proxy: {
+      '/*': {
+        target: 'http://localhost:8088/**',
+        changeOrigin: true,
+        secure: false,
+      },
+    },    
   },
 })
+
