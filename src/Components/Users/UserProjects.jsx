@@ -1,6 +1,6 @@
 import { Modal } from "@mui/material";
 import axios from "axios";
-import { assignProjects, getAssignedUserProjects } from "../API/Api";
+import { assignProjects, getAssignedUserProjects, getProjectUsers } from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../API/Api";
@@ -13,6 +13,11 @@ const UserProjects = () => {
   const [searchText, setSearchText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [userIds, setUserIds] = useState([]);
+  const [assignedUser,setAssigneUser]=useState([])
+
+  useEffect(()=>{
+    getProjectUsers().then(response=>set)
+  },[])
   const [projectData, setProjectData] = useState({
     projectName: "",
   });

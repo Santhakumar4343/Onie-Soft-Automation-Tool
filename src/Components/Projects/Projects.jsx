@@ -1,6 +1,15 @@
 import { Modal } from "@mui/material";
 
-import { addProject, assignProjects, getAllProject, getBranchById, getProjectsByBranchId, unMapRegisters } from "../API/Api";
+import {
+  addProject,
+  assignProjects,
+  getAllProject,
+  getBranchById,
+  getProjectsByBranchId,
+  getProjectUsers,
+  unAssignUsers,
+  unMapRegisters,
+} from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,23 +24,69 @@ const Projects = () => {
   const [searchText, setSearchText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [userIds, setUserIds] = useState([]);
-  const user= JSON.parse(sessionStorage.getItem("user"))
-   const branchId=user.branchId;
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const branchId = user.branchId;
   const [projectData, setProjectData] = useState({
     projectName: "",
-    projectDir:"",
-    branchId:branchId
+    projectDir: "",
+    branchId: branchId,
   });
   const [users, setUsers] = useState([]);
-  const [projectId,setProjectId]=useState("");
- 
-  const [branchName,setBranchName]=useState();
-  useEffect(()=>{
-    getBranchById(user.branchId).then(response=> setBranchName(response.data.branchName))
-  },[user.branchId])
+  const [projectId, setProjectId] = useState("");
+  const [projectUsers, setProjectUsers] = useState([]);
+  const [showRemove, setShowRemove] = useState(false);
+  const confirmRemoveUser = (registerId) => {
+    setShowRemove(false)
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to remove this user from the project?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, remove!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleRemoveUserFromProject(registerId);
+        Swal.fire("Removed!", "The user has been removed.", "success");
+      }
+    });
+  };
   
+  const handleRemoveUserFromProject = (registerId) => {
+    unAssignUsers(projectId, registerId)
+      .then(() => {
+        setProjectUsers((prevUsers) =>
+          prevUsers.filter((user) => user.id !== registerId)
+        );
+        console.log(`User with ID ${registerId} removed successfully.`);
+      })
+      .catch((err) => {
+        console.error("Error removing user:", err);
+        Swal.fire("Error", "Unable to remove the user. Please try again.", "error");
+      });
+  };
+  const handleShowRemove = (id) => {
+    setProjectId(id);
+    setShowRemove(true);
+  };
   useEffect(() => {
-    
+    if (projectId) {
+      // Fetch users only when a valid projectId is set
+      getProjectUsers(projectId)
+        .then((response) => setProjectUsers(response.data))
+        .catch((err) => console.error("Error fetching project users:", err));
+    }
+  }, [projectId]); // Add projectId as a dependency
+
+  const [branchName, setBranchName] = useState();
+  useEffect(() => {
+    getBranchById(user.branchId).then((response) =>
+      setBranchName(response.data.branchName)
+    );
+  }, [user.branchId]);
+   
+  useEffect(() => {
     if (projectId) {
       unMapRegisters(projectId, branchId)
         .then((response) => {
@@ -39,9 +94,9 @@ const Projects = () => {
         })
         .catch((err) => console.error(err));
     }
-  }, [projectId,branchId]);
+  }, [projectId, branchId]);
   const handleShow = (id) => {
-   setProjectId(id);
+    setProjectId(id);
     setShowModal(true);
   };
   const handleClose = () => {
@@ -69,7 +124,7 @@ const Projects = () => {
           text: "Your project has been Created successfully!",
         });
         console.log(response);
-        location.reload()
+        window.location.reload();
       })
       .catch((err) => {
         // Show error alert when request fails
@@ -81,7 +136,7 @@ const Projects = () => {
         console.log(err);
       });
     setProjectModal(false);
-    setProjectData({ projectName: "",branchId});
+    setProjectData({ projectName: "", branchId });
   };
 
   const handleProjectChange = (e) => {
@@ -107,25 +162,29 @@ const Projects = () => {
     );
     setUserIds((prevIds) => Array.from(new Set([...prevIds, ...selectedIds])));
   };
-  
+
   const handleCancel = () => {
-    setProjectId("")
+    setProjectId("");
     setUserIds([]); // reset selection on cancel
     setShowModal(false);
   };
 
+  const handleCancelRemove = () => {
+    setProjectId("");
+    setShowRemove(false);
+  };
   const handleRemoveUser = (id) => {
     setUserIds(userIds.filter((userId) => userId !== id)); // remove user ID from the array
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Prepare the data to be sent
     const formData = {
       projectId: projectId,
       registerIds: userIds, // Ensure `userIds` is an array of selected IDs
     };
-  
+
     try {
       const result = await assignProjects(formData);
       notify("Users Assigned SuccessFully");
@@ -134,14 +193,14 @@ const Projects = () => {
       errorNotify("Something Went Wrong");
     } finally {
       setShowModal(false);
-      setProjectId("")
+      setProjectId("");
       setUserIds([]); // reset selection on cancel
     }
   };
   return (
     <div className="container-fluid ">
       <h2 className="text-center" style={{ color: "#4f0e83" }}>
-       {branchName} Projects
+        {branchName} Projects
       </h2>
       <div className="d-flex justify-content-between mb-4">
         <button
@@ -192,9 +251,11 @@ const Projects = () => {
                   className="w-40 "
                   style={{ color: "white", fontSize: "30" }}
                   onClick={() => handleShow(project.id)}
-                  
                 />
-                <PersonRemoveIcon style={{ color: "white", fontSize: "30" }} />
+                <PersonRemoveIcon
+                  style={{ color: "white", fontSize: "30" }}
+                  onClick={() => handleShowRemove(project.id)}
+                />
                 <GroupIcon style={{ color: "white", fontSize: "30" }} />
               </div>
             </div>
@@ -234,11 +295,13 @@ const Projects = () => {
                   <option value="" disabled>
                     -- Select Users --
                   </option>
-                  {users.filter(user=>user.empRole.toLowerCase()==="user").map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.empName}
-                    </option>
-                  ))}
+                  {users
+                    .filter((user) => user.empRole.toLowerCase() === "user")
+                    .map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.empName}
+                      </option>
+                    ))}
                 </select>
               </div>
               <div className="text-center">
@@ -274,7 +337,6 @@ const Projects = () => {
                   {userIds.map((userId) => {
                     const selectedUser = users.find(
                       (user) => user.id === Number(userId)
-                     
                     );
                     return (
                       <li
@@ -308,10 +370,99 @@ const Projects = () => {
                   })}
                 </ul>
               </div>
+              <div>
+                <h5 className="mt-5">Assigned Users:</h5>
+                {projectUsers.map((user) => (
+                  <li key={user.id}>{user.empName}</li>
+                ))}
+              </div>
             </form>
           </div>
         </div>
       </Modal>
+      <Modal open={showRemove} onClose={handleCancelRemove}>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "90vh",
+    }}
+  >
+    <div
+      className="modal-content p-4"
+      style={{
+        maxWidth: "450px",
+        height: "500px",
+        width: "100%",
+        backgroundColor: "white",
+        borderRadius: "20px",
+        position: "relative",
+      }}
+    >
+      {/* Close Button */}
+      <button
+        type="button"
+        onClick={handleCancelRemove}
+        style={{
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          background: "none",
+          border: "none",
+          fontSize: "20px",
+          cursor: "pointer",
+        }}
+      >
+        &#10005; {/* X Icon */}
+      </button>
+
+      <form onSubmit={handleSubmit} className="mt-4">
+        <div>
+          <h5 className="mt-5">Assigned Users:</h5>
+          <ul>
+            {projectUsers.map((user) => (
+              <li
+                key={user.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "10px",
+                }}
+              >
+                <span>{user.empName}</span>
+                <PersonRemoveIcon
+                  style={{
+                    color: "red",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => confirmRemoveUser(user.id)} // Confirmation popup
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* Cancel Button */}
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{
+              borderRadius: "20px",
+              width: "150px",
+            }}
+            onClick={handleCancelRemove}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</Modal>
+
       <Modal open={projectModal} onClose={() => setProjectModal(false)}>
         <div
           style={{
