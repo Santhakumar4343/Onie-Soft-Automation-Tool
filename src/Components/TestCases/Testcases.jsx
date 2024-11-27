@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { Modal, Button } from "react-bootstrap";
-import PaginationComponent from "../../PaginationComponent";
-import { RiPencilFill } from "react-icons/ri";
+
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Testcases.css";
-import AdminDashboard from "../Admin/AdminDashboard";
-import Sidebar from "../Admin/Sidebar";
-import axios from "axios";
+
 import { addTestcase, getTestcaseByProjectId } from "../API/Api";
 import Swal from "sweetalert2";
 import moment from "moment";
@@ -116,7 +114,7 @@ const Testcases = () => {
             className="text-center mb-4"
             style={{ color: "#4f0e83", boxShadow: "grey" }}
           >
-            Test Cases for {project.projectName}
+            {project.projectName} - Test Cases 
           </h2>
         </div>
 

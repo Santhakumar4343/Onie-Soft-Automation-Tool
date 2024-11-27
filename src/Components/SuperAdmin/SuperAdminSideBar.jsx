@@ -6,7 +6,7 @@ const SuperAdminSidebar = () => {
   const location = useLocation();
 
   return (
-    <div className="col-md-3 col-lg-2 p-3 text-white">
+    <div className="col-md-2 col-lg-2 p-3 text-white sideBar">
       <div className="profile-section text-center mb-4">
         <img
           src={Logo}
@@ -16,7 +16,7 @@ const SuperAdminSidebar = () => {
           height="120"
         />
       </div>
-      <ul className="nav flex-column">
+      <ul className="nav flex-column  " >
       <li className="nav-item">
           <a
             href="/adminDashboard/"

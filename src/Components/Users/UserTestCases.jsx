@@ -8,7 +8,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../TestCases/Testcases.css";
 
 import axios from "axios";
-import { addTestcase, API_URL, getTestcaseByProjectId, updateTestcase } from "../API/Api";
+import {
+  addTestcase,
+  API_URL,
+  getTestcaseByProjectId,
+  updateTestcase,
+} from "../API/Api";
 import Swal from "sweetalert2";
 import moment from "moment";
 import EditIcon from "@mui/icons-material/Edit";
@@ -17,7 +22,7 @@ const UserTestcases = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [editTestCase,setEditTestCase]=useState(null);
+  const [editTestCase, setEditTestCase] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { project } = location.state || {};
@@ -51,16 +56,15 @@ const UserTestcases = () => {
       if (editTestCase) {
         // Edit mode
         try {
-          const response =  updateTestcase(editTestCase.id) 
+          const response = updateTestcase();
           if (response.status === 200) {
             Swal.fire({
               icon: "success",
               title: "Updated",
               text: "Test case updated successfully!",
             });
-
-          }   
-          window.location.reload()
+          }
+          window.location.reload();
         } catch (error) {
           Swal.fire({
             icon: "error",
@@ -69,7 +73,6 @@ const UserTestcases = () => {
           });
         }
       } else {
-        
         try {
           const response = await addTestcase(project.id, values);
           if (response.status === 200 || response.status === 201) {
@@ -79,9 +82,9 @@ const UserTestcases = () => {
               text: "Test case created successfully!",
             });
           }
-  window.location.reload()
+          window.location.reload();
         } catch (error) {
-          console.log (error)
+          console.log(error);
           Swal.fire({
             icon: "error",
             title: "Failed",
@@ -89,12 +92,13 @@ const UserTestcases = () => {
           });
         }
       }
-    
+
       // Refresh and close modal
       formik.resetForm();
       setShowModal(false);
       setEditTestCase(null);
-    }});
+    },
+  });
 
   const handleClose = () => {
     setShowModal(false);
@@ -103,6 +107,7 @@ const UserTestcases = () => {
   const handleEdit = (testCase) => {
     setEditTestCase(testCase);
     formik.setValues({
+      id: testCase.id,
       testCaseName: testCase.testCaseName,
       automationId: testCase.automationId,
       author: testCase.author,
@@ -309,9 +314,9 @@ const UserTestcases = () => {
         {/* Modal Popup */}
         <Modal show={showModal} onHide={handleClose} centered backdrop="static">
           <Modal.Header closeButton>
-          <Modal.Title>
-      {editTestCase ? "Edit Test Case" : "Add Test Case"}
-    </Modal.Title>
+            <Modal.Title>
+              {editTestCase ? "Edit Test Case" : "Add Test Case"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <form onSubmit={formik.handleSubmit}>

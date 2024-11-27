@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import "../TestRuns/TestRunDetails.css";
+import "./TestRunDetails.css";
 
 import Swal from "sweetalert2";
 import {
   addTestCasestoTestRun,
   executeTestRun,
- 
   getTestCasesByTestRunId,
 } from "../API/Api";
 import moment from "moment";
@@ -140,9 +139,11 @@ function TestRunView() {
 
   return (
     <div className="container">
-      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>Test Run </h2>
+      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>
+        {testRun.testRunName}-Test Run{" "}
+      </h2>
       <div className="TestRun">
-        <button
+        {/* <button
           onClick={handleTestRun}
           style={{
             borderRadius: "20px",
@@ -153,7 +154,7 @@ function TestRunView() {
           }}
         >
           Execute Test Run
-        </button>
+        </button> */}
         {/* <button
           onClick={handleAddToTestRun}
           disabled={selectedCases.length === 0}

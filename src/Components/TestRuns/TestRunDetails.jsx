@@ -109,7 +109,7 @@ console.log(testRun.id);
 
   return (
     <div className="container">
-      <h2 style={{color:"#4f0e83",textAlign:"center"}}>Test Run </h2>
+      <h2 style={{color:"#4f0e83",textAlign:"center"}}>{testRun.testRunName}-Test Run </h2>
       <div className="TestRun">
         {/* <button
           onClick={handleTestRun}
@@ -123,7 +123,7 @@ console.log(testRun.id);
         >
           Execute Test Run
         </button> */}
-        <button
+        {/* <button
           onClick={handleAddToTestRun}
           disabled={selectedCases.length === 0}
           style={{
@@ -135,7 +135,7 @@ console.log(testRun.id);
           }}
         >
           Add to Test Run
-        </button>
+        </button> */}
       </div>
       <div
         style={{
@@ -179,13 +179,13 @@ console.log(testRun.id);
             }}
           >
             <tr>
-              <th>
+              {/* <th>
                 <input
                   type="checkbox"
                   checked={selectedCases.length === testCases.length}
                   onChange={handleSelectAll}
                 />
-              </th>
+              </th> */}
              
 
               <th>Test Case Name</th>
@@ -198,13 +198,13 @@ console.log(testRun.id);
           <tbody>
             {testCases.map((testCase, index) => (
               <tr key={index}>
-                <td>
+                {/* <td>
                   <input
                     type="checkbox"
                     checked={selectedCases.includes(testCase.id)}
                     onChange={() => handleCheckboxChange(testCase.id)}
                   />
-                </td>
+                </td> */}
                 
 
                 <td>{testCase.testCaseName}</td>

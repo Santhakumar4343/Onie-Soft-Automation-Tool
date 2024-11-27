@@ -1,6 +1,6 @@
 import { Modal } from "@mui/material";
 import axios from "axios";
-import { assignProjects, getAssignedUserProjects, getProjectUsers } from "../API/Api";
+import { assignProjects, getAssignedUserProjects } from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../API/Api";
@@ -13,11 +13,8 @@ const UserProjects = () => {
   const [searchText, setSearchText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [userIds, setUserIds] = useState([]);
-  const [assignedUser,setAssigneUser]=useState([])
+ 
 
-  useEffect(()=>{
-    getProjectUsers().then(response=>set)
-  },[])
   const [projectData, setProjectData] = useState({
     projectName: "",
   });
@@ -31,23 +28,16 @@ const UserProjects = () => {
       })
       .catch((err) => console.log(err));
   }, []);
-  const handleShow = (id) => {
-   setProjectId(id);
-    setShowModal(true);
-  };
-  const handleClose = () => {
-    setShowModal(false);
-  };
+ 
+  const [projects, setProjects] = useState([]);
   useEffect(() => {
     getAssignedUserProjects(user.id)
       .then((response) => setProjects(response.data))
       .catch((err) => console.log(err));
   }, [user.id]);
-  const [projects, setProjects] = useState([]);
+ 
 
-  const handleProject = () => {
-    setProjectModal(true);
-  };
+  
 
   const handleProjectSubmit = (e) => {
     e.preventDefault();

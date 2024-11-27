@@ -45,3 +45,25 @@
   color: #ffffff;
   border-radius: 5px;
 }
+
+
+
+.dropdown-menu {
+  min-width: 150px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(251, 248, 248, 0.1);
+}
+
+.dropdown-item {
+  padding: 10px 15px;
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #000;
+}
