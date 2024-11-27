@@ -355,8 +355,8 @@ const View = () => {
 
   return (
     <div>
-      <h3 className="text-center">Super Admin-Dashboard</h3>
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+      
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px",marginTop:"20px" }}>
         {["companies", "branches", "admin", "projects", "users"].map((tab) => (
           <button
             key={tab}

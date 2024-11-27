@@ -17,10 +17,18 @@ const Sidebar = () => {
         />
       </div>
       <ul className="nav flex-column">
-        <li className="nav-item">
+      <li className="nav-item">
           <a
             href="/dashboard"
             className={location.pathname === "/dashboard" ? "active" : ""}
+          >
+            Dashooard
+          </a>
+        </li>
+        <li className="nav-item">
+          <a
+            href="/dashboard/projects"
+            className={location.pathname === "/dashboard/projects" ? "active" : ""}
           >
             Projects
           </a>

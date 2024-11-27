@@ -200,7 +200,7 @@ const Projects = () => {
   return (
     <div className="container-fluid ">
       <h2 className="text-center" style={{ color: "#4f0e83" }}>
-        {branchName} Projects
+        {branchName} - Projects
       </h2>
       <div className="d-flex justify-content-between mb-4">
         <button
@@ -256,7 +256,7 @@ const Projects = () => {
                   style={{ color: "white", fontSize: "30" }}
                   onClick={() => handleShowRemove(project.id)}
                 />
-                <GroupIcon style={{ color: "white", fontSize: "30" }} />
+               
               </div>
             </div>
           </div>

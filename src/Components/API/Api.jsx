@@ -2,7 +2,7 @@ export const API_URL = "http://localhost:8088";
 
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8088";
+export const API_BASE_URL = "http://localhost:8088";
 
 const Api = axios.create({
   baseURL: API_BASE_URL,
@@ -121,9 +121,9 @@ export const addTestcase = (id, data) => {
   const headers = getApiHeaders();
   return Api.post(`/testcases/v1/save/${id}`, data, headers);
 };
-export const updateTestcase = (id) => {
+export const updateTestcase = () => {
   const headers = getApiHeaders();
-  return Api.put(`/testcases/v1/update/${id}`, headers);
+  return Api.put(`/testcases/v1/update`, headers);
 };
 export const getTestcaseById = (id) => {
   const headers = getApiHeaders();
@@ -246,4 +246,9 @@ export const getProjectsByBranchId = (id) => {
 export const deleteCompanyById = (id) => {
   const headers = getApiHeaders();
   return Api.delete(`/cmp/v1/delete/${id}`, headers);
+};
+
+export const TestuRunDetails = () => {
+  const headers = getApiHeaders();
+  return Api.put(`/testrun/v1/addtestresults`, headers);
 };

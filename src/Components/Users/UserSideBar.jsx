@@ -17,10 +17,18 @@ const UserSidebar = () => {
         />
       </div>
       <ul className="nav flex-column">
-        <li className="nav-item">
+      <li className="nav-item">
           <a
             href="/userDashboard"
             className={location.pathname === "/userDashboard" ? "active" : ""}
+          >
+            Dashboard
+          </a>
+        </li>
+        <li className="nav-item">
+          <a
+            href="/userDashboard/projects"
+            className={location.pathname === "/userDashboard/projects" ? "active" : ""}
           >
             Projects
           </a>

@@ -3,22 +3,22 @@ import { useLocation } from "react-router-dom";
 import "../TestRuns/TestRunDetails.css";
 
 import Swal from "sweetalert2";
-import { addTestCasestoTestRun, edittestrun,  } from "../API/Api";
+import { addTestCasestoTestRun, edittestrun } from "../API/Api";
 import moment from "moment";
 
 function UserTestRunDetails() {
+  const location = useLocation();
 
-  
-const location=useLocation();
-
-const project=location.state?.project||{};
-const testRun=location.state?.testRun||{};
-console.log(testRun.id);
+  const project = location.state?.project || {};
+  const testRun = location.state?.testRun || {};
+  console.log(testRun.id);
   const [testCases, setTestCases] = useState([]);
 
-  useEffect(()=>{
-    edittestrun(testRun.id,project.id).then(response=>setTestCases(response.data)).catch(err=>console.log(err))
-  },[testRun.id,project.id])
+  useEffect(() => {
+    edittestrun(testRun.id, project.id)
+      .then((response) => setTestCases(response.data))
+      .catch((err) => console.log(err));
+  }, [testRun.id, project.id]);
 
   const [selectedCases, setSelectedCases] = useState([]);
 
@@ -44,7 +44,7 @@ console.log(testRun.id);
       Swal.fire("Error", "No test cases selected!", "error");
       return;
     }
-  
+
     Swal.fire({
       title: "Are you sure?",
       text: "Do you want to add these test cases to the Test Run?",
@@ -62,27 +62,30 @@ console.log(testRun.id);
         // Prepare payload for API
         const payload = {
           testRunId: testRun.id,
-          testRunName: testRun.testRunName || "Default Test Run Name", 
+          testRunName: testRun.testRunName || "Default Test Run Name",
           testCaseId: selectedCases,
         };
-  
+
         addTestCasestoTestRun(payload)
           .then((response) => {
-            if(response.status===200||response.status===201){
-            Swal.fire(
-              "Added!",
-              "Selected test cases have been added to the Test Run.",
-              "success"
-            );
-            window.location.reload()
-            setSelectedCases([]);}
-            else{
-  Swal.fire("Error", "Failed to add test cases to the Test Run.", "error");
+            if (response.status === 200 || response.status === 201) {
+              Swal.fire(
+                "Added!",
+                "Selected test cases have been added to the Test Run.",
+                "success"
+              );
+              window.location.reload();
+              setSelectedCases([]);
+            } else {
+              Swal.fire(
+                "Error",
+                "Failed to add test cases to the Test Run.",
+                "error"
+              );
             }
           })
           .catch((error) => {
             console.error("Error adding test cases to the test run:", error);
-          
           });
       }
     });
@@ -109,7 +112,9 @@ console.log(testRun.id);
 
   return (
     <div className="container">
-      <h2 style={{color:"#4f0e83",textAlign:"center"}}>Test Run </h2>
+      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>
+        {testRun.testRunName}-Test Run{" "}
+      </h2>
       <div className="TestRun">
         {/* <button
           onClick={handleTestRun}
@@ -186,7 +191,6 @@ console.log(testRun.id);
                   onChange={handleSelectAll}
                 />
               </th>
-             
 
               <th>Test Case Name</th>
               <th>Automation ID</th>
@@ -205,12 +209,13 @@ console.log(testRun.id);
                     onChange={() => handleCheckboxChange(testCase.id)}
                   />
                 </td>
-                
 
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
                 <td>{testCase.author}</td>
-                <td>{moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}</td>
+                <td>
+                  {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}
+                </td>
                 <td>{testCase.updatedAt}</td>
               </tr>
             ))}

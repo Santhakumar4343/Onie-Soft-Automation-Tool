@@ -1,102 +1,71 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import "../TestRuns/TestRunDetails.css";
-
 import Swal from "sweetalert2";
-import {
-  addTestCasestoTestRun,
-  executeTestRun,
- 
-  getTestCasesByTestRunId,
-} from "../API/Api";
 import moment from "moment";
+import {
+  executeTestRun,
+  getTestCasesByTestRunId,
+  
+} from "../API/Api";
 
 function UserTestRunView() {
   const location = useLocation();
-
   const project = location.state?.project || {};
   const testRun = location.state?.testRun || {};
-  console.log(testRun.id);
   const [testCases, setTestCases] = useState([]);
+  const [statusUpdates, setStatusUpdates] = useState({}); // Live status updates
 
+  // Fetch initial test cases
   useEffect(() => {
     getTestCasesByTestRunId(testRun.id)
       .then((response) => setTestCases(response.data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err));
   }, [testRun.id]);
 
-  const [selectedCases, setSelectedCases] = useState([]);
+  // Establish SSE connection for real-time updates
+  useEffect(() => {
+    const eventSource = new EventSource(`http://localhost:8088/testrun/v1/addtestresults`); // SSE endpoint
 
-  // Handle individual row selection
-  const handleCheckboxChange = (id) => {
-    setSelectedCases((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((id) => id !== id)
-        : [...prevSelected, id]
-    );
-  };
+    eventSource.onmessage = (event) => {
+      const message = event.data;
+      console.log("SSE Message received:", message);
 
-  const handleSelectAll = () => {
-    if (selectedCases.length === testCases.length) {
-      setSelectedCases([]);
-    } else {
-      setSelectedCases(testCases.map((testCase) => testCase.id)); // Select all
-    }
-  };
+      // Extract relevant information from the message
+      const [testCaseName, status] = parseUpdateMessage(message);
 
-  const handleAddToTestRun = () => {
-    if (selectedCases.length === 0) {
-      Swal.fire("Error", "No test cases selected!", "error");
-      return;
-    }
-
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to add these test cases to the Test Run?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#4f0e83",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, add to Test Run!",
-      customClass: {
-        confirmButton: "custom-confirm-button",
-        cancelButton: "custom-cancel-button",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const payload = {
-          testRunId: testRun.id,
-          testRunName: testRun.testRunName || "Default Test Run Name",
-          testCaseId: selectedCases,
-        };
-
-        addTestCasestoTestRun(payload)
-          .then((response) => {
-            if (response.status === 200 || response.status === 201) {
-              Swal.fire(
-                "Added!",
-                "Selected test cases have been added to the Test Run.",
-                "success"
-              );
-              setSelectedCases([]);
-            } else {
-              Swal.fire(
-                "Error",
-                "Failed to add test cases to the Test Run.",
-                "error"
-              );
-            }
-          })
-          .catch((error) => {
-            console.error("Error adding test cases to the test run:", error);
-          });
+      // Update the status dynamically
+      if (testCaseName && status) {
+        setStatusUpdates((prevUpdates) => ({
+          ...prevUpdates,
+          [testCaseName]: status,
+        }));
       }
-    });
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("SSE Error:", error);
+      eventSource.close(); // Stop SSE connection on error
+    };
+
+    // Clean up on component unmount
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
+  const parseUpdateMessage = (message) => {
+    const regex = /Test case (.+) status updated to (.+)/;
+    const match = message.match(regex);
+    if (match && match.length === 3) {
+      return [match[1], match[2]]; // Extract testCaseName and status
+    }
+    return [null, null];
   };
+
   const handleTestRun = () => {
     Swal.fire({
       title: "Are you sure?",
-      text: "Do you want to  Execute Test Run?",
+      text: "Do you want to Execute Test Run?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#4f0e83",
@@ -111,28 +80,23 @@ function UserTestRunView() {
         executeTestRun(testRun.id)
           .then((response) => {
             const { status } = response;
-
             if (status === 200 || status === 201) {
-              Swal.fire({
-                title: "Executed!",
-                text: "Test Run Executed Successfully.",
-                icon: "success",
-              });
+              Swal.fire(
+                "Execution Started!",
+                "Test Run Execution Started Successfully.",
+                "success"
+              );
             } else {
-              Swal.fire({
-                title: "Oops...!",
-                text: "Something Went Wrong.",
-                icon: "error",
-              });
+              Swal.fire("Oops...!", "Something Went Wrong.", "error");
             }
           })
           .catch((error) => {
             console.error("Error executing test run:", error);
-            Swal.fire({
-              title: "Error!",
-              text: "An unexpected error occurred. Please try again later.",
-              icon: "error",
-            });
+            Swal.fire(
+              "Error!",
+              "An unexpected error occurred. Please try again later.",
+              "error"
+            );
           });
       }
     });
@@ -140,7 +104,9 @@ function UserTestRunView() {
 
   return (
     <div className="container">
-      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>Test Run </h2>
+      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>
+        {testRun.testRunName} - Test Run
+      </h2>
       <div className="TestRun">
         <button
           onClick={handleTestRun}
@@ -154,50 +120,28 @@ function UserTestRunView() {
         >
           Execute Test Run
         </button>
-        {/* <button
-          onClick={handleAddToTestRun}
-          disabled={selectedCases.length === 0}
-          style={{
-            borderRadius: "20px",
-            backgroundColor: "#4f0e83",
-            color: "white",
-            width: "14%",
-            height: "35px",
-          }}
-        >
-          Add to Test Run
-        </button> */}
       </div>
-      <div
-        style={{
-          maxHeight: "620px",
-          overflowY: "auto",
-        }}
-      >
+      <div style={{ maxHeight: "620px", overflowY: "auto" }}>
         <style>
           {`
-      /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
-      div::-webkit-scrollbar {
-        width: 2px;
-       
-      }
-      div::-webkit-scrollbar-thumb {
-        background-color: #4f0e83;
-        border-radius: 4px;
-      }
-      div::-webkit-scrollbar-track {
-        background-color: #e0e0e0;
-      }
-
-      /* Scrollbar styling for Firefox */
-      div {
-        scrollbar-width: thin; 
-        scrollbar-color: #4f0e83 #e0e0e0;   
-      }
-    `}
+          div::-webkit-scrollbar {
+            width: 2px;
+          }
+          div::-webkit-scrollbar-thumb {
+            background-color: #4f0e83;
+            border-radius: 4px;
+          }
+          div::-webkit-scrollbar-track {
+            background-color: #e0e0e0;
+          }
+          div {
+            scrollbar-width: thin;
+            scrollbar-color: #4f0e83 #e0e0e0;
+          }
+        `}
         </style>
         <table
-          className="table  table-hover mt-4"
+          className="table table-hover mt-4"
           style={{ textAlign: "center" }}
         >
           <thead
@@ -210,14 +154,6 @@ function UserTestRunView() {
             }}
           >
             <tr>
-              {/* <th>
-                <input
-                  type="checkbox"
-                  checked={selectedCases.length === testCases.length}
-                  onChange={handleSelectAll}
-                />
-              </th> */}
-
               <th>Test Case Name</th>
               <th>Automation ID</th>
               <th>Status</th>
@@ -229,17 +165,10 @@ function UserTestRunView() {
           <tbody>
             {testCases.map((testCase, index) => (
               <tr key={index}>
-                {/* <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedCases.includes(testCase.id)}
-                    onChange={() => handleCheckboxChange(testCase.id)}
-                  />
-                </td> */}
-
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
-                <td>{testCase.status}</td>
+                {/* Show live-updated status if available, fallback to original */}
+                <td>{statusUpdates[testCase.testCaseName] || testCase.status}</td>
                 <td>{testCase.author}</td>
                 <td>
                   {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}

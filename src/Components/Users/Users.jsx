@@ -14,6 +14,7 @@ import {
   assignProjects,
   assignUser,
   getAllRegister,
+  getAssignedUserProjects,
   getUnMapProjects,
   updateRegister,
 } from "../API/Api";
@@ -24,6 +25,7 @@ import { errorNotify, notify } from "../../NotificationUtil";
 import Projects from "../Projects/Projects";
 import { useLocation } from "react-router-dom";
 import { ConstructionOutlined } from "@mui/icons-material";
+import Swal from "sweetalert2";
 const Users = () => {
   const [show, setShow] = useState(false);
   const [users, setUsers] = useState([]);
@@ -36,6 +38,7 @@ const Users = () => {
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading,isLoading]=useState(false);
+  const [userProjects,setUserProjects]=useState([]);
   const [formData, setFormData] = useState({
     empId: "",
     empName: "",
@@ -97,22 +100,52 @@ const Users = () => {
       branchId: branchId,
     }
     try {
+      isLoading(true); // Show loading indicator
+    
       if (editingUser) {
         // Update user
-        isLoading(true)
-        await updateRegister(data);
+        await updateRegister(data)
+          .then((response) => {
+            if (response.status === 200 || response.status === 201) {
+              Swal.fire("Success!", "User updated successfully.", "success");
+              isLoading(false)
+            } else {
+              Swal.fire("Error!", "Failed to update user.", "error");
+            }
+          })
+          .catch((error) => {
+            console.error("Error updating user:", error);
+            Swal.fire("Error!", "An unexpected error occurred.", "error");
+          });
       } else {
-        isLoading(true)
-        await addRegister(data);
+        // Add new user
+        await addRegister(data)
+          .then((response) => {
+            if (response.status === 200 || response.status === 201) {
+              Swal.fire("Success!", "User added successfully.", "success");
+              isLoading(false)
+            } else {
+              Swal.fire("Error!", "Failed to add user.", "error");
+            }
+          })
+          .catch((error) => {
+            console.error("Error adding user:", error);
+            Swal.fire("Error!", "An unexpected error occurred.", "error");
+          });
       }
-      handleClose();
-      // Refresh users list
+    
+      handleClose(); // Close modal or reset form
+      // Refresh the users list
       const updatedUsers = await getAllRegister();
       setUsers(updatedUsers.data);
+    
     } catch (error) {
-      console.error("Failed to save user", error);
+      console.error("An error occurred:", error);
+      Swal.fire("Error!", "An unexpected error occurred. Please try again.", "error");
+    } finally {
+      isLoading(false); // Hide loading indicator
     }
-  };
+  }    
 
   const handleEditUser = (user) => {
     setEditingUser(user);
@@ -145,7 +178,9 @@ const Users = () => {
     setUserId(id);
     setShowModal(true);
   };
-
+   useEffect(()=>{
+    getAssignedUserProjects(userId).then(response=>setUserProjects(response.data)).catch(err=>console.log(err))
+   },[userId])
   const handleRemoveUser = (id) => {
     setProjectIds(projectIds.filter((userId) => userId !== id)); // remove user ID from the array
   };
@@ -358,6 +393,14 @@ const Users = () => {
                     );
                   })}
                 </ul>
+              </div>
+              <div  className="mt-3">
+                <h5 >Assigned Projects</h5>
+                {
+                  userProjects.map(project=>(
+                    <li style={{listStyle:"none"}} key={project.id}>{project.projectName}</li>
+                  ))
+                }
               </div>
             </form>
           </div>
