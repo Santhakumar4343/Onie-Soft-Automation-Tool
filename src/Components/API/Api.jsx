@@ -176,6 +176,11 @@ export const executeTestRun = (id) => {
   
   return Api.post(`/testrun/v1/run/${id}`);
 };
+
+export const testRunResult = (id) => {
+  
+  return Api.get(`/testrun/v1/testcases/${id}`);
+};
 // Company Api's
 
 export const addCompany = (data) => {
@@ -199,6 +204,10 @@ export const getAllCompany = () => {
 export const createBranch = (data) => {
   const headers = getApiHeaders();
   return Api.post("/branch/v1/save", data, headers);
+};
+export const updateBranch = (data) => {
+  const headers = getApiHeaders();
+  return Api.put("/branch/v1/update", data, headers);
 };
 
 export const getAllBranches = () => {

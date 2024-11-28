@@ -11,6 +11,7 @@ import UserTestRunView from './TestRunView';
 import Config from './Config';
 import Userview from './Userview';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import UserProfile from './UserProfile';
 
 const UserDashboard = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -43,7 +44,7 @@ const UserDashboard = () => {
                 className="dropdown-menu dropdown-menu-right show"
                 style={{ position: 'absolute', right: 0 }}
               >
-                <a className="dropdown-item" href="/profile">
+                <a className="dropdown-item" href="/userDashboard/profile">
                   Profile
                 </a>
                 <a className="dropdown-item" href="/logout">
@@ -58,6 +59,7 @@ const UserDashboard = () => {
         <Routes>
           <Route path="/" element={<Userview />} />
           <Route path="/projects" element={<UserProjects />} />
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="/testcases/*" element={<UserTestcases />} />
           <Route path="/testruns" element={<UserTestRuns />} />
           <Route path="/testrunDetails" element={<UserTestRunDetails />} />

@@ -22,7 +22,7 @@ const Sidebar = () => {
             href="/dashboard"
             className={location.pathname === "/dashboard" ? "active" : ""}
           >
-            Dashooard
+            Dashboard
           </a>
         </li>
         <li className="nav-item">
