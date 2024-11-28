@@ -1,31 +1,41 @@
 import { Modal } from "@mui/material";
 import { useEffect, useState } from "react";
-
+import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from "sweetalert2";
-import { createBranch, getAllBranchesByCompany } from "../API/Api";
+import { createBranch, getAllBranchesByCompany, updateBranch } from "../API/Api";
 import { useLocation, useNavigate } from "react-router-dom";
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
 const Deparments = () => {
   const [projectModal, setProjectModal] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [branches, setBranches] = useState([]);
-  
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState(null);
   const location = useLocation();
-const cmpId = location.state?.company.id || {};
+  const cmpId = location.state?.company.id || {};
 
-console.log(cmpId)
-  const navigate=useNavigate();
+  console.log(cmpId);
+  const navigate = useNavigate();
   const [branchData, setBranchData] = useState({
     branchName: "",
     branchId: "",
-    
   });
 
-  const handleBranchClick=(branch)=>{
-    navigate("/adminDashboard/admins" ,{state:{branch}})
-  }
-   
+  const handleBranchClick = (branch) => {
+    navigate("/adminDashboard/admins", { state: { branch } });
+  };
+
   const handleProject = () => {
+    setProjectModal(true);
+    setIsEditing(false); // Reset to Add mode
+    setBranchData({ branchName: "", branchId: "" });
+  };
+
+  const handleEditClick = (branch) => {
+    setIsEditing(true);
+    setSelectedBranch(branch); // Set the branch to edit
+    setBranchData({ branchName: branch.branchName, branchId: branch.branchId });
     setProjectModal(true);
   };
 
@@ -38,36 +48,67 @@ console.log(cmpId)
   }, [cmpId]);
 
   const handleProjectSubmit = (e) => {
-    const data={
-      branchName: branchData.branchName,
-      branchId: branchData.branchId,
-      cmpId:cmpId
-    };
     e.preventDefault();
-    createBranch(data)
-      .then((response) => {
-      if(response.status===201||response.status===201){
-        Swal.fire({
-          icon: "success",
-          title: "Branch Saved",
-          text: "Your Branch has been Created successfully!",
+    if (isEditing) {
+      // Update Branch
+      const updatedBranch = {
+        id:selectedBranch.id,
+        branchName: branchData.branchName,
+        branchId: branchData.branchId,
+        cmpId: cmpId,
+      };
+      updateBranch( updatedBranch) // Call update API
+        .then((response) => {
+          if (response.status === 200) {
+            setBranches((prev) =>
+              prev.map((branch) =>
+                branch.id === selectedBranch.id ? response.data : branch
+              )
+            );
+            Swal.fire({
+              icon: "success",
+              title: "Branch Updated",
+              text: "Branch details updated successfully!",
+            });
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          Swal.fire({
+            icon: "error",
+            title: "Update Failed",
+            text: "Could not update branch details.",
+          });
         });
-        window.location.reload()
-      }
-      else{
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Something went wrong! Could not create the Branch.",
+    } else {
+      // Add Branch
+      const data = {
+        branchName: branchData.branchName,
+        branchId: branchData.branchId,
+        cmpId: cmpId,
+      };
+      createBranch(data)
+        .then((response) => {
+          if (response.status === 201) {
+            setBranches((prev) => [...prev, response.data]);
+            Swal.fire({
+              icon: "success",
+              title: "Branch Saved",
+              text: "Branch created successfully!",
+            });
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          Swal.fire({
+            icon: "error",
+            title: "Add Failed",
+            text: "Could not create the branch.",
+          });
         });
-      }
-      })
-      .catch((err) => {
-       
-        console.log(err);
-      });
+    }
     setProjectModal(false);
-    setBranchData({ cmpName: "", cmpId: "" });
+    setBranchData({ branchName: "", branchId: "" });
   };
 
   const handleProjectChange = (e) => {
@@ -78,14 +119,42 @@ console.log(cmpId)
     }));
   };
 
-  const filteredBranches = branches.filter((company) =>
-    company.branchName.toLowerCase().includes(searchText.toLowerCase())
+  // const handleDeleteClick = (branchId) => {
+  //   Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "This will delete the branch permanently!",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#d33",
+  //     cancelButtonColor: "#3085d6",
+  //     confirmButtonText: "Yes, delete it!",
+  //   }).then((result) => {
+  //     if (result.isConfirmed) {
+  //       deleteBranch(branchId)
+  //         .then(() => {
+  //           setBranches((prev) => prev.filter((branch) => branch.id !== branchId));
+  //           Swal.fire("Deleted!", "Branch has been deleted.", "success");
+  //         })
+  //         .catch((err) => {
+  //           console.log(err);
+  //           Swal.fire("Error!", "Could not delete branch.", "error");
+  //         });
+  //     }
+  //   });
+  // };
+  const filteredBranches = branches.filter(
+    (company) =>
+      company.branchName.toLowerCase().includes(searchText.toLowerCase()) ||
+      company.branchId.toLowerCase().includes(searchText.toLowerCase())
   );
 
+  const handleBranchClear = () => {
+    setBranchData({ branchName: "", branchId: "" });
+  };
   return (
     <div className="container-fluid">
       <h2 className="text-center" style={{ color: "#4f0e83" }}>
-       {location.state?.company?.cmpName} Branches
+        {location.state?.company?.cmpName} Branches
       </h2>
       <div className="d-flex justify-content-between mb-4">
         <button
@@ -111,33 +180,41 @@ console.log(cmpId)
       </div>
 
       <div className="table-responsive">
-  <table className="table  table-hover ">
-    <thead >
-      <tr>
-        <th>Branch ID</th>
-        <th>Branch Name</th>
-        <th>View Admins</th>
-      </tr>
-    </thead>
-    <tbody>
-      {filteredBranches.map((branch, index) => (
-        <tr key={index}>
-          <td>{branch.branchId}</td>
-          <td>{branch.branchName}</td>
-          <td>
-            <VisibilityIcon
-              style={{cursor:"pointer"}}
-              onClick={() => handleBranchClick(branch)}
-            >
-             
-            </VisibilityIcon>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-
+        <table className="table  table-hover ">
+          <thead>
+            <tr>
+              <th>Branch ID</th>
+              <th>Branch Name</th>
+              <th>View Admins</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredBranches.map((branch, index) => (
+              <tr key={index}>
+                <td>{branch.branchId}</td>
+                <td>{branch.branchName}</td>
+                <td>
+                  <VisibilityIcon
+                    style={{ cursor: "pointer",color: "#4f0e83"  }}
+                    onClick={() => handleBranchClick(branch)}
+                  ></VisibilityIcon>
+                </td>
+                <td>
+                  <EditIcon
+                    style={{ cursor: "pointer", marginRight: "10px",color: "#4f0e83"  }}
+                    onClick={() => handleEditClick(branch)}
+                  />
+                  <DeleteIcon
+                    style={{ cursor: "pointer", color: "red" }}
+                    // onClick={() => handleDeleteClick(branch.id)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <Modal open={projectModal} onClose={() => setProjectModal(false)}>
         <div
@@ -157,10 +234,24 @@ console.log(cmpId)
               borderRadius: "20px",
             }}
           >
-            <h4 className="modal-title text-center">Add Branch</h4>
+            <button
+              onClick={() => setProjectModal(false)}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "none",
+                border: "none",
+                fontSize: "35px",
+                cursor: "pointer",
+              }}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h4>{isEditing ? "Update Branch" : "Add Branch"}</h4>
             <form onSubmit={handleProjectSubmit} className="mt-4">
-
-            <div className="form-group">
+              <div className="form-group">
                 <input
                   type="text"
                   name="branchId"
@@ -168,6 +259,7 @@ console.log(cmpId)
                   placeholder="Branch Id"
                   onChange={handleProjectChange}
                   value={branchData.branchId}
+                  disabled={isEditing}
                   required
                 />
               </div>
@@ -182,7 +274,7 @@ console.log(cmpId)
                   required
                 />
               </div>
-              
+
               <div className="text-center">
                 <button
                   type="button"
@@ -192,9 +284,9 @@ console.log(cmpId)
                     marginRight: "20px",
                     width: "150px",
                   }}
-                  onClick={() => setProjectModal(false)}
+                  onClick={handleBranchClear}
                 >
-                  Cancel
+                  Clear
                 </button>
                 <button
                   type="submit"
@@ -205,7 +297,7 @@ console.log(cmpId)
                     width: "150px",
                   }}
                 >
-                  Add Branch
+                {isEditing ? "Update Branch" : "Add Branch"}
                 </button>
               </div>
             </form>

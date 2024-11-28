@@ -65,8 +65,12 @@ const Companies = () => {
   };
 
   const filteredCompanies = companies.filter((company) =>
-    company.cmpName.toLowerCase().includes(searchText.toLowerCase())
+    company.cmpName.toLowerCase().includes(searchText.toLowerCase())||
+  company.cmpId.toLowerCase().includes(searchText.toLowerCase())
   );
+  const handleCompanyModal=()=>{
+    setCompanyData({ cmpName: "", cmpId: "" });
+  }
 
   return (
     <div className="container-fluid">
@@ -123,78 +127,95 @@ const Companies = () => {
       </div>
 
       <Modal open={projectModal} onClose={() => setProjectModal(false)}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-          }}
-        >
-          <div
-            className="modal-content p-4"
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+    }}
+  >
+    <div
+      className="modal-content p-4"
+      style={{
+        maxWidth: "500px",
+        width: "100%",
+        backgroundColor: "white",
+        borderRadius: "20px",
+        position: "relative",
+      }}
+    >
+      {/* Close Button */}
+      <button
+        onClick={() => setProjectModal(false)}
+        style={{
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          background: "none",
+          border: "none",
+          fontSize: "35px",
+          cursor: "pointer",
+        }}
+        aria-label="Close"
+      >
+        &times;
+      </button>
+
+      <h4 className="modal-title text-center">Add Company</h4>
+      <form onSubmit={handleProjectSubmit} className="mt-4">
+        <div className="form-group">
+          <input
+            type="text"
+            name="cmpId"
+            className="form-control w-80 mb-3"
+            placeholder="Company Id"
+            onChange={handleProjectChange}
+            value={companyData.cmpId}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <input
+            type="text"
+            name="cmpName"
+            className="form-control w-80 mb-3"
+            placeholder="Company Name"
+            onChange={handleProjectChange}
+            value={companyData.cmpName}
+            required
+          />
+        </div>
+        <div className="text-center">
+          <button
+            type="button"
+            className="btn btn-secondary mt-3"
             style={{
-              maxWidth: "500px",
-              width: "100%",
-              backgroundColor: "white",
               borderRadius: "20px",
+              marginRight: "20px",
+              width: "150px",
+            }}
+            onClick={handleCompanyModal}
+          >
+            Clear
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary mt-3"
+            style={{
+              borderRadius: "20px",
+              background: "#4f0e83",
+              width: "150px",
             }}
           >
-            <h4 className="modal-title text-center">Add Company</h4>
-            <form onSubmit={handleProjectSubmit} className="mt-4">
-
-            <div className="form-group">
-                <input
-                  type="text"
-                  name="cmpId"
-                  className="form-control w-80 mb-3"
-                  placeholder="Company Id"
-                  onChange={handleProjectChange}
-                  value={companyData.cmpId}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="cmpName"
-                  className="form-control w-80 mb-3"
-                  placeholder="Company Name"
-                  onChange={handleProjectChange}
-                  value={companyData.cmpName}
-                  required
-                />
-              </div>
-              
-              <div className="text-center">
-                <button
-                  type="button"
-                  className="btn btn-secondary mt-3"
-                  style={{
-                    borderRadius: "20px",
-                    marginRight: "20px",
-                    width: "150px",
-                  }}
-                  onClick={() => setProjectModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary mt-3"
-                  style={{
-                    borderRadius: "20px",
-                    background: "#4f0e83",
-                    width: "150px",
-                  }}
-                >
-                  Add Company
-                </button>
-              </div>
-            </form>
-          </div>
+            Add Company
+          </button>
         </div>
-      </Modal>
+      </form>
+    </div>
+  </div>
+</Modal>
+
     </div>
   );
 };

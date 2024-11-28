@@ -44,7 +44,7 @@ const AdminDashboard = () => {
                 className="dropdown-menu dropdown-menu-right show"
                 style={{ position: "absolute", right: 0 }}
               >
-                <a className="dropdown-item" href="/profile">
+                <a className="dropdown-item" href="/dashboard/profile">
                   Profile
                 </a>
                 <a className="dropdown-item" href="/logout">
@@ -59,6 +59,7 @@ const AdminDashboard = () => {
         <Routes>
           <Route path="/" element={<AdminView />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/profile" element={<AdminProfile/>} />
           <Route path="/testcases/*" element={<Testcases />} />
           <Route path="/testruns" element={<TestRuns />} />
           <Route path="/testrunDetails" element={<TestRunDetails />} />

@@ -1,66 +1,55 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import moment from "moment";
-import {
-  executeTestRun,
-  getTestCasesByTestRunId,
-  
-} from "../API/Api";
+import { executeTestRun, getTestCasesByTestRunId, testRunResult } from "../API/Api";
 
 function UserTestRunView() {
   const location = useLocation();
-  const project = location.state?.project || {};
   const testRun = location.state?.testRun || {};
   const [testCases, setTestCases] = useState([]);
-  const [statusUpdates, setStatusUpdates] = useState({}); // Live status updates
+  const [polling, setPolling] = useState(false);
 
   // Fetch initial test cases
   useEffect(() => {
-    getTestCasesByTestRunId(testRun.id)
-      .then((response) => setTestCases(response.data))
-      .catch((err) => console.error(err));
+    if (testRun.id) {
+      getTestCasesByTestRunId(testRun.id)
+        .then((response) => setTestCases(response.data))
+        .catch((err) => console.error(err));
+    }
   }, [testRun.id]);
 
-  // Establish SSE connection for real-time updates
+  // Polling for live status updates
   useEffect(() => {
-    const eventSource = new EventSource(`http://localhost:8088/testrun/v1/addtestresults`); // SSE endpoint
-
-    eventSource.onmessage = (event) => {
-      const message = event.data;
-      console.log("SSE Message received:", message);
-
-      // Extract relevant information from the message
-      const [testCaseName, status] = parseUpdateMessage(message);
-
-      // Update the status dynamically
-      if (testCaseName && status) {
-        setStatusUpdates((prevUpdates) => ({
-          ...prevUpdates,
-          [testCaseName]: status,
-        }));
-      }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error("SSE Error:", error);
-      eventSource.close(); // Stop SSE connection on error
-    };
-
-    // Clean up on component unmount
-    return () => {
-      eventSource.close();
-    };
-  }, []);
-
-  const parseUpdateMessage = (message) => {
-    const regex = /Test case (.+) status updated to (.+)/;
-    const match = message.match(regex);
-    if (match && match.length === 3) {
-      return [match[1], match[2]]; // Extract testCaseName and status
+    if (polling) {
+      const interval = setInterval(() => {
+        Promise.all(
+          testCases.map((testCase) =>
+            testRunResult(testCase.id)
+              .then((response) => ({
+                ...testCase,
+                status: response.data?.status || "In Progress",
+              }))
+              .catch(() => ({ ...testCase, status: "In Progress" }))
+          )
+        )
+          .then((updatedTestCases) => {
+            setTestCases((prevTestCases) =>
+              prevTestCases.map((prevTestCase) => {
+                const updatedTestCase = updatedTestCases.find(
+                  (testCase) => testCase.id === prevTestCase.id
+                );
+                return updatedTestCase || prevTestCase;
+              })
+            );
+          })
+          .catch((err) => console.error("Error fetching live status:", err));
+      }, 5000); // Poll every 5 seconds
+  
+      return () => clearInterval(interval);
     }
-    return [null, null];
-  };
+  }, [polling,testCases]);
+  
 
   const handleTestRun = () => {
     Swal.fire({
@@ -86,6 +75,7 @@ function UserTestRunView() {
                 "Test Run Execution Started Successfully.",
                 "success"
               );
+              setPolling(true); // Start polling after execution begins
             } else {
               Swal.fire("Oops...!", "Something Went Wrong.", "error");
             }
@@ -167,8 +157,15 @@ function UserTestRunView() {
               <tr key={index}>
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
-                {/* Show live-updated status if available, fallback to original */}
-                <td>{statusUpdates[testCase.testCaseName] || testCase.status}</td>
+                <td>
+                  {testCase.status === "In Progress" ? (
+                    <span style={{ color: "green" }}>
+                      <i className="fa fa-spinner fa-spin"></i> In Progress
+                    </span>
+                  ) : (
+                    testCase.status
+                  )}
+                </td>
                 <td>{testCase.author}</td>
                 <td>
                   {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}
