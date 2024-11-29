@@ -9,47 +9,77 @@ function UserTestRunView() {
   const testRun = location.state?.testRun || {};
   const [testCases, setTestCases] = useState([]);
   const [polling, setPolling] = useState(false);
+  const pollingInterval = 5000; // Poll every 5 seconds
 
-  // Fetch initial test cases
-  useEffect(() => {
-    if (testRun.id) {
-      getTestCasesByTestRunId(testRun.id)
-        .then((response) => setTestCases(response.data))
-        .catch((err) => console.error(err));
-    }
-  }, [testRun.id]);
+  // // Fetch initial test cases
+  // useEffect(() => {
+  //   if (testRun.id) {
+  //     getTestCasesByTestRunId(testRun.id)
+  //       .then((response) => setTestCases(response.data))
+  //       .catch((err) => console.error(err));
+  //   }
+  // }, [testRun.id]);
 
-  // Polling for live status updates
-  useEffect(() => {
-    if (polling) {
-      const interval = setInterval(() => {
-        Promise.all(
-          testCases.map((testCase) =>
-            testRunResult(testCase.id)
-              .then((response) => ({
-                ...testCase,
-                status: response.data?.status || "In Progress",
-              }))
-              .catch(() => ({ ...testCase, status: "In Progress" }))
-          )
-        )
-          .then((updatedTestCases) => {
-            setTestCases((prevTestCases) =>
-              prevTestCases.map((prevTestCase) => {
-                const updatedTestCase = updatedTestCases.find(
-                  (testCase) => testCase.id === prevTestCase.id
-                );
-                return updatedTestCase || prevTestCase;
-              })
-            );
-          })
-          .catch((err) => console.error("Error fetching live status:", err));
-      }, 5000); // Poll every 5 seconds
+  // // Polling for live status updates
+  // useEffect(() => {
+  //   if (polling) {
+  //     const interval = setInterval(() => {
+  //       testCases.forEach((testCase) => {
+  //         testRunResult(testCase.id)
+  //           .then((response) => {
+  //             const updatedTestCase = {
+  //               ...testCase,
+  //               status: response.data?.status || "In Progress",
+  //             };
+
+  //             setTestCases((prevTestCases) =>
+  //               prevTestCases.map((prevTestCase) =>
+  //                 prevTestCase.id === updatedTestCase.id
+  //                   ? updatedTestCase
+  //                   : prevTestCase
+  //               )
+  //             );
+  //           })
+  //           .catch(() => {
+  //             setTestCases((prevTestCases) =>
+  //               prevTestCases.map((prevTestCase) =>
+  //                 prevTestCase.id === testCase.id
+  //                   ? { ...prevTestCase, status: "In Progress" }
+  //                   : prevTestCase
+  //               )
+  //             );
+  //           });
+  //       });
+  //     }, 5000); // Poll every 5 seconds
   
-      return () => clearInterval(interval);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [polling,testCases]);
+
+   // Fetch test cases from API
+   const fetchTestCases = async () => {
+    try {
+      const response = await getTestCasesByTestRunId(testRun.id);
+      const data = response.data;
+      console.log(data)
+      setTestCases(data); // Assume the API returns an array of test cases
+    } catch (error) {
+      console.error("Error fetching test cases:", error);
     }
-  }, [polling,testCases]);
+  };
   
+  useEffect(() => {
+    // Fetch immediately on mount
+    fetchTestCases();
+
+    // Set up polling using setInterval
+    const intervalId = setInterval(() => {
+      fetchTestCases();
+    }, pollingInterval);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleTestRun = () => {
     Swal.fire({
@@ -91,6 +121,12 @@ function UserTestRunView() {
       }
     });
   };
+
+  const testCaseColors = {
+    "In Progress": "blue",
+    "SKIP": "orange",
+    "FAIL": "red",
+    "PASS": "green",}
 
   return (
     <div className="container">
@@ -158,6 +194,7 @@ function UserTestRunView() {
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
                 <td>
+                  {/*
                   {testCase.status === "In Progress" ? (
                     <span style={{ color: "green" }}>
                       <i className="fa fa-spinner fa-spin"></i> In Progress
@@ -165,6 +202,15 @@ function UserTestRunView() {
                   ) : (
                     testCase.status
                   )}
+                  */}
+                  <span
+                    style={{
+                      color: testCaseColors[testCase.status],
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {testCase.status}
+                  </span>
                 </td>
                 <td>{testCase.author}</td>
                 <td>
