@@ -144,12 +144,12 @@ const UserTestcases = () => {
     <div className=" container-fluid ">
       <div className="content">
         <div style={{ position: "sticky", top: "0", zIndex: "100" }}>
-          <h2
+          <h4
             className="text-center mb-4"
             style={{ color: "#4f0e83", boxShadow: "grey" }}
           >
             Test Cases for - {project.projectName}
-          </h2>
+          </h4>
         </div>
 
         <div

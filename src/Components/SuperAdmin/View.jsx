@@ -2,13 +2,20 @@ import { useEffect, useState } from "react";
 import {
   getAllBranchesByCompany,
   getAllCompany,
-  getBranchById,
+  
   getProjectsByBranchId,
   getProjectUsers,
   getRegisterForBranch,
 } from "../API/Api";
 import moment from "moment";
-
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import PeopleIcon from '@mui/icons-material/People';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
 const View = () => {
   const [activeTab, setActiveTab] = useState("companies");
   const [selectedCompany, setSelectedCompany] = useState("");
@@ -19,7 +26,12 @@ const View = () => {
   const [admins, setAdmins] = useState([]);
   const [projects, setProjects] = useState([]);
   const [users,setUsers]=useState([]);
-  
+
+
+  // Handle tab change
+  const handleChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
   useEffect(() => {
     getAllCompany()
       .then((response) => setCompanies(response.data))
@@ -355,25 +367,22 @@ const View = () => {
 
   return (
     <div>
-      
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px",marginTop:"20px" }}>
-        {["companies", "branches", "admin", "projects", "users"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: "5px 20px",
-              backgroundColor: activeTab === tab ? "#4f0e83" : "#f0f0f0",
-              color: activeTab === tab ? "#fff" : "#000",
-              border: "none",
-              borderRadius: "20px",
-              cursor: "pointer",
-            }}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-      </div>
+      <Box sx={{ width: "100%", marginBottom: "20px", marginTop: "20px" }}>
+        <Tabs
+          value={activeTab}
+          onChange={handleChange}
+          textColor="secondary"
+          indicatorColor="secondary"
+          aria-label="admin dashboard tabs"
+        >
+          
+          <Tab icon={<ApartmentIcon/>} iconPosition="start" value="companies" label="Companies"/>
+          <Tab icon={<AccountTreeIcon/>} iconPosition="start" value="branches" label="Branches" />
+          <Tab icon={<PeopleAltIcon/>} iconPosition="start" value="admin" label="Admins" />
+          <Tab icon={<FactCheckIcon/>} iconPosition="start" value="projects" label="Projects" />
+          <Tab  icon={<PeopleIcon/>} iconPosition="start" value="users" label="Users" />
+        </Tabs>
+      </Box>
       {renderContent()}
     </div>
   );

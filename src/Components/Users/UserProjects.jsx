@@ -124,9 +124,9 @@ const UserProjects = () => {
   };
   return (
     <div className="container-fluid ">
-      <h2 className="text-center" style={{ color: "#4f0e83" }}>
+      <h4 className="text-center" style={{ color: "#4f0e83" }}>
         Projects
-      </h2>
+      </h4>
       <div className="d-flex justify-content-end mb-4">
         {/* <button
           onClick={handleProject}

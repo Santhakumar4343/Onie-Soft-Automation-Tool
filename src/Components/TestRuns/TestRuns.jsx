@@ -75,7 +75,7 @@ const TestRuns = () => {
     <div className="d-flex">
      
       <div className="container ">
-      <h2 className="text-center mb-2" style={{color:"#4f0e83"}}>{project.projectName}-Test Runs</h2>
+      <h4 className="text-center mb-2" style={{color:"#4f0e83"}}>{project.projectName}-Test Runs</h4>
         <div className="d-flex justify-content-end mb-3">
           {/* <button
             className="btn btn-primary"

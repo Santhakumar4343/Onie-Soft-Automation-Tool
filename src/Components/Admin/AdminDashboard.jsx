@@ -12,6 +12,7 @@ import Company from "../Company/Company";
 import TestRunView from "../TestRuns/TestRunView";
 import AdminView from "./AdminView";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import AdminProfile from "./AdminProfile";
 
 const AdminDashboard = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -32,7 +33,7 @@ const AdminDashboard = () => {
         {/* Header Section */}
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h1></h1>
-          <h2>Admin Dashboard</h2>
+          <h4 style={{color:"#808080"}}>Admin Dashboard</h4>
           <div
             className="position-relative"
             onMouseEnter={toggleDropdown}

@@ -19,6 +19,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
+import { Tooltip } from "@mui/material";
 
 const Admins = () => {
   const [show, setShow] = useState(false);
@@ -29,6 +30,7 @@ const Admins = () => {
   const [loading, isLoading] = useState(false);
   const location = useLocation();
   const branchId = location.state?.branch?.id || {};
+  const cmpName = location.state?.company?.cmpName || {};
   console.log(branchId);
 
   const [formData, setFormData] = useState({
@@ -71,8 +73,18 @@ const Admins = () => {
     });
   };
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+
+    // Update status only during edit
+    if (name === "status") {
+      if (editingAdmin) {
+        setFormData({ ...formData, status: checked });
+      }
+      return; // Skip further processing for "status" in creation flow
+    }
+
+    // Update other fields
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
   useEffect(() => {
@@ -90,7 +102,9 @@ const Admins = () => {
       if (editingAdmin) {
         // Exclude password if not provided
         const { password, ...updatedData } = formData;
-        payload = password ? formData : updatedData;
+
+        // Use updatedData which doesn't include password
+        payload = updatedData;
 
         await updateRegister(payload); // Update user details
         Swal.fire({
@@ -185,9 +199,9 @@ const Admins = () => {
   );
   return (
     <div className="container">
-      <h2 className="mb-3" style={{ color: "#4f0890", textAlign: "center" }}>
-        {location.state?.branch?.branchName} Admins
-      </h2>
+      <h4 className="mb-3" style={{ color: "#4f0890", textAlign: "center" }}>
+        {cmpName} - {location.state?.branch?.branchName} - Admins
+      </h4>
       <div className="d-flex justify-content-between mb-3">
         <Button
           variant="primary"
@@ -247,16 +261,20 @@ const Admins = () => {
                 <td>{user.empRole}</td>
                 <td>{user.empDepartment}</td>
                 <td>
+                <Tooltip title="Edit"  placement="left" arrow>
                   <EditIcon
                     className=" me-3"
                     style={{ cursor: "pointer", color: "#4f0e83" }}
                     onClick={() => handleEditUser(user)}
                   />
+                  </Tooltip>
+                  <Tooltip title="Delete" placement="right" arrow>
                   <DeleteIcon
                     className="text-danger"
                     style={{ cursor: "pointer" }}
                     onClick={() => handleDeleteUser(user.id)}
                   />
+                  </Tooltip>
                 </td>
               </tr>
             ))}
@@ -312,6 +330,18 @@ const Admins = () => {
                 onChange={handleInputChange}
               />
             </Form.Group>
+            {editingAdmin && (
+              <Form.Group controlId="empStatus" className="mb-3">
+                <Form.Check
+                  type="checkbox"
+                  name="status"
+                  label="Status"
+                  checked={formData.status}
+                  onChange={handleInputChange}
+                />
+              </Form.Group>
+            )}
+
             {!editingAdmin && (
               <Form.Group controlId="password">
                 <Form.Control

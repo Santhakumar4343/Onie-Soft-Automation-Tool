@@ -11,6 +11,7 @@ function UserTestRunView() {
   const [polling, setPolling] = useState(false);
   const pollingInterval = 5000; // Poll every 5 seconds
 
+
   // // Fetch initial test cases
   // useEffect(() => {
   //   if (testRun.id) {
@@ -81,6 +82,49 @@ function UserTestRunView() {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Fetch initial test cases
+  useEffect(() => {
+    if (testRun.id) {
+      getTestCasesByTestRunId(testRun.id)
+        .then((response) => setTestCases(response.data))
+        .catch((err) => console.error("Error fetching test cases:", err));
+    }
+  }, [testRun.id]);
+
+  // Poll for status updates
+  useEffect(() => {
+    if (polling) {
+      const interval = setInterval(() => {
+        const statusUpdates = testCases.map((testCase) =>
+          testRunResult(testCase.id)
+            .then((response) => ({
+              id: testCase.id,
+              status: response.data?.status || "In Progress",
+            }))
+            .catch(() => ({ id: testCase.id, status: "In Progress" }))
+        );
+
+        Promise.all(statusUpdates)
+          .then((updatedStatuses) => {
+            setTestCases((prevTestCases) =>
+              prevTestCases.map((testCase) => {
+                const updatedStatus = updatedStatuses.find(
+                  (status) => status.id === testCase.id
+                );
+                return updatedStatus
+                  ? { ...testCase, status: updatedStatus.status }
+                  : testCase;
+              })
+            );
+          })
+          .catch((err) => console.error("Error polling statuses:", err));
+      }, 5000); // Poll every 5 seconds
+
+      return () => clearInterval(interval); // Cleanup on unmount or polling stop
+    }
+  }, [polling, testCases]);
+
+
   const handleTestRun = () => {
     Swal.fire({
       title: "Are you sure?",
@@ -90,22 +134,17 @@ function UserTestRunView() {
       confirmButtonColor: "#4f0e83",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, Execute Test Run!",
-      customClass: {
-        confirmButton: "custom-confirm-button",
-        cancelButton: "custom-cancel-button",
-      },
     }).then((result) => {
       if (result.isConfirmed) {
         executeTestRun(testRun.id)
           .then((response) => {
-            const { status } = response;
-            if (status === 200 || status === 201) {
+            if (response.status === 200 || response.status === 201) {
               Swal.fire(
                 "Execution Started!",
                 "Test Run Execution Started Successfully.",
                 "success"
               );
-              setPolling(true); // Start polling after execution begins
+              setPolling(true); // Start polling
             } else {
               Swal.fire("Oops...!", "Something Went Wrong.", "error");
             }
@@ -130,9 +169,9 @@ function UserTestRunView() {
 
   return (
     <div className="container">
-      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>
+      <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
         {testRun.testRunName} - Test Run
-      </h2>
+      </h4>
       <div className="TestRun">
         <button
           onClick={handleTestRun}
@@ -148,24 +187,6 @@ function UserTestRunView() {
         </button>
       </div>
       <div style={{ maxHeight: "620px", overflowY: "auto" }}>
-        <style>
-          {`
-          div::-webkit-scrollbar {
-            width: 2px;
-          }
-          div::-webkit-scrollbar-thumb {
-            background-color: #4f0e83;
-            border-radius: 4px;
-          }
-          div::-webkit-scrollbar-track {
-            background-color: #e0e0e0;
-          }
-          div {
-            scrollbar-width: thin;
-            scrollbar-color: #4f0e83 #e0e0e0;
-          }
-        `}
-        </style>
         <table
           className="table table-hover mt-4"
           style={{ textAlign: "center" }}
@@ -189,8 +210,8 @@ function UserTestRunView() {
             </tr>
           </thead>
           <tbody>
-            {testCases.map((testCase, index) => (
-              <tr key={index}>
+            {testCases.map((testCase) => (
+              <tr key={testCase.id}>
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
                 <td>

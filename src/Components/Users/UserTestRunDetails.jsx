@@ -112,9 +112,9 @@ function UserTestRunDetails() {
 
   return (
     <div className="container">
-      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>
+      <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
         {testRun.testRunName}-Test Run{" "}
-      </h2>
+      </h4>
       <div className="TestRun">
         {/* <button
           onClick={handleTestRun}
