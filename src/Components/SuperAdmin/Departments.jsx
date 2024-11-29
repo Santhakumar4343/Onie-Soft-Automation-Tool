@@ -13,9 +13,9 @@ const Deparments = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const location = useLocation();
-  const cmpId = location.state?.company.id || {};
+  const company = location.state?.company || {};
 
-  console.log(cmpId);
+  
   const navigate = useNavigate();
   const [branchData, setBranchData] = useState({
     branchName: "",
@@ -23,7 +23,7 @@ const Deparments = () => {
   });
 
   const handleBranchClick = (branch) => {
-    navigate("/adminDashboard/admins", { state: { branch } });
+    navigate("/adminDashboard/admins", { state: { branch,company} });
   };
 
   const handleProject = () => {
@@ -40,12 +40,12 @@ const Deparments = () => {
   };
 
   useEffect(() => {
-    getAllBranchesByCompany(cmpId)
+    getAllBranchesByCompany(company.id)
       .then((response) => {
         setBranches(response.data);
       })
       .catch((err) => console.log(err));
-  }, [cmpId]);
+  }, [company.id]);
 
   const handleProjectSubmit = (e) => {
     e.preventDefault();
@@ -55,7 +55,7 @@ const Deparments = () => {
         id:selectedBranch.id,
         branchName: branchData.branchName,
         branchId: branchData.branchId,
-        cmpId: cmpId,
+        cmpId: company.cmpId,
       };
       updateBranch( updatedBranch) // Call update API
         .then((response) => {
@@ -85,7 +85,7 @@ const Deparments = () => {
       const data = {
         branchName: branchData.branchName,
         branchId: branchData.branchId,
-        cmpId: cmpId,
+        cmpId: company.cmpId,
       };
       createBranch(data)
         .then((response) => {
@@ -153,9 +153,9 @@ const Deparments = () => {
   };
   return (
     <div className="container-fluid">
-      <h2 className="text-center" style={{ color: "#4f0e83" }}>
+      <h4 className="text-center" style={{ color: "#4f0e83" }}>
         {location.state?.company?.cmpName} Branches
-      </h2>
+      </h4>
       <div className="d-flex justify-content-between mb-4">
         <button
           onClick={handleProject}

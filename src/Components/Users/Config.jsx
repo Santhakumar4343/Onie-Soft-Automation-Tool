@@ -107,7 +107,7 @@ const Config = () => {
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center my-3">
-        <h3>Project Configurations</h3>
+        <h4 style={{color:"#4f0e83"}}>Project Configurations</h4>
         <Button
           variant="contained"
           color="primary"

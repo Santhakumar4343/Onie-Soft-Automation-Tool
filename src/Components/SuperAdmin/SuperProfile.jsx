@@ -35,7 +35,7 @@ const SuperProfile = () => {
           title: "Profile Updated",
           text: "Your profile has been successfully updated.",
         });
-        setIsEditing(false); // Exit editing mode after successful update
+        setIsEditing(false);
       } else {
         Swal.fire({
           icon: "error",
@@ -53,123 +53,181 @@ const SuperProfile = () => {
     }
   };
 
+ 
   return (
+    <div> <h4 className="text-center" style={{color:"#4f0e83"}}>Profile</h4>
     <div className="d-flex justify-content-center align-items-center mt-2">
+     
       {!isEditing ? (
-        <div className="card text-center" style={{ width: "30rem" }}>
-          <div className="card-body">
-            <h5 className="card-title mb-4">Profile Details</h5>
-            <p className="card-text">
-              <strong>Name:</strong> {formData.empName}
-            </p>
-            <p className="card-text">
-              <strong>Email:</strong> {formData.empEmail}
-            </p>
-            <p className="card-text">
-              <strong>Mobile:</strong> {formData.empMob}
-            </p>
-            <p className="card-text">
-              <strong>Department:</strong> {formData.empDepartment}
-            </p>
-            <p className="card-text">
-              <strong>Role:</strong> {formData.empRole}
-            </p>
-            <p className="card-text">
-              <strong>Status:</strong> {formData.status ? "Active" : "Inactive"}
-            </p>
-            <button
-              className="btn btn-primary"
-              onClick={() => setIsEditing(true)}
-            >
-              Edit Profile
-            </button>
-          </div>
-        </div>
+        <table className="table table-hover " style={{ width: "80%" }}>
+          <thead>
+           
+          </thead>
+          <tbody>
+            <tr>
+              <td>Name</td>
+              <td>{formData.empName}</td>
+            </tr>
+            <tr>
+              <td>Email</td>
+              <td>{formData.empEmail}</td>
+            </tr>
+            <tr>
+              <td>Mobile</td>
+              <td>{formData.empMob}</td>
+            </tr>
+            <tr>
+              <td>Department</td>
+              <td>{formData.empDepartment}</td>
+            </tr>
+            <tr>
+              <td>Role</td>
+              <td>{formData.empRole}</td>
+            </tr>
+            <tr>
+              <td>Status</td>
+              <td>{formData.status ? "Active" : "Inactive"}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan="2" className="text-center"  style={{border:"none"}}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    height: "40px",
+                    color: "white",
+                    backgroundColor: "#4f0e83",
+                    width: "15%",
+                    borderRadius: "20px",
+                  }}
+                >
+                  Edit Profile
+                </button>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
       ) : (
-        <form onSubmit={handleSubmit} className="card p-4" style={{ width: "30rem" }}>
-          <h5 className="card-title mb-4 text-center">Edit Profile</h5>
-          <div className="mb-3">
-            <label className="form-label">Employee Name</label>
-            <input
-              type="text"
-              className="form-control"
-              name="empName"
-              value={formData.empName}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              className="form-control"
-              name="empEmail"
-              value={formData.empEmail}
-              onChange={handleInputChange}
-              readOnly
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Mobile</label>
-            <input
-              type="text"
-              className="form-control"
-              name="empMob"
-              value={formData.empMob}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Department</label>
-            <input
-              type="text"
-              className="form-control"
-              name="empDepartment"
-              value={formData.empDepartment}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Role</label>
-            <input
-              type="text"
-              className="form-control"
-              name="empRole"
-              value={formData.empRole}
-              onChange={handleInputChange}
-              readOnly
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Status</label>
-            <div className="form-check">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                name="status"
-                checked={formData.status}
-                onChange={handleInputChange}
-              />
-              <label className="form-check-label">Active</label>
-            </div>
-          </div>
-          <div className="d-flex justify-content-between">
-            <button type="submit" className="btn btn-success">
-              Save Changes
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setIsEditing(false)}
-            >
-              Cancel
-            </button>
-          </div>
+        <form onSubmit={handleSubmit} style={{ width: "80%" }}>
+          <table className="table table-hover ">
+            <thead>
+             
+            </thead>
+            <tbody>
+              <tr>
+                <td>Name</td>
+                <td>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="empName"
+                    value={formData.empName}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Email</td>
+                <td>
+                  <input
+                    type="email"
+                    className="form-control"
+                    name="empEmail"
+                    value={formData.empEmail}
+                    onChange={handleInputChange}
+                    readOnly
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Mobile</td>
+                <td>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="empMob"
+                    value={formData.empMob}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Department</td>
+                <td>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="empDepartment"
+                    value={formData.empDepartment}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Role</td>
+                <td>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="empRole"
+                    value={formData.empRole}
+                    onChange={handleInputChange}
+                    readOnly
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Status</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    name="status"
+                    checked={formData.status}
+                    onChange={handleInputChange}
+                  />{" "}
+                  Active
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan="2" className="text-center " style={{border:"none"}}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary me-2"
+                    onClick={() => setIsEditing(false)}
+                    style={{
+                      height: "40px",
+                      color: "white",
+                     
+                      width: "10%",
+                      borderRadius: "20px",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-success"
+                    style={{
+                      height: "40px",
+                      color: "white",
+                      backgroundColor: "#4f0e83",
+                      width: "15%",
+                      borderRadius: "20px",
+                    }}>
+                    Save Changes
+                  </button>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </form>
       )}
+    </div>
     </div>
   );
 };

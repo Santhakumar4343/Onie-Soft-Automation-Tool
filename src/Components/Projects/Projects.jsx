@@ -199,9 +199,9 @@ const Projects = () => {
   };
   return (
     <div className="container-fluid ">
-      <h2 className="text-center" style={{ color: "#4f0e83" }}>
+      <h4 className="text-center" style={{ color: "#4f0e83" }}>
         {branchName} - Projects
-      </h2>
+      </h4>
       <div className="d-flex justify-content-between mb-4">
         <button
           onClick={handleProject}

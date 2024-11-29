@@ -32,7 +32,7 @@ const UserDashboard = () => {
         {/* Header Section */}
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h1></h1>
-          <h2>User Dashboard</h2>
+          <h4 style={{color:"#808080"}}>User Dashboard</h4>
           <div
             className="position-relative"
             onMouseEnter={toggleDropdown}

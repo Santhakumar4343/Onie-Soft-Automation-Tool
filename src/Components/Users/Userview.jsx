@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import {
     getAssignedUserProjects,
-    getAssignProjectsByRegId,
-  getProjectsByBranchId,
+    
   getProjectUsers,
   getTestcaseByProjectId,
   getTestRunByProjectId,
 } from "../API/Api";
 import moment from "moment";
 
+
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import PermDataSettingIcon from '@mui/icons-material/PermDataSetting';
+import { Box, Tab, Tabs } from "@mui/material";
+import BugReportIcon from '@mui/icons-material/BugReport';
 const UserView = () => {
   const [activeTab, setActiveTab] = useState("projects");
 
@@ -20,6 +24,10 @@ const UserView = () => {
   const [testruns, setTestRuns] = useState([]);
   const user = JSON.parse(sessionStorage.getItem("user"));
   const branchId = user.branchId;
+
+  const handleChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
 
   useEffect(() => {
     getAssignedUserProjects(user.id)
@@ -221,24 +229,56 @@ const UserView = () => {
   return (
     <div>
      
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-        {["projects", "testcases", "testruns"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: "5px 20px",
-              backgroundColor: activeTab === tab ? "#4f0e83" : "#f0f0f0",
-              color: activeTab === tab ? "#fff" : "#000",
-              border: "none",
-              borderRadius: "20px",
-              cursor: "pointer",
-            }}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-      </div>
+     <Box sx={{ width: "100%", marginBottom: "20px", marginTop: "20px" }}>
+      <Tabs
+        value={activeTab}
+        onChange={handleChange}
+        TabIndicatorProps={{
+          style: {
+            backgroundColor: "#037999", // Indicator color (green)
+          },
+        }}
+        aria-label="admin dashboard tabs"
+      >
+        <Tab
+          icon={<FactCheckIcon />}
+          iconPosition="start"
+          value="projects"
+          label="Projects"
+          sx={{
+            color: activeTab === "projects" ? "#037999" : "inherit", // Set green color for active tab text
+            '&.Mui-selected': {
+              color: "#037999", // Ensure green color is applied when the tab is selected
+            },
+          }}
+        />
+        
+        <Tab
+          icon={<PermDataSettingIcon />}
+          iconPosition="start"
+          value="testcases"
+          label="Testcases"
+          sx={{
+            color: activeTab === "testcases" ? "#037999" : "inherit", // Set green color for active tab text
+            '&.Mui-selected': {
+              color: "#037999", // Ensure green color is applied when the tab is selected
+            },
+          }}
+        />
+        <Tab
+          icon={<BugReportIcon />}
+          iconPosition="start"
+          value="testruns"
+          label="TestRuns"
+          sx={{
+            color: activeTab === "testruns" ? "#037999" : "inherit", // Set green color for active tab text
+            '&.Mui-selected': {
+              color: "#037999", // Ensure green color is applied when the tab is selected
+            },
+          }}
+        />
+      </Tabs>
+    </Box>
       {renderContent()}
     </div>
   );
