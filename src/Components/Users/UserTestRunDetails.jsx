@@ -26,7 +26,7 @@ function UserTestRunDetails() {
   const handleCheckboxChange = (id) => {
     setSelectedCases((prevSelected) =>
       prevSelected.includes(id)
-        ? prevSelected.filter((id) => id !== id)
+        ? prevSelected.filter((selectedId) => selectedId !== id)
         : [...prevSelected, id]
     );
   };
