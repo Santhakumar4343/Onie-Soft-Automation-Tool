@@ -121,9 +121,9 @@ export const addTestcase = (id, data) => {
   const headers = getApiHeaders();
   return Api.post(`/testcases/v1/save/${id}`, data, headers);
 };
-export const updateTestcase = () => {
+export const updateTestcase = (data) => {
   const headers = getApiHeaders();
-  return Api.put(`/testcases/v1/update`, headers);
+  return Api.put(`/testcases/v1/update`, data, headers);
 };
 export const getTestcaseById = (id) => {
   const headers = getApiHeaders();

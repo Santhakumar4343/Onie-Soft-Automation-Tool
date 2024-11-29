@@ -56,7 +56,7 @@ const UserTestcases = () => {
       if (editTestCase) {
         // Edit mode
         try {
-          const response = updateTestcase();
+          const response = updateTestcase(values);
           if (response.status === 200) {
             Swal.fire({
               icon: "success",
