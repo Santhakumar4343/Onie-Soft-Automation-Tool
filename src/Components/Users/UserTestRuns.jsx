@@ -1,13 +1,12 @@
 import { Modal } from "@mui/material";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { API_URL, createTestRun, getTestRunByProjectId } from "../API/Api";
+import {  createTestRun, getTestRunByProjectId, TestRunClone } from "../API/Api";
 import Swal from "sweetalert2";
 import moment from "moment";
 import EditIcon from '@mui/icons-material/Edit';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 const UserTestRuns = () => {
   const [searchText, setSearchText] = useState("");
   const [testRunModal, setTestRunModal] = useState(false);
@@ -35,6 +34,21 @@ const UserTestRuns = () => {
 
   const handleTestRunClick = (testRun) => navigate("/userDashboard/testRunDetails",{state:{project,testRun}});
   const handleTestRunView= (testRun) => navigate("/userDashboard/testRunView",{state:{project,testRun}});
+
+  const handleCloneTestcases = (testRunId) => {
+    TestRunClone(testRunId, project.id)
+      .then((response) => {
+        // Assuming newTestRuns is the updated list of test runs that you want to add
+         // Spread the previous state and new test runs
+        Swal.fire("Success", "Test cases cloned successfully!", "success");
+      })
+      .catch((err) => {
+        console.error(err);
+        Swal.fire("Error", "Failed to clone test cases.", "error");
+      });
+  };
+  
+  
   const handleTestRunSubmit = (e) => {
     e.preventDefault();
       const data={
@@ -125,7 +139,8 @@ const UserTestRuns = () => {
           <td>{moment(testRun.updatedAt).format("DD MMM YYYY, HH:mm:ss")}</td>
           <div>
            <td><EditIcon  className="me-2" style={{ cursor: "pointer", color: "#4f0e83" }} onClick={() => handleTestRunClick(testRun)} /></td>
-           <td><RemoveRedEyeIcon  style={{ cursor: "pointer", color: "#4f0e83" }} onClick={() => handleTestRunView(testRun)}/></td>
+           <td><RemoveRedEyeIcon className="me-2"  style={{ cursor: "pointer", color: "#4f0e83" }} onClick={() => handleTestRunView(testRun)}/></td>
+           <td><ContentCopyIcon  style={{ cursor: "pointer", color: "#4f0e83" }} onClick={()=>handleCloneTestcases(testRun.id)}/></td>
           </div>
         </tr>
       ))}

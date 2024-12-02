@@ -91,9 +91,13 @@ export const addProject = (data) => {
   const headers = getApiHeaders();
   return Api.post("/projects/v1/save", data, headers);
 };
-export const updateProject = ( data) => {
+export const updateProject = (data) => {
   const headers = getApiHeaders();
   return Api.put(`/projects/v1/update`, data, headers);
+};
+export const updateConfig = (data) => {
+  const headers = getApiHeaders();
+  return Api.post(`/userconfig/v1/save`, data, headers);
 };
 export const getProjectById = (id) => {
   const headers = getApiHeaders();
@@ -111,6 +115,11 @@ export const getAllUserProjects = () => {
 export const getAssignedUserProjects = (usedId) => {
   const headers = getApiHeaders();
   return Api.get(`/projectusers/v1/getassignprojects/${usedId}`, headers);
+};
+
+export const getConfigsByUseId = (usedId) => {
+  const headers = getApiHeaders();
+  return Api.get(`/userconfig/v1/getconfigsbyuid/${usedId}`, headers);
 };
 export const deleteProjectById = (id) => {
   const headers = getApiHeaders();
@@ -173,12 +182,10 @@ export const getUnmapedTestCasesByTestRunId = (id) => {
   return Api.get(`/testrun/v1/testrun/v1/edittestrun/${id}`, headers);
 };
 export const executeTestRun = (id) => {
-  
   return Api.post(`/testrun/v1/run/${id}`);
 };
 
 export const testRunResult = (id) => {
-  
   return Api.get(`/testrun/v1/testcases/${id}`);
 };
 // Company Api's
@@ -233,7 +240,7 @@ export const assignUser = (data) => {
 };
 export const getAssignProjectsByRegId = (id) => {
   const headers = getApiHeaders();
-  return Api.post(`/projectusers/v1/getassignprojects/${id}`, headers);
+  return Api.get(`/projectusers/v1/getassignprojects/${id}`, headers);
 };
 export const getUnmapedProjectsByRegisterId = (id) => {
   const headers = getApiHeaders();
@@ -244,9 +251,12 @@ export const getProjectUsers = (id) => {
   const headers = getApiHeaders();
   return Api.get(`/projectusers/v1/getassignregisters/${id}`, headers);
 };
-export const unAssignUsers = (projectId,registerId) => {
+export const unAssignUsers = (projectId, registerId) => {
   const headers = getApiHeaders();
-  return Api.delete(`/projectusers/v1/unassign?projectId=${projectId}&registerId=${registerId}`, headers);
+  return Api.delete(
+    `/projectusers/v1/unassign?projectId=${projectId}&registerId=${registerId}`,
+    headers
+  );
 };
 export const getProjectsByBranchId = (id) => {
   const headers = getApiHeaders();
@@ -261,3 +271,9 @@ export const TestuRunDetails = () => {
   const headers = getApiHeaders();
   return Api.put(`/testrun/v1/addtestresults`, headers);
 };
+
+
+export const TestRunClone=(testRunId,projectId)=>{
+  const headers = getApiHeaders();
+  return Api.post(`/testrun/v1/cloneTestRun/${testRunId}?projectId=${projectId}`, headers);
+}

@@ -14,9 +14,7 @@ import moment from "moment";
 import EditIcon from "@mui/icons-material/Edit";
 const Testcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  
   const navigate = useNavigate();
   const location = useLocation();
   const { project } = location.state || {};
@@ -77,23 +75,7 @@ const Testcases = () => {
     setShowModal(false);
     formik.resetForm();
   };
-  const handleEdit = (id) => {
-    const filterData = testCases.filter((ele) => ele.testCaseId === id);
-    console.log(filterData);
-  };
-  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
-
-  const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-    setCurrentPage(0);
-  };
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 0) setCurrentPage(currentPage - 1);
-  };
+  
   const handleSearchInput = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
@@ -118,65 +100,11 @@ const Testcases = () => {
           </h4>
         </div>
 
-        <div
-          style={{
-            position: "sticky",
-            top: "0",
-            zIndex: "100",
-            backgroundColor: "white",
-            padding: "10px 15px",
-          }}
-        >
+        
           <div className="d-flex justify-content-between align-items-center">
-            <select
-              className="form-control"
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              style={{
-                width: "150px",
-                appearance: "auto",
-                marginRight: "10px",
-                fontSize: "14px",
-              }}
-            >
-              {[5, 10, 15, 20].map((size) => (
-                <option key={size} value={size}>
-                  {size} per page
-                </option>
-              ))}
-            </select>
+           
 
-            <div
-              className="flex-grow-1 mx-3"
-              style={{ position: "relative", borderRadius: "20px" }}
-            >
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchInput}
-                placeholder="Search by Test Case Name, Author......"
-                className="form-control w-50"
-              />
-            </div>
-
-            {/* <button
-              onClick={() => setShowModal(true)}
-              style={{
-                color: "white",
-                backgroundColor: "#4f0e83",
-                borderRadius: "20px",
-                padding: "8px 15px",
-                fontSize: "14px",
-                marginRight: "10px",
-                width: "130px",
-                height: "40px",
-              }}
-              className="btn"
-            >
-              Add Test Case
-            </button> */}
-
-            <button
+          <button
               onClick={handleTestRun}
               style={{
                 color: "white",
@@ -191,8 +119,22 @@ const Testcases = () => {
             >
               View Test Runs
             </button>
+           
+              <input
+                style={{width:"40%"}}
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchInput}
+                placeholder="Search by Test Case Name, Author......"
+                className="form-control "
+              />
+            
+
+            
+
+            
           </div>
-        </div>
+      
 
         <div
           style={{

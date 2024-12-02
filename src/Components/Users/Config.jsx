@@ -1,44 +1,59 @@
 import { useEffect, useState } from "react";
 
-import { Button, Modal, TextField } from "@mui/material";
+import { Button, MenuItem, Modal, Select, TextField } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import swal from "sweetalert2";
 import {
-  addProject,
   deleteProjectById,
-  getAssignedUserProjects,
-  updateProject,
+  getAssignProjectsByRegId,
+  getConfigsByUseId,
+  updateConfig,
 } from "../API/Api";
+import { useNavigate } from "react-router-dom";
 
 const Config = () => {
   const user = JSON.parse(sessionStorage.getItem("user"));
-
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
+  const [configs, setConfigs] = useState([]);
   const [modalData, setModalData] = useState({
     projectName: "",
     ipAddress: "",
-    projectDir: "",
+    projectPath: "",
+    id: "",
   });
   const [isEditMode, setEditMode] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    fetchProjects();
+    fetchPorjects();
   }, [user.id]);
 
-  const fetchProjects = () => {
-    getAssignedUserProjects(user.id)
+  useEffect(() => {
+    userConfigs();
+  }, [user.id]);
+  const userConfigs = () => {
+    getConfigsByUseId(user.id)
+      .then((response) => setConfigs(response.data))
+      .catch((err) => console.log(err));
+  };
+
+  const fetchPorjects = () => {
+    getAssignProjectsByRegId(user.id)
       .then((response) => setProjects(response.data))
       .catch((err) => console.log(err));
   };
 
+  const handleProjectConfig = (project) => {
+    navigate("/userDashboard/configpage", { state: { project } });
+  };
   const openModal = (project = null) => {
     if (project) {
       setModalData(project);
       setEditMode(true);
     } else {
-      setModalData({ projectName: "", ipAddress: "", projectDir: "" });
+      setModalData({ projectName: "", ipAddress: "", projectPath: "" });
       setEditMode(false);
     }
     setShowModal(true);
@@ -46,39 +61,34 @@ const Config = () => {
 
   const closeModal = () => {
     setShowModal(false);
-    setModalData({ projectName: "", ipAddress: "", projectDir: "" });
+    setModalData({ projectName: "", ipAddress: "", projectPath: "" });
   };
 
   const clearModal = () => {
-    setModalData({ projectName: "", ipAddress: "", projectDir: "" });
+    setModalData({ projectName: "", ipAddress: "", projectPath: "" });
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isEditMode) {
-      // Update Project
-      const data={
-        id:modalData.id,
-        projectName:modalData.projectName,
-        ipAddress:modalData.ipAddress,
-        projectDir:modalData.projectDir
-      }
-      updateProject( data)
-        .then(() => {
-          fetchProjects();
-          closeModal();
-          swal("Success", "Project updated successfully!", "success");
-        })
-        .catch((err) => console.log(err));
-    } else {
-      // Add Project
-      addProject(modalData)
-        .then(() => {
-          fetchProjects();
-          closeModal();
-          swal("Success", "Project added successfully!", "success");
-        })
-        .catch((err) => console.log(err));
-    }
+
+    // Prepare the data for submission
+    const data = {
+      userId: user.id,
+      projectId: modalData.id, // Make sure projectId is set correctly
+      projectName: modalData.projectName,
+      ipAddress: modalData.ipAddress,
+      projectPath: modalData.projectPath,
+    };
+
+    console.log(modalData); // Log the modalData to verify
+
+    // Call the updateConfig function with the data
+    updateConfig(data)
+      .then(() => {
+        userConfigs();
+        closeModal();
+        swal.fire("Success", "Project Config added successfully!", "success");
+      })
+      .catch((err) => console.log(err));
   };
 
   const handleDelete = (projectId) => {
@@ -92,7 +102,7 @@ const Config = () => {
       if (willDelete) {
         deleteProjectById(projectId)
           .then(() => {
-            fetchProjects();
+            userConfigs();
             swal(
               "Deleted!",
               "Project has been deleted successfully!",
@@ -107,7 +117,6 @@ const Config = () => {
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center my-3">
-        <h4 style={{color:"#4f0e83"}}>Project Configurations</h4>
         <Button
           variant="contained"
           color="primary"
@@ -122,6 +131,8 @@ const Config = () => {
         >
           Add Project
         </Button>
+        <h4 style={{ color: "#4f0e83" }}>Project Configurations</h4>
+        <h1></h1>
       </div>
       <div
         style={{
@@ -150,15 +161,15 @@ const Config = () => {
             </tr>
           </thead>
           <tbody>
-            {projects.map((project, index) => (
+            {configs.map((project, index) => (
               <tr key={index}>
                 <td>{project.projectName}</td>
                 <td>{project.ipAddress}</td>
-                <td>{project.projectDir}</td>
+                <td>{project.projectPath}</td>
                 <td>
                   <EditIcon
                     style={{ cursor: "pointer", color: "#4f0e83" }}
-                    onClick={() => openModal(project)}
+                    onClick={() => handleProjectConfig(project)}
                   />
                   &nbsp;
                   <DeleteIcon
@@ -219,16 +230,31 @@ const Config = () => {
             {/* Modal Form */}
             <form onSubmit={handleSubmit} className="mt-4">
               <div className="form-group">
-                <TextField
+                <Select
                   fullWidth
                   margin="dense"
-                  label="Project Name"
                   value={modalData.projectName}
                   onChange={(e) =>
-                    setModalData({ ...modalData, projectName: e.target.value })
+                    setModalData({
+                      ...modalData,
+                      projectName: e.target.value,
+                      id: projects.find((p) => p.projectName === e.target.value)
+                        ?.id, // Save project ID
+                    })
                   }
-                />
+                  displayEmpty
+                >
+                  <MenuItem value="" disabled>
+                    Select a Project
+                  </MenuItem>
+                  {projects.map((project) => (
+                    <MenuItem key={project.id} value={project.projectName}>
+                      {project.projectName}
+                    </MenuItem>
+                  ))}
+                </Select>
               </div>
+
               <div className="form-group">
                 <TextField
                   fullWidth
@@ -245,9 +271,9 @@ const Config = () => {
                   fullWidth
                   margin="dense"
                   label="Project Path"
-                  value={modalData.projectDir}
+                  value={modalData.projectPath}
                   onChange={(e) =>
-                    setModalData({ ...modalData, projectDir: e.target.value })
+                    setModalData({ ...modalData, projectPath: e.target.value })
                   }
                 />
               </div>

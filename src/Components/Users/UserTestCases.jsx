@@ -162,38 +162,8 @@ const UserTestcases = () => {
           }}
         >
           <div className="d-flex justify-content-between align-items-center">
-            <select
-              className="form-control"
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              style={{
-                width: "150px",
-                appearance: "auto",
-                marginRight: "10px",
-                fontSize: "14px",
-              }}
-            >
-              {[5, 10, 15, 20].map((size) => (
-                <option key={size} value={size}>
-                  {size} per page
-                </option>
-              ))}
-            </select>
-
-            <div
-              className="flex-grow-1 mx-3"
-              style={{ position: "relative", borderRadius: "20px" }}
-            >
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchInput}
-                placeholder="Search by Test Case Name, Author......"
-                className="form-control w-50"
-              />
-            </div>
-
-            <button
+            <div>
+          <button
               onClick={() => setShowModal(true)}
               style={{
                 color: "white",
@@ -225,6 +195,22 @@ const UserTestcases = () => {
             >
               View Test Runs
             </button>
+            </div>
+           
+              
+             
+            
+              <input
+                type="text"
+                value={searchQuery}
+                style={{width:"40%"}}
+                onChange={handleSearchInput}
+                placeholder="Search by Test Case Name, Author......"
+                className="form-control "
+              />
+           
+
+            
           </div>
         </div>
 

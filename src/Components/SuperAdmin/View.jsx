@@ -9,7 +9,7 @@ import {
 } from "../API/Api";
 import moment from "moment";
 import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
+import Tab from "@mui/material/Tab";  
 import Box from "@mui/material/Box";
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -184,7 +184,7 @@ const View = () => {
                       </thead>
                       <tbody>
                         {admins.length > 0 ? (
-                          admins.map((admin) => (
+                          admins.filter(admin=>admin.empRole.includes("Admin")).map((admin) => (
                             <tr key={admin.id}>
                               <td>{admin.id}</td>
                               <td>{admin.empName}</td>

@@ -1,23 +1,24 @@
-import { Modal } from "@mui/material";
+import { Modal, Tooltip } from "@mui/material";
 
 import {
   addProject,
   assignProjects,
-  getAllProject,
+  
   getBranchById,
   getProjectsByBranchId,
   getProjectUsers,
   unAssignUsers,
   unMapRegisters,
+  updateProject,
 } from "../API/Api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Swal from "sweetalert2";
-
+import EditIcon from "@mui/icons-material/Edit";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
-import GroupIcon from "@mui/icons-material/Group";
+
 import { errorNotify, notify } from "../../NotificationUtil";
 const Projects = () => {
   const [projectModal, setProjectModal] = useState(false);
@@ -31,6 +32,14 @@ const Projects = () => {
     projectDir: "",
     branchId: branchId,
   });
+  const [isEditMode, setIsEditMode] = useState(false);
+  const handleClearProject = () => {
+    setProjectData({
+      projectName: "",
+      projectDir: ""
+    });
+  };
+  
   const [users, setUsers] = useState([]);
   const [projectId, setProjectId] = useState("");
   const [projectUsers, setProjectUsers] = useState([]);
@@ -111,34 +120,81 @@ const Projects = () => {
 
   const handleProject = () => {
     setProjectModal(true);
+    setIsEditMode(false); // Reset to Add mode
+    setProjectData({ projectName: "", branchId: "" });
+  };
+
+  const handleEditClick = (projectId = null) => {
+    if (projectId) {
+      const projectToEdit = filteredProjects.find((p) => p.id === projectId);
+      if (projectToEdit) {
+        setProjectData(projectToEdit); // Prepopulate form with selected project
+        setIsEditMode(true); // Enable edit mode
+        setProjectModal(true); // Open the modal
+      }
+    }
   };
 
   const handleProjectSubmit = (e) => {
     e.preventDefault();
-    addProject(projectData)
-      .then((response) => {
-        // Show success alert when request is successful
-        Swal.fire({
-          icon: "success",
-          title: "Project Saved",
-          text: "Your project has been Created successfully!",
+  
+    if (isEditMode) {
+      // Update existing project
+ const    updateData={
+  id:projectData.id,
+      projectName:projectData.projectName,
+    projectDir: projectData.projectDir,
+    branchId: branchId,
+     }
+      updateProject(updateData)
+        .then((response) => {
+          Swal.fire({
+            icon: "success",
+            title: "Project Updated",
+            text: "Your project has been updated successfully!",
+          });
+          console.log(response);
+          window.location.reload();
+        })
+        .catch((err) => {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Something went wrong! Could not update the project.",
+          });
+          console.log(err);
         });
-        console.log(response);
-        window.location.reload();
-      })
-      .catch((err) => {
-        // Show error alert when request fails
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Something went wrong! Could not create the project.",
-        });
-        console.log(err);
-      });
-    setProjectModal(false);
-    setProjectData({ projectName: "", branchId });
-  };
+    } else {
+      // Add new project
 
+      const    addData={
+        projectName:projectData.projectName,
+      projectDir: projectData.projectDir,
+      branchId: branchId,
+       }
+      addProject(addData)
+        .then((response) => {
+          Swal.fire({
+            icon: "success",
+            title: "Project Saved",
+            text: "Your project has been created successfully!",
+          });
+          console.log(response);
+          window.location.reload();
+        })
+        .catch((err) => {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Something went wrong! Could not create the project.",
+          });
+          console.log(err);
+        });
+    }
+  
+    setProjectModal(false);
+  };
+  
   const handleProjectChange = (e) => {
     const { name, value } = e.target;
     setProjectData((prevData) => ({
@@ -172,6 +228,10 @@ const Projects = () => {
   const handleCancelRemove = () => {
     setProjectId("");
     setShowRemove(false);
+  };
+  const handleCancelProject = () => {
+    setProjectId("");
+    setProjectModal(false);
   };
   const handleRemoveUser = (id) => {
     setUserIds(userIds.filter((userId) => userId !== id)); // remove user ID from the array
@@ -247,15 +307,25 @@ const Projects = () => {
                 className="card-footer d-flex justify-content-center align-items-center"
                 style={{ gap: "20px" }}
               >
+                <Tooltip title="Add User" arrow placement="bottom" >
                 <PersonAddIcon
                   className="w-40 "
                   style={{ color: "white", fontSize: "30" }}
                   onClick={() => handleShow(project.id)}
                 />
+                </Tooltip>
+                <Tooltip title="Remove User" arrow placement="bottom" >
                 <PersonRemoveIcon
                   style={{ color: "white", fontSize: "30" }}
                   onClick={() => handleShowRemove(project.id)}
                 />
+                </Tooltip>
+                <Tooltip title="Edit" arrow placement="bottom" >
+                <EditIcon
+                  style={{ color: "white", fontSize: "28" }}
+                  onClick={() => handleEditClick(project.id)}
+                />
+                </Tooltip>
                
               </div>
             </div>
@@ -282,6 +352,7 @@ const Projects = () => {
               borderRadius: "20px",
             }}
           >
+            
             <h4 className="modal-title text-center">Assign User</h4>
             <form onSubmit={handleSubmit} className="mt-4">
               <div className="form-group">
@@ -481,7 +552,23 @@ const Projects = () => {
               borderRadius: "20px",
             }}
           >
-            <h4 className="modal-title text-center">Add Project</h4>
+             {/* Close Button */}
+      <button
+        type="button"
+        onClick={handleCancelProject}
+        style={{
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          background: "none",
+          border: "none",
+          fontSize: "25px",
+          cursor: "pointer",
+        }}
+      >
+        &#10005; {/* X Icon */}
+      </button>
+    <h4>  {isEditMode ? "Update Project" : "Add Project"}</h4>
             <form onSubmit={handleProjectSubmit} className="mt-4">
               <div className="form-group">
                 <input
@@ -507,19 +594,18 @@ const Projects = () => {
               </div>
               <div className="text-center">
                 <button
-                  type="submit"
-                  className="btn btn-primary mt-3 "
+                  className="btn btn-secondary mt-3 "
                   style={{
                     borderRadius: "20px",
-                    background: "#4f0e83",
+                   
                     marginRight: "20px",
                     width: "150px",
                   }}
-                  onClick={() => {
-                    setProjectModal(false);
-                  }}
+                  onClick={
+                    handleClearProject
+                  }
                 >
-                  Cancel
+                  Clear
                 </button>
                 <button
                   type="submit"
@@ -530,7 +616,7 @@ const Projects = () => {
                     width: "150px",
                   }}
                 >
-                  Add Project
+                   {isEditMode ? "Update Project" : "Add Project"}
                 </button>
               </div>
             </form>

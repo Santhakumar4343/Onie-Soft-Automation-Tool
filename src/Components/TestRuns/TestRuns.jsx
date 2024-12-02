@@ -1,4 +1,4 @@
-import { Modal } from "@mui/material";
+import { Modal, Tooltip } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -125,8 +125,12 @@ const TestRuns = () => {
           <td>{moment(testRun.createdAt).format("DD MMM YYYY, HH:mm:ss")}</td>
           <td>{moment(testRun.updatedAt).format("DD MMM YYYY, HH:mm:ss")}</td>
           <div>
+            <Tooltip title="To Be Added" arrow placement="bottom">
            <td><EditIcon  className="me-2" style={{ cursor: "pointer", color: "#4f0e83" }} onClick={() => handleTestRunClick(testRun)} /></td>
+           </Tooltip>
+           <Tooltip title="Added" arrow placement="bottom">
            <td><RemoveRedEyeIcon  style={{ cursor: "pointer", color: "#4f0e83" }} onClick={() => handleTestRunView(testRun)}/></td>
+           </Tooltip>
           </div>
         </tr>
       ))}

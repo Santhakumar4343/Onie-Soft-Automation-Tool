@@ -2,7 +2,7 @@ import "./AdminDashboard.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Sidebar from "./Sidebar";
 import { useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import {  Route, Routes, useNavigate } from "react-router-dom";
 import Testcases from "../TestCases/Testcases";
 import TestRuns from "../TestRuns/TestRuns";
 import TestRunDetails from "../TestRuns/TestRunDetails";
@@ -13,14 +13,30 @@ import TestRunView from "../TestRuns/TestRunView";
 import AdminView from "./AdminView";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AdminProfile from "./AdminProfile";
+import Swal from "sweetalert2";
 
 const AdminDashboard = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-
+  const navigate=useNavigate();
   // Handlers for dropdown toggle
   const toggleDropdown = () => setDropdownOpen(true);
   const closeDropdown = () => setDropdownOpen(false);
-
+  const handleLogout = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will be logged out.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, logout'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.history.replaceState(null, '', '/');
+        navigate('/');
+      }
+    });
+  }
   return (
     <div className="d-flex">
       {/* Sidebar */}
@@ -48,7 +64,7 @@ const AdminDashboard = () => {
                 <a className="dropdown-item" href="/dashboard/profile">
                   Profile
                 </a>
-                <a className="dropdown-item" href="/logout">
+                <a className="dropdown-item"  onClick={handleLogout}>
                   Logout
                 </a>
               </div>

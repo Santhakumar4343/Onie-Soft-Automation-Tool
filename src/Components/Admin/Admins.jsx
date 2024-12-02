@@ -17,10 +17,10 @@ import {
 } from "../API/Api";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { Tooltip } from "@mui/material";
-
+import { Tab, Tooltip } from "@mui/material";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 const Admins = () => {
   const [show, setShow] = useState(false);
   const [admins, setAdmins] = useState([]);
@@ -31,6 +31,7 @@ const Admins = () => {
   const location = useLocation();
   const branchId = location.state?.branch?.id || {};
   const cmpName = location.state?.company?.cmpName || {};
+  const navigate=useNavigate()
   console.log(branchId);
 
   const [formData, setFormData] = useState({
@@ -197,6 +198,10 @@ const Admins = () => {
   const onlyAdmins = admins.filter(
     (admin) => admin.empRole.toLowerCase() === "admin"
   );
+
+  const handleBackwardClick=()=>{
+    navigate("/adminDashboard/departments")
+ }
   return (
     <div className="container">
       <h4 className="mb-3" style={{ color: "#4f0890", textAlign: "center" }}>
@@ -216,7 +221,7 @@ const Admins = () => {
         >
           Add Admin
         </Button>
-        <InputGroup className="w-50">
+        <InputGroup style={{width:"40%"}}>
           <FormControl
             placeholder="Search admins"
             value={searchTerm}
@@ -279,8 +284,17 @@ const Admins = () => {
               </tr>
             ))}
         </tbody>
+      
       </Table>
-
+      <div>
+      <Tooltip title="Back" arrow placement="right" >
+          <Tab icon={<ArrowBackIcon sx={{ fontSize: "2rem" ,color:"#4f0e83"}}  onClick={handleBackwardClick}/>}  
+          ></Tab>
+          
+          </Tooltip> 
+          
+    
+        </div>
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>

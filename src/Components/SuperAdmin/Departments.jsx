@@ -1,4 +1,4 @@
-import { Modal } from "@mui/material";
+import { Modal, Tab, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from "sweetalert2";
@@ -6,6 +6,8 @@ import { createBranch, getAllBranchesByCompany, updateBranch } from "../API/Api"
 import { useLocation, useNavigate } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 const Deparments = () => {
   const [projectModal, setProjectModal] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -25,7 +27,9 @@ const Deparments = () => {
   const handleBranchClick = (branch) => {
     navigate("/adminDashboard/admins", { state: { branch,company} });
   };
-
+ const handleBackwardClick=()=>{
+    navigate("/adminDashboard/companies")
+ }
   const handleProject = () => {
     setProjectModal(true);
     setIsEditing(false); // Reset to Add mode
@@ -154,7 +158,7 @@ const Deparments = () => {
   return (
     <div className="container-fluid">
       <h4 className="text-center" style={{ color: "#4f0e83" }}>
-        {location.state?.company?.cmpName} Branches
+        {location.state?.company?.cmpName} - Branches
       </h4>
       <div className="d-flex justify-content-between mb-4">
         <button
@@ -195,25 +199,40 @@ const Deparments = () => {
                 <td>{branch.branchId}</td>
                 <td>{branch.branchName}</td>
                 <td>
+                <Tooltip title="View" arrow placement="left" >
                   <VisibilityIcon
                     style={{ cursor: "pointer",color: "#4f0e83"  }}
                     onClick={() => handleBranchClick(branch)}
                   ></VisibilityIcon>
+                  </Tooltip>
                 </td>
                 <td>
+                <Tooltip title="Edit" arrow placement="left" >
                   <EditIcon
                     style={{ cursor: "pointer", marginRight: "10px",color: "#4f0e83"  }}
                     onClick={() => handleEditClick(branch)}
                   />
+                   </Tooltip>
+                   <Tooltip title="Delete" arrow placement="right" >
                   <DeleteIcon
                     style={{ cursor: "pointer", color: "red" }}
                     // onClick={() => handleDeleteClick(branch.id)}
                   />
+                   </Tooltip>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        <div>
+        <Tooltip title="Back" arrow placement="right" >
+          <Tab icon={<ArrowBackIcon sx={{ fontSize: "2rem" ,color:"#4f0e83"}}  onClick={handleBackwardClick}/>}  
+          ></Tab>
+           </Tooltip>
+              
+          
+    
+        </div>
       </div>
 
       <Modal open={projectModal} onClose={() => setProjectModal(false)}>
@@ -259,7 +278,7 @@ const Deparments = () => {
                   placeholder="Branch Id"
                   onChange={handleProjectChange}
                   value={branchData.branchId}
-                  disabled={isEditing}
+                
                   required
                 />
               </div>
