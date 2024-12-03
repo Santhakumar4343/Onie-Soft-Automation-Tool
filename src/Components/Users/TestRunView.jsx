@@ -11,50 +11,7 @@ function UserTestRunView() {
   const [polling, setPolling] = useState(false);
   const pollingInterval = 5000; // Poll every 5 seconds
 
-  // // Fetch initial test cases
-  // useEffect(() => {
-  //   if (testRun.id) {
-  //     getTestCasesByTestRunId(testRun.id)
-  //       .then((response) => setTestCases(response.data))
-  //       .catch((err) => console.error(err));
-  //   }
-  // }, [testRun.id]);
-
-  // // Polling for live status updates
-  // useEffect(() => {
-  //   if (polling) {
-  //     const interval = setInterval(() => {
-  //       testCases.forEach((testCase) => {
-  //         testRunResult(testCase.id)
-  //           .then((response) => {
-  //             const updatedTestCase = {
-  //               ...testCase,
-  //               status: response.data?.status || "In Progress",
-  //             };
-
-  //             setTestCases((prevTestCases) =>
-  //               prevTestCases.map((prevTestCase) =>
-  //                 prevTestCase.id === updatedTestCase.id
-  //                   ? updatedTestCase
-  //                   : prevTestCase
-  //               )
-  //             );
-  //           })
-  //           .catch(() => {
-  //             setTestCases((prevTestCases) =>
-  //               prevTestCases.map((prevTestCase) =>
-  //                 prevTestCase.id === testCase.id
-  //                   ? { ...prevTestCase, status: "In Progress" }
-  //                   : prevTestCase
-  //               )
-  //             );
-  //           });
-  //       });
-  //     }, 5000); // Poll every 5 seconds
   
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [polling,testCases]);
 
    // Fetch test cases from API
    const fetchTestCases = async () => {
@@ -194,15 +151,6 @@ function UserTestRunView() {
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
                 <td>
-                  {/*
-                  {testCase.status === "In Progress" ? (
-                    <span style={{ color: "green" }}>
-                      <i className="fa fa-spinner fa-spin"></i> In Progress
-                    </span>
-                  ) : (
-                    testCase.status
-                  )}
-                  */}
                   <span
                     style={{
                       color: testCaseColors[testCase.status],
