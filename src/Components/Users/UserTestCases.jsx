@@ -96,12 +96,20 @@ const UserTestcases = () => {
       // Refresh and close modal
       formik.resetForm();
       setShowModal(false);
-      setEditTestCase(null);
+      setEditTestCase(false);
     },
   });
 
   const handleClose = () => {
     setShowModal(false);
+    formik.resetForm();
+  };
+  const handleAddTestCase=()=>{
+    setEditTestCase(null)
+    setShowModal(true);
+  }
+  const handleClear = () => {
+   
     formik.resetForm();
   };
   const handleEdit = (testCase) => {
@@ -135,7 +143,9 @@ const UserTestcases = () => {
   const filteredTestCases = testCases.filter(
     (testcase) =>
       testcase.testCaseName.toLowerCase().includes(searchQuery) ||
-      testcase.author.toLowerCase().includes(searchQuery)
+      testcase.author.toLowerCase().includes(searchQuery)||
+      testcase.feature.toLowerCase().includes(searchQuery)||
+      testcase.automationId.toLowerCase().includes(searchQuery)
   );
   const handleTestRun = () => {
     navigate("/userDashboard/testruns", { state: { project } });
@@ -164,7 +174,7 @@ const UserTestcases = () => {
           <div className="d-flex justify-content-between align-items-center">
             <div>
           <button
-              onClick={() => setShowModal(true)}
+              onClick={handleAddTestCase}
               style={{
                 color: "white",
                 backgroundColor: "#4f0e83",
@@ -383,19 +393,34 @@ const UserTestcases = () => {
                   </div>
                 )}
               </div>
-
+   <div className="d-flex align-items-center justify-content-center">
+              <Button
+              className="btn btn-secondary"
+                onClick={handleClear}
+                style={{
+                  
+                 
+                  borderRadius: "20px",
+                  width: "20%",
+                  
+                }}
+              >
+                Clear
+              </Button>
               <Button
                 type="submit"
                 style={{
                   color: "white",
                   backgroundColor: "#4f0e83",
                   borderRadius: "20px",
-                  width: "50%",
-                  marginLeft: "120px",
+                  width: "20%",
+                  marginLeft:"15px"
+                  
                 }}
               >
                 Submit
               </Button>
+              </div>
             </form>
           </Modal.Body>
         </Modal>

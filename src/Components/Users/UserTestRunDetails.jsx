@@ -115,19 +115,8 @@ function UserTestRunDetails() {
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
         {testRun.testRunName}-Test Run{" "}
       </h4>
-      <div className="TestRun">
-        {/* <button
-          onClick={handleTestRun}
-          style={{
-            borderRadius: "20px",
-            backgroundColor: "#4f0e83",
-            color: "white",
-            width: "14%",
-            maxHeight: "50px",
-          }}
-        >
-          Execute Test Run
-        </button> */}
+      <div className="">
+        
         <button
           onClick={handleAddToTestRun}
           disabled={selectedCases.length === 0}
@@ -144,7 +133,7 @@ function UserTestRunDetails() {
       </div>
       <div
         style={{
-          maxHeight: "620px",
+          maxHeight: "550px",
           overflowY: "auto",
         }}
       >

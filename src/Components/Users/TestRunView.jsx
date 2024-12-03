@@ -87,10 +87,10 @@ function UserTestRunView() {
 
   return (
     <div className="container">
-      <h2 style={{ color: "#4f0e83", textAlign: "center" }}>
+      <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
         {testRun.testRunName} - Test Run
-      </h2>
-      <div className="TestRun">
+      </h4>
+      <div className="">
         <button
           onClick={handleTestRun}
           style={{
@@ -104,7 +104,7 @@ function UserTestRunView() {
           Execute Test Run
         </button>
       </div>
-      <div style={{ maxHeight: "620px", overflowY: "auto" }}>
+      <div style={{ maxHeight: "550px", overflowY: "auto" }}>
         <style>
           {`
           div::-webkit-scrollbar {
