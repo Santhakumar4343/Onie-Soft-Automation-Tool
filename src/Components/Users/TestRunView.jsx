@@ -104,7 +104,7 @@ function UserTestRunView() {
           Execute Test Run
         </button>
       </div>
-      <div style={{ maxHeight: "550px", overflowY: "auto" }}>
+      <div style={{ maxHeight: "530px", overflowY: "auto" }}>
         <style>
           {`
           div::-webkit-scrollbar {

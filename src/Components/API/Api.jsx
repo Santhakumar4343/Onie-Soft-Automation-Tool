@@ -117,6 +117,11 @@ export const getAssignedUserProjects = (usedId) => {
   return Api.get(`/projectusers/v1/getassignprojects/${usedId}`, headers);
 };
 
+export const getProjectsByProjectId= (projectId) => {
+  const headers = getApiHeaders();
+  return Api.get(`/projects/v1/getProject/${projectId}`, headers);
+};
+
 export const getConfigsByUseId = (usedId) => {
   const headers = getApiHeaders();
   return Api.get(`/userconfig/v1/getconfigsbyuid/${usedId}`, headers);

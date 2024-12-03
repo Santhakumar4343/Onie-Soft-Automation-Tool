@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   TextField,
   Checkbox,
@@ -10,40 +10,58 @@ import {
   Typography,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { updateConfig, updateProject } from "../API/Api";
+import {
+  getProjectsByProjectId,
+  updateConfig,
+  updateProject,
+} from "../API/Api";
 import Swal from "sweetalert2";
 
 const Configurations = () => {
+  const location = useLocation();
+  const project = location.state?.project;
+  const navigate = useNavigate();
+
+  
+  useEffect(() => {
+    getProjectsByProjectId(project.projectId)
+      .then((response) => {
+        const data=response.data;
+      })
+      .catch((err) => console.log(err));
+  }, [project.projectId]);
+ 
   const [basicAuth, setBasicAuth] = useState(false);
+
   const [authentication, setAuthentication] = useState({
     basicAuthUser: "",
     basicAuthPassword: "",
   });
 
-  const [url,setUrl]=useState({
-    url:"",
-    apiBaseURL:""
-})
+  const [url, setUrl] = useState({
+    url: "",
+    apiBaseURL: "",
+  });
 
-const [wait,setWait]=useState({
-    shortWait:15,
-    customWait:30,
-    retryCount:0
-})
+  const [wait, setWait] = useState({
+    shortWait: 15,
+    customWait: 30,
+    retryCount: 0,
+  });
 
-const [count,setCount]=useState({
-    notifyBlockerCount:0,
-    notifyCriticalCount:0,
-    notifyMajorCount:0
-})
-const [jiraConfig,setJiraConfig]=useState({
-    jiraUserName:"",
-    jiraPassword:"",
-    jiraURL:"",
-    jiraProjectKey:""
-})
-const [emailReportTo,setEmailReportTo]=useState("")
- const [elasticSearchURL,setElasticSearchURL]=useState("")
+  const [count, setCount] = useState({
+    notifyBlockerCount: 0,
+    notifyCriticalCount: 0,
+    notifyMajorCount: 0,
+  });
+  const [jiraConfig, setJiraConfig] = useState({
+    jiraUserName: "",
+    jiraPassword: "",
+    jiraURL: "",
+    jiraProjectKey: "",
+  });
+  const [emailReportTo, setEmailReportTo] = useState("");
+  const [elasticSearchURL, setElasticSearchURL] = useState("");
   const [enableLiveReporting, setEnableLiveReporting] = useState(false);
   const [notifyTeams, setNotifyTeams] = useState(false);
   const [sendEmailReport, setSendEmailReport] = useState(false);
@@ -55,26 +73,69 @@ const [emailReportTo,setEmailReportTo]=useState("")
   const [headLess, setHeadLess] = useState(false);
   const [traceView, setTraceView] = useState(false);
   const [enableRecording, setEnableRecording] = useState(false);
-  const location = useLocation();
-  const project = location.state?.project;
-  const navigate = useNavigate();
+
   const [modalData, setModalData] = useState({
     projectName: project.projectName,
     projectPath: project.projectPath,
     ipAddress: project.ipAddress,
   });
   const user = JSON.parse(sessionStorage.getItem("user"));
+
+  useEffect(() => {
+    getProjectsByProjectId(project.projectId)
+      .then((response) => {
+        const data=response.data;
+        setBasicAuth(data.basicAuth)
+        setUrl({ url: data.url, apiBaseURL: data.apiBaseURL });
+        setAuthentication({
+            basicAuthUser: data.basicAuthUser,
+            basicAuthPassword: data.basicAuthPassword
+          });
+          setWait({
+            shortWait: data.shortWait,
+            customWait: data.customWait,
+            retryCount: data.retryCount,
+          })
+          setBrowser(data.browser)
+          setTestType(data.testType)
+          setHeadLess(data.headLess);
+          setTraceView(data.traceView);
+          setEnableRecording(data.enableRecording)
+          setEnableLiveReporting(data.enableLiveReporting)
+          setOverrideReport(data.overrideReport);
+          setNotifyTeams(data.notifyTeams);
+          setCount({
+            notifyBlockerCount: data.notifyBlockerCount,
+            notifyCriticalCount: data.notifyCriticalCount,
+            notifyMajorCount: data.notifyMajorCount,
+          })
+          setSendEmailReport(data.sendEmailReport)
+          setEmailReportTo(data.emailReportTo)
+          setElasticSearchURL(data.elasticSearchURL)
+          setCreateJiraIssues(data.createJiraIssues)
+         setJiraConfig({
+            jiraUserName: data.jiraUserName,
+            jiraPassword: data.jiraPassword,
+            jiraURL: data.jiraURL,
+            jiraProjectKey: data.jiraProjectKey,
+          })
+          
+      })
+      .catch((err) => console.log(err));
+  }, [project.projectId]);
+
   const handleNestedChange = (setter) => (key) => (e) => {
     setter((prev) => ({
       ...prev,
       [key]: e.target.value,
     }));
   };
-  console.log(project)
+
   const handleUpdate = () => {
     const data = {
+    id:project.id,
       userId: user.id,
-      projectId: project.id,
+      projectId: project.projectId,
       projectName: modalData.projectName,
       ipAddress: modalData.ipAddress,
       projectPath: modalData.projectPath,
@@ -99,9 +160,8 @@ const [emailReportTo,setEmailReportTo]=useState("")
   };
 
   const handleSubmit = () => {
-
     const payload = {
-        id:project.projectId,
+      id: project.projectId,
       projectName: modalData.projectName,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -135,24 +195,23 @@ const [emailReportTo,setEmailReportTo]=useState("")
       jiraProjectKey: jiraConfig.jiraProjectKey,
     };
 
-   
     updateProject(payload).then((response) => {
-        if (response.status === 200 || response.status === 201) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Update Successful',
-            text: 'Configuration updated successfully!',
-
-          }) 
-          navigate("/userDashboard/config"); }else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Update Failed',
-            text: 'Failed to update configuration. Please try again.',
-          });
-        }
-  })}
-  ;
+      if (response.status === 200 || response.status === 201) {
+        Swal.fire({
+          icon: "success",
+          title: "Update Successful",
+          text: "Configuration updated successfully!",
+        });
+        navigate("/userDashboard/config");
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: "Failed to update configuration. Please try again.",
+        });
+      }
+    });
+  };
   return (
     <Grid container spacing={1} style={{ padding: "20px" }}>
       <Grid item xs={12}>
@@ -197,7 +256,15 @@ const [emailReportTo,setEmailReportTo]=useState("")
           xs={12}
           style={{ display: "flex", justifyContent: "center" }}
         >
-          <Button variant="contained" style={{backgroundColor:"#4f0e83",color:"white",borderRadius:"20px"}}  onClick={handleUpdate}>
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: "#4f0e83",
+              color: "white",
+              borderRadius: "20px",
+            }}
+            onClick={handleUpdate}
+          >
             Update
           </Button>
         </Grid>
@@ -208,15 +275,20 @@ const [emailReportTo,setEmailReportTo]=useState("")
           <Typography variant="h6">Project Configurations</Typography>
         </Grid>
         <Grid item xs={6}>
-          <TextField label="www.qiker.com" fullWidth margin="normal" variant="outlined" 
-          value={url.url}
-          name="url"
-          onChange={handleNestedChange(setUrl)("url")}/>
+          <TextField
+            label="www.qiker.com"
+            fullWidth
+            margin="normal"
+            variant="outlined"
+            value={url.url}
+            name="url"
+            onChange={handleNestedChange(setUrl)("url")}
+          />
         </Grid>
         <Grid item xs={6}>
           <TextField
-          name="apiBaseURL"
-          value={url.apiBaseURL}
+            name="apiBaseURL"
+            value={url.apiBaseURL}
             label="www.qiker/api"
             fullWidth
             margin="normal"
@@ -251,7 +323,9 @@ const [emailReportTo,setEmailReportTo]=useState("")
                 name="basicAuthUser"
                 margin="normal"
                 variant="outlined"
-                onChange={handleNestedChange(setAuthentication)("basicAuthUser")}
+                onChange={handleNestedChange(setAuthentication)(
+                  "basicAuthUser"
+                )}
                 value={authentication.basicAuthUser}
               />
             </Grid>
@@ -264,7 +338,9 @@ const [emailReportTo,setEmailReportTo]=useState("")
                 margin="normal"
                 variant="outlined"
                 value={authentication.basicAuthPassword}
-                onChange={handleNestedChange(setAuthentication)("basicAuthPassword")}
+                onChange={handleNestedChange(setAuthentication)(
+                  "basicAuthPassword"
+                )}
               />
             </Grid>
           </>
@@ -291,7 +367,7 @@ const [emailReportTo,setEmailReportTo]=useState("")
             <MenuItem value="edge">Edge</MenuItem>
           </Select>
         </Grid>
-         
+
         {/* Test Type Select */}
         <Grid item xs={6}>
           <Select
@@ -308,45 +384,45 @@ const [emailReportTo,setEmailReportTo]=useState("")
           </Select>
         </Grid>
         <Grid item xs={4}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={headLess}
-              onChange={(e) => setHeadLess(e.target.checked)}
-              color="primary"
-            />
-          }
-          label="Headless Mode"
-        />
-      </Grid>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={headLess}
+                onChange={(e) => setHeadLess(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Headless Mode"
+          />
+        </Grid>
 
-      {/* Trace View Option */}
-      <Grid item xs={4}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={traceView}
-              onChange={(e) => setTraceView(e.target.checked)}
-              color="primary"
-            />
-          }
-          label="Trace View"
-        />
-      </Grid>
+        {/* Trace View Option */}
+        <Grid item xs={4}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={traceView}
+                onChange={(e) => setTraceView(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Trace View"
+          />
+        </Grid>
 
-      {/* Enable Recording Option */}
-      <Grid item xs={4}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={enableRecording}
-              onChange={(e) => setEnableRecording(e.target.checked)}
-              color="primary"
-            />
-          }
-          label="Enable Recording"
-        />
-      </Grid>
+        {/* Enable Recording Option */}
+        <Grid item xs={4}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={enableRecording}
+                onChange={(e) => setEnableRecording(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Enable Recording"
+          />
+        </Grid>
         {/* Short Wait */}
         <Grid item xs={4}>
           <TextField
@@ -464,7 +540,7 @@ const [emailReportTo,setEmailReportTo]=useState("")
             </Grid>
             <Grid item xs={4}>
               <TextField
-              value={count.notifyMajorCount}
+                value={count.notifyMajorCount}
                 label="Notify Major Count"
                 type="number"
                 fullWidth
@@ -498,7 +574,7 @@ const [emailReportTo,setEmailReportTo]=useState("")
             variant="outlined"
             multiline
             rows={4}
-            onChange={(e)=>setEmailReportTo(e.target.value)}
+            onChange={(e) => setEmailReportTo(e.target.value)}
           />
         )}
       </Grid>
@@ -550,7 +626,7 @@ const [emailReportTo,setEmailReportTo]=useState("")
             </Grid>
             <Grid item xs={6}>
               <TextField
-              value={jiraConfig.jiraProjectKey}
+                value={jiraConfig.jiraProjectKey}
                 label="JIRA Project Key"
                 fullWidth
                 margin="normal"
@@ -570,7 +646,16 @@ const [emailReportTo,setEmailReportTo]=useState("")
         className="mt-3"
       >
         <Grid item xs={3}>
-          <Button variant="contained"  style={{backgroundColor:"#4f0e83",color:"white",borderRadius:"20px"}} fullWidth onClick={handleSubmit}>
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: "#4f0e83",
+              color: "white",
+              borderRadius: "20px",
+            }}
+            fullWidth
+            onClick={handleSubmit}
+          >
             Save Configurations
           </Button>
         </Grid>

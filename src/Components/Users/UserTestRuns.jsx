@@ -128,7 +128,7 @@ const UserTestRuns = () => {
         <div
           className="table-responsive"
           style={{
-            maxHeight: "550px",
+            maxHeight: "520px",
             overflowY: "auto",
           }}
         >
@@ -154,7 +154,7 @@ const UserTestRuns = () => {
       }
     `}
           </style>
-          <table className="table table-bordered table-hover">
+          <table className="table  table-hover">
             <thead
               className="thead-dark"
               style={{

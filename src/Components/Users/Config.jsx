@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { Button, MenuItem, Modal, Select, TextField } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import { Button, MenuItem, Modal, Select, TextField, Tooltip } from "@mui/material";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteIcon from "@mui/icons-material/Delete";
 import swal from "sweetalert2";
 import {
@@ -116,8 +116,8 @@ const Config = () => {
 
   return (
     <div className="container">
-      <div className="d-flex justify-content-between align-items-center my-3">
-        <Button
+      <div className="">
+        {/* <Button
           variant="contained"
           color="primary"
           onClick={() => openModal()}
@@ -130,8 +130,8 @@ const Config = () => {
           }}
         >
           Add Project
-        </Button>
-        <h4 style={{ color: "#4f0e83" }}>Project Configurations</h4>
+        </Button> */}
+        <h4 style={{ color: "#4f0e83" ,textAlign:"center"}}>Project Configurations</h4>
         <h1></h1>
       </div>
       <div
@@ -167,10 +167,12 @@ const Config = () => {
                 <td>{project.ipAddress}</td>
                 <td>{project.projectPath}</td>
                 <td>
-                  <EditIcon
+                  <Tooltip title="Add Configurations"  arrow>
+                  <AddCircleIcon
                     style={{ cursor: "pointer", color: "#4f0e83" }}
                     onClick={() => handleProjectConfig(project)}
                   />
+                  </Tooltip>
                   &nbsp;
                   <DeleteIcon
                     style={{ cursor: "pointer", color: "red" }}

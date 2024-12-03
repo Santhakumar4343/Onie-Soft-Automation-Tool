@@ -226,7 +226,7 @@ const UserTestcases = () => {
 
         <div
           style={{
-            maxHeight: "550px",
+            maxHeight: "520px",
             overflowY: "auto",
           }}
         >
