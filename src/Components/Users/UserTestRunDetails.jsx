@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import "../TestRuns/TestRunDetails.css";
 
 import Swal from "sweetalert2";
-import { addTestCasestoTestRun, edittestrun } from "../API/Api";
+import { addTestCasestoTestRun, edittestrun, getTestCasesByTestRunId } from "../API/Api";
 import moment from "moment";
 
 function UserTestRunDetails() {
@@ -13,11 +13,31 @@ function UserTestRunDetails() {
   const testRun = location.state?.testRun || {};
   console.log(testRun.id);
   const [testCases, setTestCases] = useState([]);
+  const [casesInRun, setCasesInRun] = useState([]);
 
   useEffect(() => {
-    edittestrun(testRun.id, project.id)
-      .then((response) => setTestCases(response.data))
-      .catch((err) => console.log(err));
+    const fetchTestCases = async () => {
+      try {
+        const [testRunResponse, testCaseResponse] = await Promise.all([
+          edittestrun(testRun.id, project.id),
+          getTestCasesByTestRunId(testRun.id),
+        ]);
+       
+        const combinedTestCases = [
+          ...(testRunResponse?.data || []),
+          ...(testCaseResponse?.data || []),
+        ];
+        console.log(combinedTestCases);
+        setTestCases(combinedTestCases);
+        setCasesInRun(testRunResponse.data.map((testCase) => testCase.automationId));
+        setSelectedCases(testCaseResponse.data.map((testCase) => testCase.automationId));
+      } catch (error) {
+        console.error("Error fetching test cases:", error);
+      }
+    };
+  
+    // Call the fetch function
+    fetchTestCases();
   }, [testRun.id, project.id]);
 
   const [selectedCases, setSelectedCases] = useState([]);
@@ -35,7 +55,7 @@ function UserTestRunDetails() {
     if (selectedCases.length === testCases.length) {
       setSelectedCases([]);
     } else {
-      setSelectedCases(testCases.map((testCase) => testCase.id)); // Select all
+      setSelectedCases(testCases.map((testCase) => testCase.automationId)); // Select all
     }
   };
 
@@ -194,8 +214,8 @@ function UserTestRunDetails() {
                 <td>
                   <input
                     type="checkbox"
-                    checked={selectedCases.includes(testCase.id)}
-                    onChange={() => handleCheckboxChange(testCase.id)}
+                    checked={selectedCases.includes(testCase.automationId)}
+                    onChange={() => handleCheckboxChange(testCase.automationId)}
                   />
                 </td>
 
