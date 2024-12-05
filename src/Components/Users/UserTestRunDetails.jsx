@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../TestRuns/TestRunDetails.css";
 
 import Swal from "sweetalert2";
-import { addTestCasestoTestRun, edittestrun, getTestCasesByTestRunId } from "../API/Api";
+import { addTestCasestoTestRun, edittestrun, getTestCasesByTestRunId, getTestCasesByTestRunIdVthout } from "../API/Api";
 import moment from "moment";
 
 function UserTestRunDetails() {
@@ -11,16 +11,17 @@ function UserTestRunDetails() {
 
   const project = location.state?.project || {};
   const testRun = location.state?.testRun || {};
-  console.log(testRun.id);
+  const data = location.state?.data || {};
+ 
   const [testCases, setTestCases] = useState([]);
   const [casesInRun, setCasesInRun] = useState([]);
-
+  const navigate=useNavigate();
   useEffect(() => {
     const fetchTestCases = async () => {
       try {
         const [testRunResponse, testCaseResponse] = await Promise.all([
-          edittestrun(testRun.id, project.id),
-          getTestCasesByTestRunId(testRun.id),
+          edittestrun(testRun.id||data.id, project.id),
+          getTestCasesByTestRunIdVthout(testRun.id ||data.id),
         ]);
        
         const combinedTestCases = [
@@ -81,14 +82,15 @@ function UserTestRunDetails() {
       if (result.isConfirmed) {
         // Prepare payload for API
         const payload = {
-          testRunId: testRun.id,
-          testRunName: testRun.testRunName || "Default Test Run Name",
+          testRunId: testRun.id ||data.id,
+          testRunName: testRun.testRunName||data.testRunName || "Default Test Run Name",
           testCaseId: selectedCases,
         };
 
         addTestCasestoTestRun(payload)
           .then((response) => {
             if (response.status === 200 || response.status === 201) {
+              navigate("/userDashboard/testRunView", { state: { payload } });
               Swal.fire(
                 "Added!",
                 "Selected test cases have been added to the Test Run.",
@@ -110,32 +112,27 @@ function UserTestRunDetails() {
       }
     });
   };
-  const handleTestRun = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to  Execute Test Run?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#4f0e83",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Execute Test Run!",
-      customClass: {
-        confirmButton: "custom-confirm-button",
-        cancelButton: "custom-cancel-button",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire("Executed!", "Test Run Executed Successfully.", "success");
-      }
-    });
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const handleSearchInput = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
   };
+  const filteredTestCases = testCases.filter(
+    (testcase) =>
+      testcase.testCaseName.toLowerCase().includes(searchQuery) ||
+      testcase.author.toLowerCase().includes(searchQuery)||
+      testcase.feature.toLowerCase().includes(searchQuery)||
+      testcase.automationId.toLowerCase().includes(searchQuery)
+  );
 
+ 
   return (
     <div className="container">
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
-        {testRun.testRunName}-Test Run{" "}
+        {testRun.testRunName ||data.testRunName}-Test Run{" "}
       </h4>
-      <div className="">
+      <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
         
         <button
           onClick={handleAddToTestRun}
@@ -150,10 +147,18 @@ function UserTestRunDetails() {
         >
           Add to Test Run
         </button>
+        <input
+                type="text"
+                value={searchQuery}
+                style={{width:"40%"}}
+                onChange={handleSearchInput}
+                placeholder="Search by Test Case Name, Author......"
+                className="form-control "
+              />
       </div>
       <div
         style={{
-          maxHeight: "550px",
+          maxHeight: "520px",
           overflowY: "auto",
         }}
       >
@@ -162,6 +167,7 @@ function UserTestRunDetails() {
       /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
       div::-webkit-scrollbar {
         width: 2px;
+        
        
       }
       div::-webkit-scrollbar-thumb {
@@ -181,11 +187,12 @@ function UserTestRunDetails() {
         </style>
         <table
           className="table  table-hover mt-4"
-          style={{ textAlign: "center" }}
+         
         >
           <thead
             style={{
               position: "sticky",
+              marginTop:"10px",
               top: 0,
               backgroundColor: "#f8f9fa",
               zIndex: 100,
@@ -209,7 +216,7 @@ function UserTestRunDetails() {
             </tr>
           </thead>
           <tbody>
-            {testCases.map((testCase, index) => (
+            {filteredTestCases.map((testCase, index) => (
               <tr key={index}>
                 <td>
                   <input

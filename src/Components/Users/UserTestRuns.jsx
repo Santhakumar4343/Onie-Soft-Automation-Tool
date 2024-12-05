@@ -7,6 +7,7 @@ import moment from "moment";
 import EditIcon from "@mui/icons-material/Edit";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import TablePagination from "../Pagination/TablePagination";
 const UserTestRuns = () => {
   const [searchText, setSearchText] = useState("");
   const [testRunModal, setTestRunModal] = useState(false);
@@ -22,16 +23,40 @@ const UserTestRuns = () => {
   });
   const [testRuns, setTestRuns] = useState([]);
 
-  const fetchTestRuns = () => {
-    getTestRunByProjectId(project.id)
-      .then((response) => setTestRuns(response.data))
-      .catch((err) => console.error(err));
-  };
-  useEffect(() => {
-    fetchTestRuns();
-  }, [project.id]);
+  const [page, setPage] = useState(1); // Current page number
 
-  const handleTestRun = () => setTestRunModal(true);
+    const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+    const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+    
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
+  useEffect(()=>{
+    getTestRunByProjectId(project.id,page-1,itemsPerPage).then(
+      response=>{setTestRuns(response.data.content)
+        setTotalPages(response.data.totalPages)
+      }
+  ).catch(err=>console.log(err))
+  },[project.id,page-1,itemsPerPage])
+
+  const handleTestRun =() =>{ 
+    setTestRunModal(true)
+  };
 
   const filteredTestRuns = testRuns.filter(
     (testRun) =>
@@ -67,13 +92,16 @@ const UserTestRuns = () => {
     };
     createTestRun(data)
       .then((response) => {
+        const data=response.data;
+        navigate("/userDashboard/testRunDetails", { state: { project, data } });
+        
         Swal.fire({
           icon: "success",
           title: "Test Run Saved",
           text: "Test Run Created Successfully!",
         });
         console.log(response);
-        window.location.reload();
+        
         setTestRunModal(false);
       })
       .catch((err) => {
@@ -96,7 +124,7 @@ const UserTestRuns = () => {
   };
 
   return (
-    <div className="d-flex">
+   
       <div className="container ">
         <h4 className="text-center mb-2" style={{ color: "#4f0e83" }}>
           {project.projectName}-Test Runs
@@ -118,7 +146,7 @@ const UserTestRuns = () => {
           <input
             type="text"
             value={searchText}
-            placeholder="Search by Test Run Name"
+            placeholder="Search by Test Run Name,Created By"
             className="form-control "
             style={{ width: "40%" }}
             onChange={(e) => setSearchText(e.target.value)}
@@ -126,7 +154,7 @@ const UserTestRuns = () => {
         </div>
 
         <div
-          className="table-responsive"
+        
           style={{
             maxHeight: "520px",
             overflowY: "auto",
@@ -166,7 +194,7 @@ const UserTestRuns = () => {
               }}
             >
               <tr>
-                <th>#</th>
+                
                 <th>Test Run Name</th>
                 <th>Created By</th>
                 <th>Created At</th>
@@ -184,7 +212,7 @@ const UserTestRuns = () => {
                     color: "white",
                   }}
                 >
-                  <td>{index + 1}</td>
+                  
                   <td>{testRun.testRunName}</td>
                   <td>{testRun.createdBy}</td>
                   <td>
@@ -220,7 +248,15 @@ const UserTestRuns = () => {
             </tbody>
           </table>
         </div>
-      </div>
+     
+        <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        />
 
       <Modal open={testRunModal} onClose={() => setTestRunModal(false)}>
         <div
@@ -285,7 +321,7 @@ const UserTestRuns = () => {
           </div>
         </div>
       </Modal>
-    </div>
+     </div>
   );
 };
 

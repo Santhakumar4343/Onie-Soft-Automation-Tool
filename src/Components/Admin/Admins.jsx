@@ -21,6 +21,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Tab, Tooltip } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import TablePagination from "../Pagination/TablePagination";
 const Admins = () => {
   const [show, setShow] = useState(false);
   const [admins, setAdmins] = useState([]);
@@ -31,6 +32,7 @@ const Admins = () => {
   const location = useLocation();
   const branchId = location.state?.branch?.id || {};
   const cmpName = location.state?.company?.cmpName || {};
+  const company =location.state?.company||{};
   const navigate=useNavigate()
   console.log(branchId);
 
@@ -88,11 +90,35 @@ const Admins = () => {
     setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
   useEffect(() => {
-    getRegisterForBranch(branchId)
-      .then((response) => setAdmins(response.data))
-      .catch((err) => console.log(err));
-  }, [branchId]);
+    getRegisterForBranch(branchId,page-1,itemsPerPage)
+      .then((response) => {
+        setAdmins(response.data.content)
+      setTotalPages(response.data.totalPages)}).catch((err) => console.log(err));
+  }, [branchId,page,itemsPerPage]);
+
 
   const handleSaveUser = async () => {
     try {
@@ -200,7 +226,7 @@ const Admins = () => {
   );
 
   const handleBackwardClick=()=>{
-    navigate("/adminDashboard/departments")
+    navigate("/adminDashboard/departments",{state:{company}})
  }
   return (
     <div className="container">
@@ -229,7 +255,34 @@ const Admins = () => {
           />
         </InputGroup>
       </div>
+      <div
+          style={{
+            maxHeight: "520px",
+            overflowY: "auto",
+          }}
+        >
+          <style>
+            {`
+      /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
+      div::-webkit-scrollbar {
+        width: 2px;
+       
+      }
+      div::-webkit-scrollbar-thumb {
+        background-color: #4f0e83;
+        border-radius: 4px;
+      }
+      div::-webkit-scrollbar-track {
+        background-color: #e0e0e0;
+      }
 
+      /* Scrollbar styling for Firefox */
+      div {
+        scrollbar-width: thin; 
+        scrollbar-color: #4f0e83 #e0e0e0;   
+      }
+    `}
+          </style>
       <Table className="table table-hover">
         <thead>
           <tr>
@@ -286,6 +339,8 @@ const Admins = () => {
         </tbody>
       
       </Table>
+</div>
+
       <div>
       <Tooltip title="Back" arrow placement="right" >
           <Tab icon={<ArrowBackIcon sx={{ fontSize: "2rem" ,color:"#4f0e83"}}  onClick={handleBackwardClick}/>}  
@@ -295,6 +350,16 @@ const Admins = () => {
           
     
         </div>
+
+        <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        />
+
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>

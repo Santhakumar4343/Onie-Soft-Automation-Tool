@@ -11,24 +11,37 @@ import {
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-
-  testRunConfig,
+  getProjectsByProjectId,
   updateConfig,
   updateProject,
-  updateRunConfig,
 } from "../API/Api";
 import Swal from "sweetalert2";
 
 const Configurations = () => {
   const location = useLocation();
-  const testRunId = location.state?.id;
+  const project = location.state?.project;
   const navigate = useNavigate();
 
+  
+  useEffect(() => {
+    getProjectsByProjectId(project.projectId)
+      .then((response) => {
+        const data=response.data;
+      })
+      .catch((err) => console.log(err));
+  }, [project.projectId]);
  
- 
- 
+  const [basicAuth, setBasicAuth] = useState(false);
 
- 
+  const [authentication, setAuthentication] = useState({
+    basicAuthUser: "",
+    basicAuthPassword: "",
+  });
+
+  const [url, setUrl] = useState({
+    url: "",
+    apiBaseURL: "",
+  });
 
   const [wait, setWait] = useState({
     shortWait: 15,
@@ -36,17 +49,22 @@ const Configurations = () => {
     retryCount: 0,
   });
 
-
+  const [count, setCount] = useState({
+    notifyBlockerCount: 0,
+    notifyCriticalCount: 0,
+    notifyMajorCount: 0,
+  });
   const [jiraConfig, setJiraConfig] = useState({
     jiraUserName: "",
     jiraPassword: "",
     jiraURL: "",
     jiraProjectKey: "",
   });
-
+  const [emailReportTo, setEmailReportTo] = useState("");
   const [elasticSearchURL, setElasticSearchURL] = useState("");
- 
- 
+  const [enableLiveReporting, setEnableLiveReporting] = useState(false);
+  const [notifyTeams, setNotifyTeams] = useState(false);
+  const [sendEmailReport, setSendEmailReport] = useState(false);
   const [createJiraIssues, setCreateJiraIssues] = useState(true);
   // Default: Live Reporting disabled
   const [overrideReport, setOverrideReport] = useState(false);
@@ -56,14 +74,23 @@ const Configurations = () => {
   const [traceView, setTraceView] = useState(false);
   const [enableRecording, setEnableRecording] = useState(false);
 
- const [id,setId]=useState(0);
-  
+  const [modalData, setModalData] = useState({
+    projectName: project.projectName,
+    projectPath: project.projectPath,
+    ipAddress: project.ipAddress,
+  });
+  const user = JSON.parse(sessionStorage.getItem("user"));
+
   useEffect(() => {
-    testRunConfig(testRunId)
+    getProjectsByProjectId(project.projectId)
       .then((response) => {
         const data=response.data;
-        setId(data.id);
-   
+        setBasicAuth(data.basicAuth)
+        setUrl({ url: data.url, apiBaseURL: data.apiBaseURL });
+        setAuthentication({
+            basicAuthUser: data.basicAuthUser,
+            basicAuthPassword: data.basicAuthPassword
+          });
           setWait({
             shortWait: data.shortWait,
             customWait: data.customWait,
@@ -74,9 +101,16 @@ const Configurations = () => {
           setHeadLess(data.headLess);
           setTraceView(data.traceView);
           setEnableRecording(data.enableRecording)
-          
+          setEnableLiveReporting(data.enableLiveReporting)
           setOverrideReport(data.overrideReport);
-         
+          setNotifyTeams(data.notifyTeams);
+          setCount({
+            notifyBlockerCount: data.notifyBlockerCount,
+            notifyCriticalCount: data.notifyCriticalCount,
+            notifyMajorCount: data.notifyMajorCount,
+          })
+          setSendEmailReport(data.sendEmailReport)
+          setEmailReportTo(data.emailReportTo)
           setElasticSearchURL(data.elasticSearchURL)
           setCreateJiraIssues(data.createJiraIssues)
          setJiraConfig({
@@ -88,7 +122,7 @@ const Configurations = () => {
           
       })
       .catch((err) => console.log(err));
-  }, [testRunId]);
+  }, [project.projectId]);
 
   const handleNestedChange = (setter) => (key) => (e) => {
     setter((prev) => ({
@@ -99,7 +133,12 @@ const Configurations = () => {
 
   const handleUpdate = () => {
     const data = {
-    
+    id:project.id,
+      userId: user.id,
+      projectId: project.projectId,
+      projectName: modalData.projectName,
+      ipAddress: modalData.ipAddress,
+      projectPath: modalData.projectPath,
     };
 
     // Call updateConfig with the data
@@ -122,21 +161,41 @@ const Configurations = () => {
 
   const handleSubmit = () => {
     const payload = {
-      id: id,
-      testRunId: testRunId,
-      browser:browser,
-      headLess:headLess,
-      traceView:traceView,
-      enableRecording:enableRecording,
-      testType: testType,
+      id: project.projectId,
+      projectName: modalData.projectName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      branchId: user.branchId,
+      url: url.url,
+      apiBaseURL: url.apiBaseURL,
+      basicAuth,
+      basicAuthUser: authentication.basicAuthUser,
+      basicAuthPassword: authentication.basicAuthPassword,
+      browser,
+      headLess,
+      traceView,
+      enableRecording,
+      testType,
       shortWait: wait.shortWait,
       customWait: wait.customWait,
       retryCount: wait.retryCount,
-      overrideReport:overrideReport,
-      createJiraIssues:createJiraIssues,
+      enableLiveReporting,
+      elasticSearchURL,
+      overrideReport,
+      notifyTeams,
+      notifyBlockerCount: count.notifyBlockerCount,
+      notifyCriticalCount: count.notifyCriticalCount,
+      notifyMajorCount: count.notifyMajorCount,
+      sendEmailReport,
+      emailReportTo,
+      createJiraIssues,
+      jiraUserName: jiraConfig.jiraUserName,
+      jiraPassword: jiraConfig.jiraPassword,
+      jiraURL: jiraConfig.jiraURL,
+      jiraProjectKey: jiraConfig.jiraProjectKey,
     };
-  console.log(payload)
-    updateRunConfig(payload).then((response) => {
+
+    updateProject(payload).then((response) => {
       if (response.status === 200 || response.status === 201) {
         Swal.fire({
           icon: "success",
@@ -153,7 +212,6 @@ const Configurations = () => {
       }
     });
   };
-  
   return (
     <Grid container spacing={1} style={{ padding: "20px" }}>
       <Grid item xs={12}>
@@ -162,21 +220,21 @@ const Configurations = () => {
         </Typography>
       </Grid>
 
-      {/* App Configurations 
-      {/* <Grid container spacing={2} alignItems="center">
+      {/* App Configurations */}
+      <Grid container spacing={2} alignItems="center">
         <Grid item xs={12}>
           <Typography variant="h6">Device Configurations</Typography>
         </Grid>
-        {/* First Row 
+        {/* First Row */}
         <Grid item xs={6}>
           <TextField
             label="Project Directory"
             fullWidth
             margin="normal"
-            // value={modalData.projectPath}
-            // onChange={(e) =>
-            //   setModalData({ ...modalData, projectPath: e.target.value })
-            // }
+            value={modalData.projectPath}
+            onChange={(e) =>
+              setModalData({ ...modalData, projectPath: e.target.value })
+            }
           />
         </Grid>
         <Grid item xs={6}>
@@ -185,14 +243,14 @@ const Configurations = () => {
             fullWidth
             margin="normal"
             variant="outlined"
-            // value={modalData.ipAddress}
-            // onChange={(e) =>
-            //   setModalData({ ...modalData, ipAddress: e.target.value })
-            // }
+            value={modalData.ipAddress}
+            onChange={(e) =>
+              setModalData({ ...modalData, ipAddress: e.target.value })
+            }
           />
         </Grid>
 
-         Update Button 
+        {/* Update Button */}
         <Grid
           item
           xs={12}
@@ -210,9 +268,9 @@ const Configurations = () => {
             Update
           </Button>
         </Grid>
-      </Grid> */}
+      </Grid>
 
-      {/* <Grid container spacing={1} alignItems="center" className="mt-2">
+      <Grid container spacing={1} alignItems="center" className="mt-2">
         <Grid item xs={12}>
           <Typography variant="h6">Project Configurations</Typography>
         </Grid>
@@ -257,7 +315,7 @@ const Configurations = () => {
         </Grid>
         {basicAuth && (
           <>
-            {/* Input Fields Side by Side 
+            {/* Input Fields Side by Side */}
             <Grid item xs={6}>
               <TextField
                 label="Basic Auth User"
@@ -287,7 +345,7 @@ const Configurations = () => {
             </Grid>
           </>
         )}
-      </Grid> */}
+      </Grid>
 
       {/* Runner Configurations */}
       <Grid container spacing={2} alignItems="center" className="mt-2">
@@ -409,7 +467,27 @@ const Configurations = () => {
       <Grid item xs={12}>
         <Typography variant="h6">Report Configurations</Typography>
         <Grid container spacing={2}>
-          
+          <Grid item xs={6}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={enableLiveReporting}
+                  onChange={() => setEnableLiveReporting(!enableLiveReporting)}
+                />
+              }
+              label="Enable Live Reporting"
+            />
+            {enableLiveReporting && (
+              <TextField
+                label="Elastic Search URL"
+                value={elasticSearchURL}
+                fullWidth
+                margin="normal"
+                variant="outlined"
+                onChange={(e) => setElasticSearchURL(e.target.value)}
+              />
+            )}
+          </Grid>
           <Grid item xs={6}>
             <FormControlLabel
               control={
@@ -425,7 +503,7 @@ const Configurations = () => {
       </Grid>
 
       {/* Teams Notification */}
-      {/* <Grid item xs={12}>
+      <Grid item xs={12}>
         <Typography variant="h6">Teams Notification</Typography>
         <FormControlLabel
           control={
@@ -473,10 +551,10 @@ const Configurations = () => {
             </Grid>
           </Grid>
         )}
-      </Grid> */}
+      </Grid>
 
       {/* Email Notification */}
-      {/* <Grid item xs={12}>
+      <Grid item xs={12}>
         <Typography variant="h6">Email Notification</Typography>
         <FormControlLabel
           control={
@@ -499,7 +577,7 @@ const Configurations = () => {
             onChange={(e) => setEmailReportTo(e.target.value)}
           />
         )}
-      </Grid> */}
+      </Grid>
 
       {/* JIRA Configurations */}
       <Grid item xs={12}>

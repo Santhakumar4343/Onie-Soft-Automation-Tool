@@ -48,7 +48,7 @@ const UserDashboard = () => {
       {/* Main content */}
       <div className="col-10 p-3">
         {/* Header Section */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex justify-content-between align-items-center mb-3 mt-2">
           <h1></h1>
           <h4 style={{color:"#808080"}}>User Dashboard</h4>
           <div
@@ -56,7 +56,7 @@ const UserDashboard = () => {
             onMouseEnter={toggleDropdown}
             onMouseLeave={closeDropdown}
           >
-            <AccountCircleIcon style={{ fontSize: '2rem', cursor: 'pointer' }} />
+            <AccountCircleIcon style={{ fontSize: '2.5rem', cursor: 'pointer' }} />
             {isDropdownOpen && (
               <div
                 className="dropdown-menu dropdown-menu-right show"

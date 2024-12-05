@@ -16,6 +16,7 @@ import {
   deleteRegister,
   getAllRegister,
   getAssignedUserProjects,
+  getRegisterForBranch,
   getUnMapProjects,
   updateRegister,
 } from "../API/Api";
@@ -28,6 +29,7 @@ import { useLocation } from "react-router-dom";
 import { ConstructionOutlined } from "@mui/icons-material";
 import Swal from "sweetalert2";
 import { Tooltip } from "@mui/material";
+import TablePagination from "../Pagination/TablePagination";
 const Users = () => {
   const [show, setShow] = useState(false);
   const [users, setUsers] = useState([]);
@@ -95,11 +97,34 @@ const Users = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
   useEffect(() => {
-    getAllRegister()
-      .then((response) => setUsers(response.data))
-      .catch((err) => console.log(err));
-  }, []);
+    getRegisterForBranch(branchId,page-1,itemsPerPage)
+      .then((response) => {
+        setUsers(response.data.content)
+      setTotalPages(response.data.totalPages)}).catch((err) => console.log(err));
+  }, [branchId,page,itemsPerPage]);
 
   const handleSaveUser = async () => {
     const data={
@@ -122,6 +147,7 @@ const Users = () => {
           .then((response) => {
             if (response.status === 200 || response.status === 201) {
               Swal.fire("Success!", "User updated successfully.", "success");
+              setUsers(prev=>[...prev,response.data])
               isLoading(false)
             } else {
               Swal.fire("Error!", "Failed to update user.", "error");
@@ -137,6 +163,7 @@ const Users = () => {
           .then((response) => {
             if (response.status === 200 || response.status === 201) {
               Swal.fire("Success!", "User added successfully.", "success");
+              setUsers(prev=>[...prev,response.data])
               isLoading(false)
             } else {
               Swal.fire("Error!", "Failed to add user.", "error");
@@ -149,9 +176,7 @@ const Users = () => {
       }
     
       handleClose(); // Close modal or reset form
-      // Refresh the users list
-      const updatedUsers = await getAllRegister();
-      setUsers(updatedUsers.data);
+    
     
     } catch (error) {
       console.error("An error occurred:", error);
@@ -331,7 +356,14 @@ const Users = () => {
             ))}
         </tbody>
       </Table>
-
+      <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        />
       <Modal show={showModal} onClose={handleCancel}>
         <div
           style={{

@@ -52,9 +52,9 @@ export const getAllRegister = () => {
   const headers = getApiHeaders(); // Dynamically get headers when making the request
   return Api.get(`/register/v1/getallreg`, headers);
 };
-export const getRegisterForBranch = (branchId) => {
+export const getRegisterForBranch = (branchId,page,itemsPerPage) => {
   const headers = getApiHeaders(); // Dynamically get headers when making the request
-  return Api.get(`/adminview/v1/registersbybranchId/${branchId}`, headers);
+  return Api.get(`/adminview/v1/registersbybranchId?branchId=${branchId}&page=${page}&size=${itemsPerPage}`, headers);
 };
 export const getProfiles = (empId) => {
   const headers = getApiHeaders(); // Dynamically get headers when making the request
@@ -143,9 +143,9 @@ export const getTestcaseById = (id) => {
   const headers = getApiHeaders();
   return Api.get(`/testcases/v1/get/${id}`, headers);
 };
-export const getTestcaseByProjectId = (id) => {
+export const getTestcaseByProjectId = (id,page,itemsPerPage) => {
   const headers = getApiHeaders();
-  return Api.get(`/testcases/v1/getForProject/${id}`, headers);
+  return Api.get(`/testcases/v1/getForProject?id=${id}&page=${page}&size=${itemsPerPage}`, headers);
 };
 export const edittestrun = (testRunId, projectId) => {
   const headers = getApiHeaders();
@@ -173,14 +173,18 @@ export const addTestCasestoTestRun = (data) => {
   const headers = getApiHeaders();
   return Api.post(`/testrun/v1/addtestrun`, data, headers);
 };
-export const getTestRunByProjectId = (id) => {
+export const getTestRunByProjectId = (id,page,itemsPerPage) => {
   const headers = getApiHeaders();
-  return Api.get(`/testrun/v1/gettestrunbyid?projectId=${id}`, headers);
+  return Api.get(`/testrun/v1/gettestrunbyid?projectId=${id}&page=${page}&size=${itemsPerPage}`, headers);
 };
 
-export const getTestCasesByTestRunId = (id) => {
+export const getTestCasesByTestRunId = (id,page,itemsPerPage) => {
   const headers = getApiHeaders();
-  return Api.get(`/testrun/v1/testcases/${id}`, headers);
+  return Api.get(`/testrun/v1/testcases?testRunId=${id}&size=${itemsPerPage}&page=${page}`, headers);
+};
+export const getTestCasesByTestRunIdVthout = (id) => {
+  const headers = getApiHeaders();
+  return Api.get(`/testrun/v1/listoftestcases?testRunId=${id}`, headers);
 };
 export const getUnmapedTestCasesByTestRunId = (id) => {
   const headers = getApiHeaders();
@@ -192,6 +196,13 @@ export const executeTestRun = (id) => {
 
 export const testRunResult = (id) => {
   return Api.get(`/testrun/v1/testcases/${id}`);
+};
+
+export const testRunConfig = (id) => {
+  return Api.get(`/runconfig/v1/getrunconfig/${id}`);
+};
+export const updateRunConfig = (data) => {
+  return Api.put(`/runconfig/v1/update`,data);
 };
 // Company Api's
 
@@ -226,9 +237,9 @@ export const getAllBranches = () => {
   const headers = getApiHeaders();
   return Api.get("/branch/v1/getallbranch", headers);
 };
-export const getAllBranchesByCompany = (cmpId) => {
+export const getAllBranchesByCompany = (cmpId,page,itemsPerPage) => {
   const headers = getApiHeaders();
-  return Api.get(`/adminview/v1/branchsbycmpid/${cmpId}`, headers);
+  return Api.get(`/adminview/v1/branchsbycmpid?cmpId=${cmpId}&page=${page}&size=${itemsPerPage}`, headers);
 };
 export const getBranchById = (branchId) => {
   const headers = getApiHeaders();

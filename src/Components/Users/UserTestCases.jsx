@@ -7,21 +7,18 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../TestCases/Testcases.css";
 
-import axios from "axios";
 import {
   addTestcase,
-  API_URL,
   getTestcaseByProjectId,
   updateTestcase,
 } from "../API/Api";
 import Swal from "sweetalert2";
 import moment from "moment";
 import EditIcon from "@mui/icons-material/Edit";
+import TablePagination from "../Pagination/TablePagination";
 const UserTestcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+
   const [editTestCase, setEditTestCase] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,14 +26,14 @@ const UserTestcases = () => {
 
   const [testCases, setTestCases] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  useEffect(() => {
-    getTestcaseByProjectId(project.id)
-      .then((response) => {
-        setTestCases(response.data);
-        console.log(response.data);
-      })
-      .catch((err) => console.log(err));
-  }, [project.id]);
+  // useEffect(() => {
+  //   getTestcaseByProjectId(project.id)
+  //     .then((response) => {
+  //       setTestCases(response.data);
+  //       console.log(response.data);
+  //     })
+  //     .catch((err) => console.log(err));
+  // }, [project.id]);
   const formik = useFormik({
     initialValues: {
       projectId: project.id,
@@ -104,12 +101,11 @@ const UserTestcases = () => {
     setShowModal(false);
     formik.resetForm();
   };
-  const handleAddTestCase=()=>{
-    setEditTestCase(null)
+  const handleAddTestCase = () => {
+    setEditTestCase(null);
     setShowModal(true);
-  }
+  };
   const handleClear = () => {
-   
     formik.resetForm();
   };
   const handleEdit = (testCase) => {
@@ -123,32 +119,56 @@ const UserTestcases = () => {
     });
     setShowModal(true);
   };
-  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
-  const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-    setCurrentPage(0);
-  };
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 0) setCurrentPage(currentPage - 1);
-  };
   const handleSearchInput = (e) => {
     const query = e.target.value.toLowerCase();
+    setPage(1);
     setSearchQuery(query);
   };
   const filteredTestCases = testCases.filter(
     (testcase) =>
       testcase.testCaseName.toLowerCase().includes(searchQuery) ||
-      testcase.author.toLowerCase().includes(searchQuery)||
-      testcase.feature.toLowerCase().includes(searchQuery)||
+      testcase.author.toLowerCase().includes(searchQuery) ||
+      testcase.feature.toLowerCase().includes(searchQuery) ||
       testcase.automationId.toLowerCase().includes(searchQuery)
   );
   const handleTestRun = () => {
     navigate("/userDashboard/testruns", { state: { project } });
+  };
+
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+  useEffect(() => {
+    getTestcaseByProjectId(project.id, page - 1, itemsPerPage)
+      .then((response) => {
+        setTestCases(response.data.content); // Extract content for the test cases
+        setTotalPages(response.data.totalPages); // Set the total pages
+      })
+      .catch((err) => console.log(err));
+  }, [project.id, page, itemsPerPage]);
+
+  
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
   };
   return (
     <div className=" container-fluid ">
@@ -173,54 +193,48 @@ const UserTestcases = () => {
         >
           <div className="d-flex justify-content-between align-items-center">
             <div>
-          <button
-              onClick={handleAddTestCase}
-              style={{
-                color: "white",
-                backgroundColor: "#4f0e83",
-                borderRadius: "20px",
-                padding: "8px 15px",
-                fontSize: "14px",
-                marginRight: "10px",
-                width: "130px",
-                height: "40px",
-              }}
-              className="btn"
-            >
-              Add Test Case
-            </button>
+              <button
+                onClick={handleAddTestCase}
+                style={{
+                  color: "white",
+                  backgroundColor: "#4f0e83",
+                  borderRadius: "20px",
+                  padding: "8px 15px",
+                  fontSize: "14px",
+                  marginRight: "10px",
+                  width: "130px",
+                  height: "40px",
+                }}
+                className="btn"
+              >
+                Add Test Case
+              </button>
 
-            <button
-              onClick={handleTestRun}
-              style={{
-                color: "white",
-                backgroundColor: "#4f0e83",
-                borderRadius: "20px",
-                padding: "8px 15px",
-                fontSize: "14px",
-                width: "130px",
-                height: "40px",
-              }}
-              className="btn"
-            >
-              View Test Runs
-            </button>
+              <button
+                onClick={handleTestRun}
+                style={{
+                  color: "white",
+                  backgroundColor: "#4f0e83",
+                  borderRadius: "20px",
+                  padding: "8px 15px",
+                  fontSize: "14px",
+                  width: "130px",
+                  height: "40px",
+                }}
+                className="btn"
+              >
+                View Test Runs
+              </button>
             </div>
-           
-              
-             
-            
-              <input
-                type="text"
-                value={searchQuery}
-                style={{width:"40%"}}
-                onChange={handleSearchInput}
-                placeholder="Search by Test Case Name, Author......"
-                className="form-control "
-              />
-           
 
-            
+            <input
+              type="text"
+              value={searchQuery}
+              style={{ width: "40%" }}
+              onChange={handleSearchInput}
+              placeholder="Search by Test Case Name, Author......"
+              className="form-control "
+            />
           </div>
         </div>
 
@@ -252,10 +266,7 @@ const UserTestcases = () => {
       }
     `}
           </style>
-          <table
-            className="table  table-hover mt-3"
-            style={{ textAlign: "center" }}
-          >
+          <table className="table  table-hover mt-3">
             <thead
               style={{
                 position: "sticky",
@@ -266,7 +277,6 @@ const UserTestcases = () => {
               }}
             >
               <tr>
-                <th>Test Case ID</th>
                 <th>Automation ID</th>
                 <th>Test Case Name</th>
 
@@ -280,7 +290,6 @@ const UserTestcases = () => {
             <tbody>
               {filteredTestCases.map((testCase, index) => (
                 <tr key={index}>
-                  <td>{testCase.id}</td>
                   <td>{testCase.automationId}</td>
                   <td>{testCase.testCaseName}</td>
 
@@ -306,6 +315,15 @@ const UserTestcases = () => {
             </tbody>
           </table>
         </div>
+
+        <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        />
 
         {/* Modal Popup */}
         <Modal show={showModal} onHide={handleClose} centered backdrop="static">
@@ -393,33 +411,29 @@ const UserTestcases = () => {
                   </div>
                 )}
               </div>
-   <div className="d-flex align-items-center justify-content-center">
-              <Button
-              className="btn btn-secondary"
-                onClick={handleClear}
-                style={{
-                  
-                 
-                  borderRadius: "20px",
-                  width: "20%",
-                  
-                }}
-              >
-                Clear
-              </Button>
-              <Button
-                type="submit"
-                style={{
-                  color: "white",
-                  backgroundColor: "#4f0e83",
-                  borderRadius: "20px",
-                  width: "20%",
-                  marginLeft:"15px"
-                  
-                }}
-              >
-                Submit
-              </Button>
+              <div className="d-flex align-items-center justify-content-center">
+                <Button
+                  className="btn btn-secondary"
+                  onClick={handleClear}
+                  style={{
+                    borderRadius: "20px",
+                    width: "20%",
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button
+                  type="submit"
+                  style={{
+                    color: "white",
+                    backgroundColor: "#4f0e83",
+                    borderRadius: "20px",
+                    width: "20%",
+                    marginLeft: "15px",
+                  }}
+                >
+                  Submit
+                </Button>
               </div>
             </form>
           </Modal.Body>

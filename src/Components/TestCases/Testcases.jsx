@@ -12,6 +12,7 @@ import { addTestcase, getTestcaseByProjectId } from "../API/Api";
 import Swal from "sweetalert2";
 import moment from "moment";
 import EditIcon from "@mui/icons-material/Edit";
+import TablePagination from "../Pagination/TablePagination";
 const Testcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -22,14 +23,40 @@ const Testcases = () => {
   const [testCases, setTestCases] = useState([]);
   const [showModal, setShowModal] = useState(false); // Modal state
 
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
   useEffect(() => {
-    getTestcaseByProjectId(project.id)
+    getTestcaseByProjectId(project.id, page - 1, itemsPerPage)
       .then((response) => {
-        setTestCases(response.data);
-        console.log(response.data);
+        setTestCases(response.data.content); // Extract content for the test cases
+        setTotalPages(response.data.totalPages); // Set the total pages
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [project.id, page, itemsPerPage]);
+
+  
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
   const formik = useFormik({
     initialValues: {
       projectId: project.id,
@@ -138,7 +165,7 @@ const Testcases = () => {
 
         <div
           style={{
-            maxHeight: "550px",
+            maxHeight: "520px",
             overflowY: "auto",
           }}
         >
@@ -186,7 +213,7 @@ const Testcases = () => {
                 <th>Author</th>
                 <th>Created Date</th>
                 <th>Updated Date</th>
-                {/* <th>Actions</th> */}
+              
               </tr>
             </thead>
             <tbody>
@@ -216,8 +243,18 @@ const Testcases = () => {
               ))}
             </tbody>
           </table>
+         
         </div>
-
+        <div>
+          <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        />
+          </div>
         {/* Modal Popup */}
         <Modal show={showModal} onHide={handleClose} centered backdrop="static">
           <Modal.Header closeButton>

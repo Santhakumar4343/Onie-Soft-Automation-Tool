@@ -3,7 +3,6 @@ import { Modal, Tooltip } from "@mui/material";
 import {
   addProject,
   assignProjects,
-  
   getBranchById,
   getProjectsByBranchId,
   getProjectUsers,
@@ -29,23 +28,22 @@ const Projects = () => {
   const branchId = user.branchId;
   const [projectData, setProjectData] = useState({
     projectName: "",
-    projectDir: "",
+
     branchId: branchId,
   });
   const [isEditMode, setIsEditMode] = useState(false);
   const handleClearProject = () => {
     setProjectData({
       projectName: "",
-      projectDir: ""
     });
   };
-  
+
   const [users, setUsers] = useState([]);
   const [projectId, setProjectId] = useState("");
   const [projectUsers, setProjectUsers] = useState([]);
   const [showRemove, setShowRemove] = useState(false);
   const confirmRemoveUser = (registerId) => {
-    setShowRemove(false)
+    setShowRemove(false);
     Swal.fire({
       title: "Are you sure?",
       text: "Do you want to remove this user from the project?",
@@ -61,7 +59,7 @@ const Projects = () => {
       }
     });
   };
-  
+
   const handleRemoveUserFromProject = (registerId) => {
     unAssignUsers(projectId, registerId)
       .then(() => {
@@ -72,7 +70,11 @@ const Projects = () => {
       })
       .catch((err) => {
         console.error("Error removing user:", err);
-        Swal.fire("Error", "Unable to remove the user. Please try again.", "error");
+        Swal.fire(
+          "Error",
+          "Unable to remove the user. Please try again.",
+          "error"
+        );
       });
   };
   const handleShowRemove = (id) => {
@@ -94,7 +96,7 @@ const Projects = () => {
       setBranchName(response.data.branchName)
     );
   }, [user.branchId]);
-   
+
   useEffect(() => {
     if (projectId) {
       unMapRegisters(projectId, branchId)
@@ -137,15 +139,15 @@ const Projects = () => {
 
   const handleProjectSubmit = (e) => {
     e.preventDefault();
-  
+
     if (isEditMode) {
       // Update existing project
- const    updateData={
-  id:projectData.id,
-      projectName:projectData.projectName,
-    projectDir: projectData.projectDir,
-    branchId: branchId,
-     }
+      const updateData = {
+        id: projectData.id,
+        projectName: projectData.projectName,
+
+        branchId: branchId,
+      };
       updateProject(updateData)
         .then((response) => {
           Swal.fire({
@@ -153,8 +155,8 @@ const Projects = () => {
             title: "Project Updated",
             text: "Your project has been updated successfully!",
           });
+          setProjects((prev) => [...prev, response.data]);
           console.log(response);
-          window.location.reload();
         })
         .catch((err) => {
           Swal.fire({
@@ -167,11 +169,11 @@ const Projects = () => {
     } else {
       // Add new project
 
-      const    addData={
-        projectName:projectData.projectName,
-      projectDir: projectData.projectDir,
-      branchId: branchId,
-       }
+      const addData = {
+        projectName: projectData.projectName,
+
+        branchId: branchId,
+      };
       addProject(addData)
         .then((response) => {
           Swal.fire({
@@ -179,8 +181,8 @@ const Projects = () => {
             title: "Project Saved",
             text: "Your project has been created successfully!",
           });
+          setProjects((prev) => [...prev, response.data]);
           console.log(response);
-          window.location.reload();
         })
         .catch((err) => {
           Swal.fire({
@@ -191,10 +193,10 @@ const Projects = () => {
           console.log(err);
         });
     }
-  
+
     setProjectModal(false);
   };
-  
+
   const handleProjectChange = (e) => {
     const { name, value } = e.target;
     setProjectData((prevData) => ({
@@ -307,26 +309,25 @@ const Projects = () => {
                 className="card-footer d-flex justify-content-center align-items-center"
                 style={{ gap: "20px" }}
               >
-                <Tooltip title="Add User" arrow placement="bottom" >
-                <PersonAddIcon
-                  className="w-40 "
-                  style={{ color: "white", fontSize: "30" }}
-                  onClick={() => handleShow(project.id)}
-                />
+                <Tooltip title="Add User" arrow placement="bottom">
+                  <PersonAddIcon
+                    className="w-40 "
+                    style={{ color: "white", fontSize: "30" }}
+                    onClick={() => handleShow(project.id)}
+                  />
                 </Tooltip>
-                <Tooltip title="Remove User" arrow placement="bottom" >
-                <PersonRemoveIcon
-                  style={{ color: "white", fontSize: "30" }}
-                  onClick={() => handleShowRemove(project.id)}
-                />
+                <Tooltip title="Remove User" arrow placement="bottom">
+                  <PersonRemoveIcon
+                    style={{ color: "white", fontSize: "30" }}
+                    onClick={() => handleShowRemove(project.id)}
+                  />
                 </Tooltip>
-                <Tooltip title="Edit" arrow placement="bottom" >
-                <EditIcon
-                  style={{ color: "white", fontSize: "28" }}
-                  onClick={() => handleEditClick(project.id)}
-                />
+                <Tooltip title="Edit" arrow placement="bottom">
+                  <EditIcon
+                    style={{ color: "white", fontSize: "28" }}
+                    onClick={() => handleEditClick(project.id)}
+                  />
                 </Tooltip>
-               
               </div>
             </div>
           </div>
@@ -352,7 +353,6 @@ const Projects = () => {
               borderRadius: "20px",
             }}
           >
-            
             <h4 className="modal-title text-center">Assign User</h4>
             <form onSubmit={handleSubmit} className="mt-4">
               <div className="form-group">
@@ -452,87 +452,88 @@ const Projects = () => {
         </div>
       </Modal>
       <Modal open={showRemove} onClose={handleCancelRemove}>
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "90vh",
-    }}
-  >
-    <div
-      className="modal-content p-4"
-      style={{
-        maxWidth: "450px",
-        height: "500px",
-        width: "100%",
-        backgroundColor: "white",
-        borderRadius: "20px",
-        position: "relative",
-      }}
-    >
-      {/* Close Button */}
-      <button
-        type="button"
-        onClick={handleCancelRemove}
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          background: "none",
-          border: "none",
-          fontSize: "20px",
-          cursor: "pointer",
-        }}
-      >
-        &#10005; {/* X Icon */}
-      </button>
-
-      <form onSubmit={handleSubmit} className="mt-4">
-        <div>
-          <h5 className="mt-5">Assigned Users:</h5>
-          <ul>
-            {projectUsers.map((user) => (
-              <li
-                key={user.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "10px",
-                }}
-              >
-                <span>{user.empName}</span>
-                <PersonRemoveIcon
-                  style={{
-                    color: "red",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => confirmRemoveUser(user.id)} // Confirmation popup
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
-        {/* Cancel Button */}
-        <div className="text-center mt-4">
-          <button
-            type="button"
-            className="btn btn-secondary"
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "90vh",
+          }}
+        >
+          <div
+            className="modal-content p-4"
             style={{
+              maxWidth: "450px",
+              height: "500px",
+              width: "100%",
+              backgroundColor: "white",
               borderRadius: "20px",
-              width: "150px",
+              position: "relative",
             }}
-            onClick={handleCancelRemove}
           >
-            Cancel
-          </button>
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={handleCancelRemove}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "none",
+                border: "none",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            >
+              &#10005; {/* X Icon */}
+            </button>
+
+            <form onSubmit={handleSubmit} className="mt-4">
+              <div>
+                <h4 className="text-center">Remove User from Project</h4>
+                <h5 className="mt-5">Assigned Users:</h5>
+                <ul>
+                  {projectUsers.map((user) => (
+                    <li
+                      key={user.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <span>{user.empName}</span>
+                      <PersonRemoveIcon
+                        style={{
+                          color: "red",
+                          fontSize: "20px",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => confirmRemoveUser(user.id)} // Confirmation popup
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {/* Cancel Button */}
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{
+                    borderRadius: "20px",
+                    width: "150px",
+                  }}
+                  onClick={handleCancelRemove}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
-    </div>
-  </div>
-</Modal>
+      </Modal>
 
       <Modal open={projectModal} onClose={() => setProjectModal(false)}>
         <div
@@ -552,23 +553,23 @@ const Projects = () => {
               borderRadius: "20px",
             }}
           >
-             {/* Close Button */}
-      <button
-        type="button"
-        onClick={handleCancelProject}
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          background: "none",
-          border: "none",
-          fontSize: "25px",
-          cursor: "pointer",
-        }}
-      >
-        &#10005; {/* X Icon */}
-      </button>
-    <h4>  {isEditMode ? "Update Project" : "Add Project"}</h4>
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={handleCancelProject}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "none",
+                border: "none",
+                fontSize: "25px",
+                cursor: "pointer",
+              }}
+            >
+              &#10005; {/* X Icon */}
+            </button>
+            <h4> {isEditMode ? "Update Project" : "Add Project"}</h4>
             <form onSubmit={handleProjectSubmit} className="mt-4">
               <div className="form-group">
                 <input
@@ -581,29 +582,17 @@ const Projects = () => {
                   required
                 />
               </div>
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="projectDir"
-                  className="form-control w-80 mb-3"
-                  placeholder="Project Directory"
-                  onChange={handleProjectChange}
-                  value={projectData.projectDir}
-                  required
-                />
-              </div>
+
               <div className="text-center">
                 <button
                   className="btn btn-secondary mt-3 "
                   style={{
                     borderRadius: "20px",
-                   
+
                     marginRight: "20px",
                     width: "150px",
                   }}
-                  onClick={
-                    handleClearProject
-                  }
+                  onClick={handleClearProject}
                 >
                   Clear
                 </button>
@@ -616,7 +605,7 @@ const Projects = () => {
                     width: "150px",
                   }}
                 >
-                   {isEditMode ? "Update Project" : "Add Project"}
+                  {isEditMode ? "Update Project" : "Add Project"}
                 </button>
               </div>
             </form>

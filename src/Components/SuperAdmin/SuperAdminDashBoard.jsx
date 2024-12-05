@@ -44,16 +44,16 @@ const SuperAdminDashboard = () => {
       {/* Main Content Section */}
       <div className="col-10 p-3">
         {/* Header with Profile Icon */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex justify-content-between align-items-center mt-3 mb-2">
           <h2 className='hidden'></h2>
-        <h4 style={{color:"#808080"}}>Super Admin Dashboard</h4>
+        <h4 style={{color:"#808080" }}>Super Admin Dashboard</h4>
           <div
             className="position-relative"
             onMouseEnter={toggleDropdown}
             onMouseLeave={closeDropdown}
           > 
             
-            <AccountCircleIcon style={{ fontSize: '2rem', cursor: 'pointer' }} />
+            <AccountCircleIcon style={{ fontSize: '2.7rem', cursor: 'pointer' }} />
             {isDropdownOpen && (
               <div
                 className="dropdown-menu dropdown-menu-right show"

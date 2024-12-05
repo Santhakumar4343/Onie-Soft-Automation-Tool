@@ -1,25 +1,51 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import moment from "moment";
 import { executeTestRun, getTestCasesByTestRunId } from "../API/Api";
+import TablePagination from "../Pagination/TablePagination";
 
 function UserTestRunView() {
   const location = useLocation();
   const testRun = location.state?.testRun || {};
+  const payload = location.state?.payload || {};
+  console.log("payload is ",payload)
   const [testCases, setTestCases] = useState([]);
   const [polling, setPolling] = useState(false);
   const pollingInterval = 5000; // Poll every 5 seconds
 
-  
+  const navigate=useNavigate();
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+   // Handle page change
+   const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
 
    // Fetch test cases from API
    const fetchTestCases = async () => {
     try {
-      const response = await getTestCasesByTestRunId(testRun.id);
-      const data = response.data;
-      console.log(data)
-      setTestCases(data); // Assume the API returns an array of test cases
+      const response = await getTestCasesByTestRunId(testRun.id||payload.testRunId, page-1 , itemsPerPage);
+    
+      setTestCases(response.data.content); // Extract content for the test cases
+      setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error("Error fetching test cases:", error);
     }
@@ -36,47 +62,49 @@ function UserTestRunView() {
 
     // Clean up the interval on component unmount
     return () => clearInterval(intervalId);
-  }, []);
+  }, [testRun.id||payload.id,page, itemsPerPage]);
 
   const handleTestRun = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to Execute Test Run?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#4f0e83",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Execute Test Run!",
-      customClass: {
-        confirmButton: "custom-confirm-button",
-        cancelButton: "custom-cancel-button",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        executeTestRun(testRun.id)
-          .then((response) => {
-            const { status } = response;
-            if (status === 200 || status === 201) {
-              Swal.fire(
-                "Execution Started!",
-                "Test Run Execution Started Successfully.",
-                "success"
-              );
-              setPolling(true); // Start polling after execution begins
-            } else {
-              Swal.fire("Oops...!", "Something Went Wrong.", "error");
-            }
-          })
-          .catch((error) => {
-            console.error("Error executing test run:", error);
-            Swal.fire(
-              "Error!",
-              "An unexpected error occurred. Please try again later.",
-              "error"
-            );
-          });
-      }
-    });
+   const id=testRun.id||payload.id;
+    navigate("/userDashboard/configpage",{state:{id}});
+    // Swal.fire({
+    //   title: "Are you sure?",
+    //   text: "Do you want to Execute Test Run?",
+    //   icon: "warning",
+    //   showCancelButton: true,
+    //   confirmButtonColor: "#4f0e83",
+    //   cancelButtonColor: "#d33",
+    //   confirmButtonText: "Yes, Execute Test Run!",
+    //   customClass: {
+    //     confirmButton: "custom-confirm-button",
+    //     cancelButton: "custom-cancel-button",
+    //   },
+    // }).then((result) => {
+    //   if (result.isConfirmed) {
+    //     executeTestRun(testRun.id)
+    //       .then((response) => {
+    //         const { status } = response;
+    //         if (status === 200 || status === 201) {
+    //           Swal.fire(
+    //             "Execution Started!",
+    //             "Test Run Execution Started Successfully.",
+    //             "success"
+    //           );
+    //           setPolling(true); // Start polling after execution begins
+    //         } else {
+    //           Swal.fire("Oops...!", "Something Went Wrong.", "error");
+    //         }
+    //       })
+    //       .catch((error) => {
+    //         console.error("Error executing test run:", error);
+    //         Swal.fire(
+    //           "Error!",
+    //           "An unexpected error occurred. Please try again later.",
+    //           "error"
+    //         );
+    //       });
+    //   }
+    // });
   };
 
   const testCaseColors = {
@@ -84,13 +112,25 @@ function UserTestRunView() {
     "SKIP": "orange",
     "FAIL": "red",
     "PASS": "green",}
-
+    const [searchQuery, setSearchQuery] = useState("");
+    const handleSearchInput = (e) => {
+      const query = e.target.value.toLowerCase();
+      setSearchQuery(query);
+    };
+    const filteredTestCases = testCases.filter(
+      (testcase) =>
+        testcase.testCaseName.toLowerCase().includes(searchQuery) ||
+        testcase.author.toLowerCase().includes(searchQuery)||
+        testcase.feature.toLowerCase().includes(searchQuery)||
+        testcase.automationId.toLowerCase().includes(searchQuery)||
+        testcase.status.toLowerCase().includes(searchQuery)
+    );
   return (
     <div className="container">
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
-        {testRun.testRunName} - Test Run
+        {testRun.testRunName||payload.testRunName} - Test Run
       </h4>
-      <div className="">
+      <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
         <button
           onClick={handleTestRun}
           style={{
@@ -103,6 +143,15 @@ function UserTestRunView() {
         >
           Execute Test Run
         </button>
+
+        <input
+                type="text"
+                value={searchQuery}
+                style={{width:"40%"}}
+                onChange={handleSearchInput}
+                placeholder="Search by Test Case Name, Author,Automation ID"
+                className="form-control "
+              />
       </div>
       <div style={{ maxHeight: "530px", overflowY: "auto" }}>
         <style>
@@ -146,7 +195,7 @@ function UserTestRunView() {
             </tr>
           </thead>
           <tbody>
-            {testCases.map((testCase, index) => (
+            {filteredTestCases.map((testCase, index) => (
               <tr key={index}>
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
@@ -170,6 +219,14 @@ function UserTestRunView() {
           </tbody>
         </table>
       </div>
+      <div> <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        /></div>
     </div>
   );
 }
