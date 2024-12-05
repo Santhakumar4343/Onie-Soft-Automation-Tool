@@ -3,8 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../TestRuns/TestRunDetails.css";
 
 import Swal from "sweetalert2";
-import { addTestCasestoTestRun, edittestrun, getTestCasesByTestRunId, getTestCasesByTestRunIdVthout } from "../API/Api";
+import {
+  addTestCasestoTestRun,
+  getTestCasesToEditTestRun
+} from "../API/Api";
 import moment from "moment";
+import TablePagination from "../Pagination/TablePagination.jsx";
 
 function UserTestRunDetails() {
   const location = useLocation();
@@ -14,32 +18,51 @@ function UserTestRunDetails() {
   const data = location.state?.data || {};
  
   const [testCases, setTestCases] = useState([]);
-  const [casesInRun, setCasesInRun] = useState([]);
+
   const navigate=useNavigate();
+
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
+
+
   useEffect(() => {
     const fetchTestCases = async () => {
       try {
-        const [testRunResponse, testCaseResponse] = await Promise.all([
-          edittestrun(testRun.id||data.id, project.id),
-          getTestCasesByTestRunIdVthout(testRun.id ||data.id),
-        ]);
-       
-        const combinedTestCases = [
-          ...(testRunResponse?.data || []),
-          ...(testCaseResponse?.data || []),
-        ];
-        console.log(combinedTestCases);
-        setTestCases(combinedTestCases);
-        setCasesInRun(testRunResponse.data.map((testCase) => testCase.automationId));
-        setSelectedCases(testCaseResponse.data.map((testCase) => testCase.automationId));
+        getTestCasesToEditTestRun(testRun.id, project.id, page-1, itemsPerPage).then(response => {
+          console.log("Response:", response)
+            setTestCases(response.data.data.testCases);
+            setTotalPages(response.data.pagination.totalPages);
+            setSelectedCases(response.data.data.idsOfTestCasesInTestRun);
+        });
       } catch (error) {
         console.error("Error fetching test cases:", error);
       }
     };
-  
     // Call the fetch function
     fetchTestCases();
-  }, [testRun.id, project.id]);
+    console.log(testCases)
+  }, [testRun.id, project.id, page-1, itemsPerPage]);
 
   const [selectedCases, setSelectedCases] = useState([]);
 
@@ -238,7 +261,16 @@ function UserTestRunDetails() {
           </tbody>
         </table>
       </div>
+      <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+      />
     </div>
+
   );
 }
 
