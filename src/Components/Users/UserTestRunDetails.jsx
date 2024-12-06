@@ -16,7 +16,7 @@ function UserTestRunDetails() {
   const project = location.state?.project || {};
   const testRun = location.state?.testRun || {};
   const data = location.state?.data || {};
- 
+
   const [testCases, setTestCases] = useState([]);
 
   const navigate=useNavigate();
@@ -25,6 +25,8 @@ function UserTestRunDetails() {
 
   const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
   const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+  const [selectedCases, setSelectedCases] = useState([]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -45,6 +47,9 @@ function UserTestRunDetails() {
     setPage(1); // Reset to first page on page size change
   };
 
+  const handleSelectedCasesAdding = (newIds) => {
+    setSelectedCases((prevIds) => [...new Set([...prevIds, ...newIds])]);
+  }
 
   useEffect(() => {
     const fetchTestCases = async () => {
@@ -53,7 +58,7 @@ function UserTestRunDetails() {
           console.log("Response:", response)
             setTestCases(response.data.data.testCases);
             setTotalPages(response.data.pagination.totalPages);
-            setSelectedCases(response.data.data.idsOfTestCasesInTestRun);
+            handleSelectedCasesAdding(response.data.data.idsOfTestCasesInTestRun)
         });
       } catch (error) {
         console.error("Error fetching test cases:", error);
@@ -63,8 +68,6 @@ function UserTestRunDetails() {
     fetchTestCases();
     console.log(testCases)
   }, [testRun.id, project.id, page-1, itemsPerPage]);
-
-  const [selectedCases, setSelectedCases] = useState([]);
 
   // Handle individual row selection
   const handleCheckboxChange = (id) => {
@@ -76,66 +79,75 @@ function UserTestRunDetails() {
   };
 
   const handleSelectAll = () => {
-    if (selectedCases.length === testCases.length) {
-      setSelectedCases([]);
-    } else {
-      setSelectedCases(testCases.map((testCase) => testCase.automationId)); // Select all
-    }
-  };
+    const currentPageIds = testCases.map((testCase) => testCase.automationId);
+    const allSelected = currentPageIds.every((id) =>
+        selectedCases.includes(id)
+    );
 
-  const handleAddToTestRun = () => {
-    if (selectedCases.length === 0) {
-      Swal.fire("Error", "No test cases selected!", "error");
-      return;
-    }
-
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to add these test cases to the Test Run?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#4f0e83",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, add to Test Run!",
-      customClass: {
-        confirmButton: "custom-confirm-button",
-        cancelButton: "custom-cancel-button",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Prepare payload for API
-        const payload = {
-          testRunId: testRun.id ||data.id,
-          testRunName: testRun.testRunName||data.testRunName || "Default Test Run Name",
-          testCaseId: selectedCases,
-        };
-
-        addTestCasestoTestRun(payload)
-          .then((response) => {
-            if (response.status === 200 || response.status === 201) {
-              navigate("/userDashboard/testRunView", { state: { payload } });
-              Swal.fire(
-                "Added!",
-                "Selected test cases have been added to the Test Run.",
-                "success"
-              );
-              window.location.reload();
-              setSelectedCases([]);
-            } else {
-              Swal.fire(
-                "Error",
-                "Failed to add test cases to the Test Run.",
-                "error"
-              );
-            }
-          })
-          .catch((error) => {
-            console.error("Error adding test cases to the test run:", error);
-          });
+    setSelectedCases((prevSelected) => {
+      if (allSelected) {
+        // Remove current page IDs if already selected
+        return prevSelected.filter((id) => !currentPageIds.includes(id));
+      } else {
+        // Add current page IDs if not already selected
+        return [...prevSelected, ...currentPageIds.filter((id) => !prevSelected.includes(id))];
       }
     });
   };
-  
+
+    const handleAddToTestRun = () => {
+      if (selectedCases.length === 0) {
+        Swal.fire("Error", "No test cases selected!", "error");
+        return;
+      }
+
+      Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to add these test cases to the Test Run?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#4f0e83",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, add to Test Run!",
+        customClass: {
+          confirmButton: "custom-confirm-button",
+          cancelButton: "custom-cancel-button",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Prepare payload for API
+          const payload = {
+            testRunId: testRun.id ||data.id,
+            testRunName: testRun.testRunName||data.testRunName || "Default Test Run Name",
+            testCaseId: selectedCases,
+          };
+
+          addTestCasestoTestRun(payload)
+            .then((response) => {
+              if (response.status === 200 || response.status === 201) {
+                navigate("/userDashboard/testRunView", { state: { payload } });
+                Swal.fire(
+                  "Added!",
+                  "Selected test cases have been added to the Test Run.",
+                  "success"
+                );
+                window.location.reload();
+                setSelectedCases([]);
+              } else {
+                Swal.fire(
+                  "Error",
+                  "Failed to add test cases to the Test Run.",
+                  "error"
+                );
+              }
+            })
+            .catch((error) => {
+              console.error("Error adding test cases to the test run:", error);
+            });
+        }
+      });
+    };
+
   const [searchQuery, setSearchQuery] = useState("");
   const handleSearchInput = (e) => {
     const query = e.target.value.toLowerCase();
@@ -149,14 +161,14 @@ function UserTestRunDetails() {
       testcase.automationId.toLowerCase().includes(searchQuery)
   );
 
- 
+
   return (
     <div className="container">
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
         {testRun.testRunName ||data.testRunName}-Test Run{" "}
       </h4>
       <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
-        
+
         <button
           onClick={handleAddToTestRun}
           disabled={selectedCases.length === 0}
@@ -190,8 +202,8 @@ function UserTestRunDetails() {
       /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
       div::-webkit-scrollbar {
         width: 2px;
-        
-       
+
+
       }
       div::-webkit-scrollbar-thumb {
         background-color: #4f0e83;
@@ -203,14 +215,14 @@ function UserTestRunDetails() {
 
       /* Scrollbar styling for Firefox */
       div {
-        scrollbar-width: thin; 
-        scrollbar-color: #4f0e83 #e0e0e0;   
+        scrollbar-width: thin;
+        scrollbar-color: #4f0e83 #e0e0e0;
       }
     `}
         </style>
         <table
           className="table  table-hover mt-4"
-         
+
         >
           <thead
             style={{
@@ -273,5 +285,6 @@ function UserTestRunDetails() {
 
   );
 }
+
 
 export default UserTestRunDetails;
