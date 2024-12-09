@@ -12,7 +12,6 @@ import TablePagination from "../Pagination/TablePagination.jsx";
 
 function UserTestRunDetails() {
   const location = useLocation();
-
   const project = location.state?.project || {};
   const testRun = location.state?.testRun || {};
   const data = location.state?.data || {};
@@ -165,7 +164,7 @@ function UserTestRunDetails() {
   return (
     <div className="container">
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
-        {testRun.testRunName ||data.testRunName}-Test Run{" "}
+        {project.projectName} : {testRun.testRunName ||data.testRunName} : Select Test Cases to this run{" "}
       </h4>
       <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
 
@@ -246,8 +245,6 @@ function UserTestRunDetails() {
               <th>Test Case Name</th>
               <th>Automation ID</th>
               <th>Author</th>
-              <th>Created Date</th>
-              <th>Updated Date</th>
             </tr>
           </thead>
           <tbody>
@@ -264,10 +261,6 @@ function UserTestRunDetails() {
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
                 <td>{testCase.author}</td>
-                <td>
-                  {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}
-                </td>
-                <td>{testCase.updatedAt}</td>
               </tr>
             ))}
           </tbody>

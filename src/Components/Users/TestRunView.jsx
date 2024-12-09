@@ -8,7 +8,8 @@ function UserTestRunView() {
   const location = useLocation();
   const testRun = location.state?.testRun || {};
   const payload = location.state?.payload || {};
-  console.log("payload is ",payload)
+  const project = location.state?.project || {};
+  console.log("Location State is ",location.state)
   const [testCases, setTestCases] = useState([]);
   const pollingInterval = 30000; // Poll every 5 seconds
 
@@ -88,7 +89,7 @@ function UserTestRunView() {
   return (
     <div className="container">
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
-        {testRun.testRunName||payload.testRunName} - Test Run
+          {project.projectName} : {testRun.testRunName||payload.testRunName} : Test Cases in this run
       </h4>
       <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
         <button
@@ -133,8 +134,7 @@ function UserTestRunView() {
         `}
         </style>
         <table
-          className="table table-hover mt-4"
-          style={{ textAlign: "center" }}
+          className="table table-hover"
         >
           <thead
             style={{
@@ -150,8 +150,6 @@ function UserTestRunView() {
               <th>Automation ID</th>
               <th>Status</th>
               <th>Author</th>
-              <th>Created Date</th>
-              <th>Updated Date</th>
             </tr>
           </thead>
           <tbody>
@@ -170,10 +168,6 @@ function UserTestRunView() {
                   </span>
                 </td>
                 <td>{testCase.author}</td>
-                <td>
-                  {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}
-                </td>
-                <td>{testCase.updatedAt}</td>
               </tr>
             ))}
           </tbody>

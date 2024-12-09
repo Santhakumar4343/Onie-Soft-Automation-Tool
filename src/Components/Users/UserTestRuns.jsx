@@ -60,6 +60,10 @@ const UserTestRuns = () => {
         setTestRunModal(true)
     };
 
+    const handleViewAllTestCasesClick = () => {
+        navigate(`/userDashboard/testcases/${project.id}`, { state: { project } });
+    };
+
     const filteredTestRuns = testRuns.filter(
         (testRun) =>
             testRun.testRunName.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -94,8 +98,8 @@ const UserTestRuns = () => {
         };
         createTestRun(data)
             .then((response) => {
-                const data = response.data;
-                navigate("/userDashboard/testRunDetails", {state: {project, data}});
+                const testRun = response.data;
+                navigate("/userDashboard/testRunDetails", {state: {project, testRun}});
 
                 Swal.fire({
                     icon: "success",
@@ -129,22 +133,39 @@ const UserTestRuns = () => {
 
         <div className="container ">
             <h4 className="text-center mb-2" style={{color: "#4f0e83"}}>
-                {project.projectName}-Test Runs
+                {project.projectName} : Test Runs
             </h4>
-            <div className="d-flex justify-content-between mb-3">
+            <div className="d-flex justify-content-between mb-3 align-items-center">
+                <div>
                 <button
                     className="btn btn-primary"
                     style={{
                         height: "40px",
                         color: "white",
                         backgroundColor: "#4f0e83",
-                        width: "15%",
+                        width: "150px",
                         borderRadius: "20px",
+                        marginRight: "10px",
                     }}
                     onClick={handleTestRun}
                 >
-                    Create Test Run
+                    Add Test Run
                 </button>
+                <button
+                    onClick={handleViewAllTestCasesClick}
+                    style={{
+                        color: "white",
+                        backgroundColor: "#4f0e83",
+                        borderRadius: "20px",
+                        padding: "8px 15px",
+                        width: "170px",
+                        height: "40px",
+                    }}
+                    className="btn"
+                >
+                    View All Test Cases
+                </button>
+                </div>
                 <input
                     type="text"
                     value={searchText}
@@ -199,9 +220,8 @@ const UserTestRuns = () => {
 
                         <th>Test Run Name</th>
                         <th>Created By</th>
-                        <th>Created At</th>
-                        <th>Updated At</th>
-                        <th>Test Cases</th>
+                        <th>No. of Test Cases</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -217,12 +237,7 @@ const UserTestRuns = () => {
 
                             <td>{testRun.testRunName}</td>
                             <td>{testRun.createdBy}</td>
-                            <td>
-                                {moment(testRun.createdAt).format("DD MMM YYYY, HH:mm:ss")}
-                            </td>
-                            <td>
-                                {moment(testRun.updatedAt).format("DD MMM YYYY, HH:mm:ss")}
-                            </td>
+                            <td>{testRun.testCaseCount}</td>
                             <div>
                                 <td>
                                     <EditIcon
