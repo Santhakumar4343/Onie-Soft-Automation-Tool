@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 import moment from "moment";
-import { executeTestRun, getTestCasesByTestRunId } from "../API/Api";
+import { getTestCasesByTestRunId } from "../API/Api";
 import TablePagination from "../Pagination/TablePagination";
 
 function UserTestRunView() {
@@ -11,8 +10,7 @@ function UserTestRunView() {
   const payload = location.state?.payload || {};
   console.log("payload is ",payload)
   const [testCases, setTestCases] = useState([]);
-  const [polling, setPolling] = useState(false);
-  const pollingInterval = 5000; // Poll every 5 seconds
+  const pollingInterval = 30000; // Poll every 5 seconds
 
   const navigate=useNavigate();
   const [page, setPage] = useState(1); // Current page number
@@ -67,44 +65,6 @@ function UserTestRunView() {
   const handleTestRun = () => {
    const id=testRun.id||payload.id;
     navigate("/userDashboard/configpage",{state:{id}});
-    // Swal.fire({
-    //   title: "Are you sure?",
-    //   text: "Do you want to Execute Test Run?",
-    //   icon: "warning",
-    //   showCancelButton: true,
-    //   confirmButtonColor: "#4f0e83",
-    //   cancelButtonColor: "#d33",
-    //   confirmButtonText: "Yes, Execute Test Run!",
-    //   customClass: {
-    //     confirmButton: "custom-confirm-button",
-    //     cancelButton: "custom-cancel-button",
-    //   },
-    // }).then((result) => {
-    //   if (result.isConfirmed) {
-    //     executeTestRun(testRun.id)
-    //       .then((response) => {
-    //         const { status } = response;
-    //         if (status === 200 || status === 201) {
-    //           Swal.fire(
-    //             "Execution Started!",
-    //             "Test Run Execution Started Successfully.",
-    //             "success"
-    //           );
-    //           setPolling(true); // Start polling after execution begins
-    //         } else {
-    //           Swal.fire("Oops...!", "Something Went Wrong.", "error");
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         console.error("Error executing test run:", error);
-    //         Swal.fire(
-    //           "Error!",
-    //           "An unexpected error occurred. Please try again later.",
-    //           "error"
-    //         );
-    //       });
-    //   }
-    // });
   };
 
   const testCaseColors = {
