@@ -19,7 +19,6 @@ import {
     updateRunConfig,
 } from "../API/Api";
 import Swal from "sweetalert2";
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 
 const Configurations = () => {
     const location = useLocation();
