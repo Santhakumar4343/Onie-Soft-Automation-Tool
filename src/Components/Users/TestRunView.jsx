@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import moment from "moment";
-import { getTestCasesByTestRunId } from "../API/Api";
-import TablePagination from "../Pagination/TablePagination";
 
+import { executeTestRun, getTestCasesByTestRunId, testRunConfig, updateRunConfig } from "../API/Api";
+import TablePagination from "../Pagination/TablePagination";
+import Swal from "sweetalert2";
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from 'dayjs';
+import CloseIcon from '@mui/icons-material/Close';
 function UserTestRunView() {
   const location = useLocation();
   const testRun = location.state?.testRun || {};
@@ -13,7 +19,6 @@ function UserTestRunView() {
   const [testCases, setTestCases] = useState([]);
   const pollingInterval = 30000; // Poll every 5 seconds
 
-  const navigate=useNavigate();
   const [page, setPage] = useState(1); // Current page number
 
   const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
@@ -63,10 +68,6 @@ function UserTestRunView() {
     return () => clearInterval(intervalId);
   }, [testRun.id||payload.id,page, itemsPerPage]);
 
-  const handleTestRun = () => {
-   const id=testRun.id||payload.id;
-    navigate("/userDashboard/configpage",{state:{id, testRun, project}});
-  };
 
   const testCaseColors = {
     "In Progress": "blue",
@@ -86,6 +87,136 @@ function UserTestRunView() {
         testcase.automationId.toLowerCase().includes(searchQuery)||
         testcase.status.toLowerCase().includes(searchQuery)
     );
+
+    
+  
+  
+ 
+
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleClose=()=>{
+    setIsModalOpen(false);
+  }
+ 
+  const handleTestRun = () => {
+    setIsModalOpen(true)
+  };
+
+  
+  const [wait, setWait] = useState({
+    shortWait: 15,
+    customWait: 30,
+    retryCount: 0,
+  });
+
+  const [createJiraIssues, setCreateJiraIssues] = useState(true);
+  // Default: Live Reporting disabled
+  const [overrideReport, setOverrideReport] = useState(false);
+  const [browser, setBrowser] = useState("chrome");
+  const [testType, setTestType] = useState("all");
+  const [headLess, setHeadLess] = useState(false);
+  const [traceView, setTraceView] = useState(false);
+  const [enableRecording, setEnableRecording] = useState(false);
+  const [enableScheduling, setEnableScheduling] = useState(false);
+  const [scheduleConfig, setScheduleConfig] = useState({
+    scheduleDate: "",
+    scheduleTime: "",
+  });
+
+  const [id, setId] = useState(0);
+
+  useEffect(() => {
+    testRunConfig(testRun.id||payload.id)
+      .then((response) => {
+        const data = response.data;
+        setId(data.id);
+
+        setWait({
+          shortWait: data.shortWait,
+          customWait: data.customWait,
+          retryCount: data.retryCount,
+        });
+        setBrowser(data.browser);
+        setTestType(data.testType);
+        setHeadLess(data.headLess);
+        setTraceView(data.traceView);
+        setEnableRecording(data.enableRecording);
+
+        setOverrideReport(data.overrideReport);
+
+        setCreateJiraIssues(data.createJiraIssues);
+        setEnableScheduling(data.scheduleExecution)
+        setScheduleConfig({
+          scheduleDate: data.scheduledDate,
+          scheduleTime: data.scheduledTime,
+        });
+      })
+      .catch((err) => console.log(err));
+  }, [testRun.id||payload.id]);
+
+  const handleNestedChange = (setter) => (key) => (newValue) => {
+    setter((prev) => ({
+      ...prev,
+      [key]: newValue,
+    }));
+  };
+  
+
+  
+
+  const handleSubmit = (startExecution) => {
+    const payload = {
+      id: id,
+      testRunId: testRun.id||payload.id,
+      browser: browser,
+      headLess: headLess,
+      traceView: traceView,
+      enableRecording: enableRecording,
+      testType: testType,
+      shortWait: wait.shortWait,
+      customWait: wait.customWait,
+      retryCount: wait.retryCount,
+      overrideReport: overrideReport,
+      createJiraIssues: createJiraIssues,
+      scheduleExecution: enableScheduling,
+      scheduledDate: scheduleConfig.scheduleDate,
+      scheduledTime: scheduleConfig.scheduleTime,
+    };
+    console.log(payload);
+    updateRunConfig(payload).then((response) => {
+      if (response.status === 200 || response.status === 201) {
+         setIsModalOpen(false)
+        Swal.fire({
+          icon: "success",
+          title: "Update Successful",
+          text: "Configuration updated successfully!",
+        });
+        if (startExecution) {
+          executeTestRun(testRun.id);
+        }
+        // navigate("/userDashboard/configpage", {state: {testRun, project}});
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: "Failed to update configuration. Please try again.",
+        });
+      }
+    });
+  };
+
+  const handleScheduleDateChange = (newValue) => {
+    // Convert Dayjs object to LocalDate (in ISO format)
+    const formattedDate = newValue ? newValue.toISOString().split('T')[0] : null;
+    handleNestedChange(setScheduleConfig)('scheduleDate')(formattedDate);
+  };
+
+  const handleScheduleTimeChange = (newValue) => {
+    // Convert Dayjs object to LocalTime (in ISO format)
+    const formattedTime = newValue ? newValue.format('HH:mm') : null;
+    handleNestedChange(setScheduleConfig)('scheduleTime')(formattedTime);
+  };
   return (
     <div className="container">
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
@@ -181,6 +312,219 @@ function UserTestRunView() {
           handleNextPage={handleNextPage}
           handlePageSizeChange={handlePageSizeChange}
         /></div>
+
+<Dialog open={isModalOpen} onClose={handleClose} fullWidth maxWidth="md">
+<DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h6">
+          {project.projectName} : {testRun.testRunName} : Configurations
+        </Typography>
+        <IconButton edge="end" color="inherit"  onClick={handleClose}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+    <DialogContent dividers>
+      {/* Runner Configurations */}
+      <Typography variant="h6">Runner Configurations</Typography>
+      <Grid container spacing={2} alignItems="center" className="mt-2">
+        {/* Browser Select */}
+        <Grid item xs={6}>
+          <Select
+            value={browser}
+            onChange={(e) => setBrowser(e.target.value)}
+            fullWidth
+            variant="outlined"
+            margin="normal"
+          >
+            <MenuItem value="chrome">Chrome</MenuItem>
+            <MenuItem value="firefox">Firefox</MenuItem>
+            <MenuItem value="edge">Edge</MenuItem>
+          </Select>
+        </Grid>
+        {/* Test Type Select */}
+        <Grid item xs={6}>
+          <Select
+            value={testType}
+            onChange={(e) => setTestType(e.target.value)}
+            fullWidth
+            variant="outlined"
+            margin="normal"
+          >
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="api">API</MenuItem>
+            <MenuItem value="web">Web</MenuItem>
+            <MenuItem value="mobile">Mobile</MenuItem>
+          </Select>
+        </Grid>
+        <Grid item xs={4}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={headLess}
+                onChange={(e) => setHeadLess(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Headless Mode"
+          />
+        </Grid>
+        {/* Trace View Option */}
+        <Grid item xs={4}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={traceView}
+                onChange={(e) => setTraceView(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Trace View"
+          />
+        </Grid>
+        {/* Enable Recording Option */}
+        <Grid item xs={4}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={enableRecording}
+                onChange={(e) => setEnableRecording(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Enable Recording"
+          />
+        </Grid>
+        {/* Short Wait */}
+        <Grid item xs={4}>
+          <TextField
+            label="Short Wait"
+            value={wait.shortWait}
+            type="number"
+            fullWidth
+            margin="normal"
+            variant="outlined"
+            onChange={handleNestedChange(setWait)("shortWait")}
+          />
+        </Grid>
+        {/* Custom Wait */}
+        <Grid item xs={4}>
+          <TextField
+            label="Custom Wait"
+            value={wait.customWait}
+            type="number"
+            fullWidth
+            margin="normal"
+            variant="outlined"
+            onChange={handleNestedChange(setWait)("customWait")}
+          />
+        </Grid>
+        {/* Retry Count */}
+        <Grid item xs={4}>
+          <TextField
+            label="Retry Count"
+            value={wait.retryCount}
+            type="number"
+            fullWidth
+            margin="normal"
+            variant="outlined"
+            onChange={handleNestedChange(setWait)("retryCount")}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Report Configurations */}
+      <Typography variant="h6">Report Configurations</Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={overrideReport}
+                onChange={() => setOverrideReport(!overrideReport)}
+              />
+            }
+            label="Override Report"
+          />
+        </Grid>
+      </Grid>
+
+      {/* JIRA Configurations */}
+      <Typography variant="h6">JIRA Configurations</Typography>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={createJiraIssues}
+            onChange={() => setCreateJiraIssues(!createJiraIssues)}
+          />
+        }
+        label="Create JIRA Issues"
+      />
+
+      {/* Schedule Configurations */}
+      <Typography variant="h6" >Schedule Configurations</Typography>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={enableScheduling}
+            onChange={() => setEnableScheduling(!enableScheduling)}
+          />
+        }
+        label="Enable Scheduling"
+        className="mb-2"
+      />
+     {enableScheduling && (
+  <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <Grid container spacing={2}>
+      <Grid item xs={6}>
+      <DatePicker
+              label="Schedule Date"
+              value={scheduleConfig.scheduleDate ? dayjs(scheduleConfig.scheduleDate) : null}
+              onChange={handleScheduleDateChange}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth margin="normal" variant="outlined" />
+              )}
+            />
+      </Grid>
+      <Grid item xs={6}>
+      <TimePicker
+              label="Schedule Time"
+              value={scheduleConfig.scheduleTime ? dayjs(scheduleConfig.scheduleTime, 'HH:mm:ss') : null}
+              onChange={handleScheduleTimeChange}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth margin="normal" variant="outlined" />
+              )}
+            />
+      </Grid>
+    </Grid>
+  </LocalizationProvider>
+)}
+
+    </DialogContent>
+    <DialogActions className="d-flex justify-content-center align-items-center">
+      <Button
+        variant="contained"
+        style={{
+          backgroundColor: "#4f0e83",
+          color: "white",
+          borderRadius: "20px",
+        }}
+        onClick={() => handleSubmit(false)}
+      >
+        Save Configurations
+      </Button>
+      <Button
+        variant="contained"
+        style={{
+          backgroundColor: "#4f0e83",
+          color: "white",
+          borderRadius: "20px",
+        }}
+        onClick={() => handleSubmit(true)}
+      >
+        Save & Start Execution
+      </Button>
+      
+    </DialogActions>
+  </Dialog>
     </div>
   );
 }
