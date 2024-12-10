@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 import moment from "moment";
-import { executeTestRun, getTestCasesByTestRunId } from "../API/Api";
+import { getTestCasesByTestRunId } from "../API/Api";
 import TablePagination from "../Pagination/TablePagination";
 
 function UserTestRunView() {
   const location = useLocation();
   const testRun = location.state?.testRun || {};
   const payload = location.state?.payload || {};
-  console.log("payload is ",payload)
+  const project = location.state?.project || {};
+  console.log("Location State is ",location.state)
   const [testCases, setTestCases] = useState([]);
-  const [polling, setPolling] = useState(false);
-  const pollingInterval = 5000; // Poll every 5 seconds
+  const pollingInterval = 30000; // Poll every 5 seconds
 
   const navigate=useNavigate();
   const [page, setPage] = useState(1); // Current page number
@@ -66,45 +65,7 @@ function UserTestRunView() {
 
   const handleTestRun = () => {
    const id=testRun.id||payload.id;
-    navigate("/userDashboard/configpage",{state:{id}});
-    // Swal.fire({
-    //   title: "Are you sure?",
-    //   text: "Do you want to Execute Test Run?",
-    //   icon: "warning",
-    //   showCancelButton: true,
-    //   confirmButtonColor: "#4f0e83",
-    //   cancelButtonColor: "#d33",
-    //   confirmButtonText: "Yes, Execute Test Run!",
-    //   customClass: {
-    //     confirmButton: "custom-confirm-button",
-    //     cancelButton: "custom-cancel-button",
-    //   },
-    // }).then((result) => {
-    //   if (result.isConfirmed) {
-    //     executeTestRun(testRun.id)
-    //       .then((response) => {
-    //         const { status } = response;
-    //         if (status === 200 || status === 201) {
-    //           Swal.fire(
-    //             "Execution Started!",
-    //             "Test Run Execution Started Successfully.",
-    //             "success"
-    //           );
-    //           setPolling(true); // Start polling after execution begins
-    //         } else {
-    //           Swal.fire("Oops...!", "Something Went Wrong.", "error");
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         console.error("Error executing test run:", error);
-    //         Swal.fire(
-    //           "Error!",
-    //           "An unexpected error occurred. Please try again later.",
-    //           "error"
-    //         );
-    //       });
-    //   }
-    // });
+    navigate("/userDashboard/configpage",{state:{id, testRun, project}});
   };
 
   const testCaseColors = {
@@ -128,7 +89,7 @@ function UserTestRunView() {
   return (
     <div className="container">
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
-        {testRun.testRunName||payload.testRunName} - Test Run
+          {project.projectName} : {testRun.testRunName||payload.testRunName} : Test Cases in this run
       </h4>
       <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
         <button
@@ -173,8 +134,7 @@ function UserTestRunView() {
         `}
         </style>
         <table
-          className="table table-hover mt-4"
-          style={{ textAlign: "center" }}
+          className="table table-hover"
         >
           <thead
             style={{
@@ -190,8 +150,6 @@ function UserTestRunView() {
               <th>Automation ID</th>
               <th>Status</th>
               <th>Author</th>
-              <th>Created Date</th>
-              <th>Updated Date</th>
             </tr>
           </thead>
           <tbody>
@@ -210,10 +168,6 @@ function UserTestRunView() {
                   </span>
                 </td>
                 <td>{testCase.author}</td>
-                <td>
-                  {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}
-                </td>
-                <td>{testCase.updatedAt}</td>
               </tr>
             ))}
           </tbody>

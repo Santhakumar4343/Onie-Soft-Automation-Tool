@@ -186,9 +186,9 @@ export const getTestCasesByTestRunIdVthout = (id) => {
   const headers = getApiHeaders();
   return Api.get(`/testrun/v1/listoftestcases?testRunId=${id}`, headers);
 };
-export const getUnmapedTestCasesByTestRunId = (id) => {
+export const getTestCasesToEditTestRun = (id, projectId, page, itemsPerPage) => {
   const headers = getApiHeaders();
-  return Api.get(`/testrun/v1/testrun/v1/edittestrun/${id}`, headers);
+  return Api.get(`/testrun/v1/edittestrun/${id}/${projectId}?page=${page}&size=${itemsPerPage}`, headers);
 };
 export const executeTestRun = (id) => {
   return Api.post(`/testrun/v1/run/${id}`);
