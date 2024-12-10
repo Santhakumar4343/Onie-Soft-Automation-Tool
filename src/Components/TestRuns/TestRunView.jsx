@@ -10,7 +10,7 @@ function UserTestRunView() {
   const testRun = location.state?.testRun || {};
   const [testCases, setTestCases] = useState([]);
   
-  const pollingInterval = 5000; // Poll every 5 seconds
+  const pollingInterval = 30000; // Poll every 5 seconds
 
   
   const [page, setPage] = useState(1); // Current page number

@@ -83,7 +83,7 @@ const UserProjects = () => {
 
   const navigate = useNavigate();
   const handleProjectClick = (project) => {
-    navigate(`/userDashboard/testcases/${project.id}`, { state: { project } });
+      navigate(`/userDashboard/testruns`, { state: { project } });
   };
   const handleUserSelect = (e) => {
     const selectedIds = Array.from(
