@@ -131,7 +131,7 @@ const Config = () => {
         >
           Add Project
         </Button> */}
-        <h4 style={{ color: "#4f0e83" ,textAlign:"center"}}>Project Configurations</h4>
+        <h4 style={{ color: "#4f0e83" ,textAlign:"center"}}>Device Configurations</h4>
         <h1></h1>
       </div>
       <div
