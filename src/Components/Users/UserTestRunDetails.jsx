@@ -124,7 +124,7 @@ function UserTestRunDetails() {
           addTestCasestoTestRun(payload)
             .then((response) => {
               if (response.status === 200 || response.status === 201) {
-                navigate("/userDashboard/testRunView", { state: { payload } });
+                navigate("/userDashboard/testRunView", { state: { payload, project } });
                 Swal.fire(
                   "Added!",
                   "Selected test cases have been added to the Test Run.",
@@ -249,12 +249,21 @@ function UserTestRunDetails() {
           </thead>
           <tbody>
             {filteredTestCases.map((testCase, index) => (
-              <tr key={index}>
+              <tr
+                key={index}
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={() => handleCheckboxChange(testCase.automationId)}
+              >
                 <td>
                   <input
                     type="checkbox"
                     checked={selectedCases.includes(testCase.automationId)}
-                    onChange={() => handleCheckboxChange(testCase.automationId)}
+                    onChange={() => {}}
+                    style={{
+                      pointerEvents: "none",
+                    }}
                   />
                 </td>
 

@@ -65,7 +65,7 @@ function UserTestRunView() {
 
   const handleTestRun = () => {
    const id=testRun.id||payload.id;
-    navigate("/userDashboard/configpage",{state:{id}});
+    navigate("/userDashboard/configpage",{state:{id, testRun, project}});
   };
 
   const testCaseColors = {

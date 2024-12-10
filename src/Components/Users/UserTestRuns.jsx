@@ -249,14 +249,20 @@ const UserTestRuns = () => {
                                 <td>
                                     <RemoveRedEyeIcon
                                         className="me-2"
-                                        style={{cursor: "pointer", color: "#4f0e83"}}
-                                        onClick={() => handleTestRunView(testRun)}
+                                        style={{
+                                            cursor: testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
+                                            color: "#4f0e83",
+                                            opacity: testRun.testCaseCount === 0 ? 0.5 : 1,}}
+                                        onClick={() => testRun.testCaseCount !== 0 && handleTestRunView(testRun)}
                                     />
                                 </td>
                                 <td>
                                     <ContentCopyIcon
-                                        style={{cursor: "pointer", color: "#4f0e83"}}
-                                        onClick={() => handleCloneTestcases(testRun.id)}
+                                        style={{
+                                            cursor: testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
+                                            color: "#4f0e83",
+                                            opacity: testRun.testCaseCount === 0 ? 0.5 : 1,}}
+                                        onClick={() => testRun.testCaseCount !== 0 && handleCloneTestcases(testRun.id)}
                                     />
                                 </td>
                             </div>
