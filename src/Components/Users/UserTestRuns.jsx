@@ -7,41 +7,41 @@ import EditIcon from "@mui/icons-material/Edit";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TablePagination from "../Pagination/TablePagination";
-
 import {PlayArrow} from "@mui/icons-material";
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 const UserTestRuns = () => {
-  const [searchText, setSearchText] = useState("");
-  const [testRunModal, setTestRunModal] = useState(false);
-  const navigate = useNavigate();
-  const user = JSON.parse(sessionStorage.getItem("user"));
-  console.log(user.id);
-  const location = useLocation();
+        const [searchText, setSearchText] = useState("");
+        const [testRunModal, setTestRunModal] = useState(false);
+        const [testRunCloneModal, setTestRunCloneModal] = useState(false);
+        const navigate = useNavigate();
+        const user = JSON.parse(sessionStorage.getItem("user"));
+        console.log(user.id);
+        const location = useLocation();
 
-  const { project } = location.state || {};
+        const {project} = location.state || {};
 
-  const [testRunData, setTestData] = useState({
-    testRunName: "",
-  });
-  const [testRuns, setTestRuns] = useState([]);
+        const [testRunData, setTestData] = useState({
+            testRunName: "",
+        });
+        const [testRuns, setTestRuns] = useState([]);
 
-  const [page, setPage] = useState(1); // Current page number
+        const [page, setPage] = useState(1); // Current page number
 
-  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
-  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+        const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+        const [totalPages, setTotalPages] = useState(0); // To store total number of pages
 
-  // Handle page change
-  const handlePageChange = (newPage) => {
-    setPage(newPage + 1); // Since pagination is 1-indexed
-  };
+        // Handle page change
+        const handlePageChange = (newPage) => {
+            setPage(newPage + 1); // Since pagination is 1-indexed
+        };
 
-  // Handle previous page
-  const handlePreviousPage = () => {
-    if (page > 1) setPage(page - 1);
-  };
-  const handleNextPage = () => {
-    if (page < totalPages) setPage(page + 1);
-  };
+        // Handle previous page
+        const handlePreviousPage = () => {
+            if (page > 1) setPage(page - 1);
+        };
+        const handleNextPage = () => {
+            if (page < totalPages) setPage(page + 1);
+        };
 
   // Handle page size change
   const handlePageSizeChange = (e) => {
@@ -58,9 +58,9 @@ const UserTestRuns = () => {
       .catch((err) => console.log(err));
   }, [project.id,page - 1, itemsPerPage]);
 
-  const handleTestRun = () => {
-    setTestRunModal(true);
-  };
+        const handleTestRun = () => {
+            setTestRunModal(true)
+        };
 
   const handleViewAllTestCasesClick = () => {
     navigate(`/userDashboard/testcases/${project.id}`, { state: { project } });
@@ -80,19 +80,34 @@ const UserTestRuns = () => {
   const handleTestRunView = (testRun) =>
     navigate("/userDashboard/testRunView", { state: { project, testRun } });
 
-  const handleCloneTestcases = (testRunId) => {
-    TestRunClone(testRunId, project.id)
-      .then((response) => {
-        // Assuming newTestRuns is the updated list of test runs that you want to add
-        // Spread the previous state and new test runs
-        setTestRuns((prev) => [...prev, response.data]);
-        Swal.fire("Success", "Test cases cloned successfully!", "success");
-      })
-      .catch((err) => {
-        console.error(err);
-        Swal.fire("Error", "Failed to clone test cases.", "error");
-      });
-  };
+        const [testRun, setTestRun] = useState({});
+
+        const handleCloneTestcases = (testRun) => {
+            setTestRunCloneModal(true);
+            setTestRun(testRun)
+        }
+
+        const handleCloneFormSubmit = (e) => {
+            e.preventDefault();
+            const data = {
+                testRunName: testRun.testRunName,
+            }
+            TestRunClone(testRun.id, project.id, data)
+                .then(() => {
+                    Swal.fire("Success", "Test cases cloned successfully!", "success");
+                    setTestRunCloneModal(false);
+                    getTestRunByProjectId(project.id, page - 1, itemsPerPage).then(
+                        response => {
+                            setTestRuns(response.data.content)
+                            setTotalPages(response.data.totalPages)
+                        }
+                    ).catch(err => console.log(err))
+                })
+                .catch((err) => {
+                    console.error(err);
+                    Swal.fire("Error", "Failed to clone test cases.", "error");
+                });
+        };
 
   const handleTestRunSubmit = (e) => {
     e.preventDefault();
@@ -128,13 +143,18 @@ const UserTestRuns = () => {
       });
   };
 
-  const handleTestRunChange = (e) => {
-    const { name, value } = e.target;
-    setTestData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+        const handleRunExecute = (testRun) => {
+            const id = testRun.id;
+            navigate("/userDashboard/configpage", {state: {id, testRun, project}});
+        };
+
+        const handleTestRunChange = (e) => {
+            const {name, value} = e.target;
+            setTestData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        };
 
   const handleBackwardClick = () => {
     navigate("/userDashboard/projects");
@@ -464,162 +484,6 @@ const UserTestRuns = () => {
         );
     }
 ;
-
-        </style>
-        <table className="table  table-hover">
-          <thead
-            className="thead-dark"
-            style={{
-              position: "sticky",
-              top: 0,
-              backgroundColor: "#f8f9fa",
-              zIndex: 100,
-              color: "#4f0e83",
-            }}
-          >
-            <tr>
-              <th>Test Run Name</th>
-              <th>Created By</th>
-              <th>No. of Test Cases</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTestRuns.map((testRun, index) => (
-              <tr
-                key={index}
-                style={{
-                  cursor: "pointer",
-                  backgroundColor: "rgb(79, 103, 228)",
-                  color: "white",
-                }}
-              >
-                <td>{testRun.testRunName}</td>
-                <td>{testRun.createdBy}</td>
-                <td>{testRun.testCaseCount}</td>
-                <div>
-                  <td>
-                    <EditIcon
-                      className="me-2"
-                      style={{ cursor: "pointer", color: "#4f0e83" }}
-                      onClick={() => handleTestRunClick(testRun)}
-                    />
-                  </td>
-                  <td>
-                    <RemoveRedEyeIcon
-                      className="me-2"
-                      style={{
-                        cursor:
-                          testRun.testCaseCount === 0
-                            ? "not-allowed"
-                            : "pointer",
-                        color: "#4f0e83",
-                        opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
-                      }}
-                      onClick={() =>
-                        testRun.testCaseCount !== 0 &&
-                        handleTestRunView(testRun)
-                      }
-                    />
-                  </td>
-                  <td>
-                    <ContentCopyIcon
-                      style={{
-                        cursor:
-                          testRun.testCaseCount === 0
-                            ? "not-allowed"
-                            : "pointer",
-                        color: "#4f0e83",
-                        opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
-                      }}
-                      onClick={() =>
-                        testRun.testCaseCount !== 0 &&
-                        handleCloneTestcases(testRun.id)
-                      }
-                    />
-                  </td>
-                </div>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <TablePagination
-        currentPage={page - 1}
-        totalPages={totalPages}
-        handlePageChange={handlePageChange}
-        handlePreviousPage={handlePreviousPage}
-        handleNextPage={handleNextPage}
-        handlePageSizeChange={handlePageSizeChange}
-      />
-
-      <Modal open={testRunModal} onClose={() => setTestRunModal(false)}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-          }}
-        >
-          <div
-            className="modal-content p-4"
-            style={{
-              maxWidth: "500px",
-              width: "100%",
-              backgroundColor: "white",
-              borderRadius: "20px",
-            }}
-          >
-            <h4 className="modal-title text-center">Add Test Run</h4>
-            <form onSubmit={handleTestRunSubmit} className="mt-4">
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="testRunName"
-                  className="form-control w-80 mb-3"
-                  placeholder="Test Run Name"
-                  onChange={handleTestRunChange}
-                  value={testRuns.testRunName}
-                  required
-                />
-              </div>
-              <div className="text-center">
-                <button
-                  type="submit"
-                  className="btn btn-primary mt-3 "
-                  style={{
-                    borderRadius: "20px",
-                    background: "#4f0e83",
-                    marginRight: "20px",
-                    width: "150px",
-                  }}
-                  onClick={() => {
-                    setTestRunModal(false);
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary mt-3 w-20"
-                  style={{
-                    borderRadius: "20px",
-                    background: "#4f0e83",
-                    width: "150px",
-                  }}
-                >
-                  Add Test Run
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </Modal>
-    </div>
-  );
-};
 
 
 export default UserTestRuns;
