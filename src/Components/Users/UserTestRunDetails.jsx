@@ -1,153 +1,172 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {useEffect, useState} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
 import "../TestRuns/TestRunDetails.css";
 
 import Swal from "sweetalert2";
 import {
-  addTestCasestoTestRun,
-  getTestCasesToEditTestRun
+    addTestCasestoTestRun,
+    getTestCasesToEditTestRun
 } from "../API/Api";
+
+
+import TablePagination from "../Pagination/TablePagination.jsx";
+
 
 import TablePagination from "../Pagination/TablePagination.jsx";
 import { Tab, Tooltip } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 function UserTestRunDetails() {
-  const location = useLocation();
-  const project = location.state?.project || {};
-  const testRun = location.state?.testRun || {};
-  const data = location.state?.data || {};
+    const location = useLocation();
+    const project = location.state?.project || {};
+    const testRun = location.state?.testRun || {};
+    const data = location.state?.data || {};
 
-  const [testCases, setTestCases] = useState([]);
+    const [testCases, setTestCases] = useState([]);
 
-  const navigate=useNavigate();
+    const navigate = useNavigate();
 
-  const [page, setPage] = useState(1); // Current page number
+    const [page, setPage] = useState(1); // Current page number
 
-  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
-  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+    const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+    const [totalPages, setTotalPages] = useState(0); // To store total number of pages
 
-  const [selectedCases, setSelectedCases] = useState([]);
+    const [selectedCases, setSelectedCases] = useState([]);
+    const [unselectedCases, setUnselectedCases] = useState([]);
+    const [visitedPages, setVisitedPages] = useState([]);
+    const [testCaseInRun, setTestCasesInRun] = useState([]);
 
-  // Handle page change
-  const handlePageChange = (newPage) => {
-    setPage(newPage + 1); // Since pagination is 1-indexed
-  };
-
-  // Handle previous page
-  const handlePreviousPage = () => {
-    if (page > 1) setPage(page - 1);
-  };
-  const handleNextPage = () => {
-    if (page < totalPages) setPage(page + 1);
-  };
-
-  // Handle page size change
-  const handlePageSizeChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setPage(1); // Reset to first page on page size change
-  };
-
-  const handleSelectedCasesAdding = (newIds) => {
-    setSelectedCases((prevIds) => [...new Set([...prevIds, ...newIds])]);
-  }
-
-  useEffect(() => {
-    const fetchTestCases = async () => {
-      try {
-        getTestCasesToEditTestRun(testRun.id, project.id, page-1, itemsPerPage).then(response => {
-          console.log("Response:", response)
-            setTestCases(response.data.data.testCases);
-            setTotalPages(response.data.pagination.totalPages);
-            handleSelectedCasesAdding(response.data.data.idsOfTestCasesInTestRun)
-        });
-      } catch (error) {
-        console.error("Error fetching test cases:", error);
-      }
+    // Handle page change
+    const handlePageChange = (newPage) => {
+        setPage(newPage + 1); // Since pagination is 1-indexed
     };
-    // Call the fetch function
-    fetchTestCases();
-    console.log(testCases)
-  }, [testRun.id, project.id, page-1, itemsPerPage]);
 
-  // Handle individual row selection
-  const handleCheckboxChange = (id) => {
-    setSelectedCases((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((selectedId) => selectedId !== id)
-        : [...prevSelected, id]
-    );
-  };
+    // Handle previous page
+    const handlePreviousPage = () => {
+        if (page > 1) setPage(page - 1);
+    };
+    const handleNextPage = () => {
+        if (page < totalPages) setPage(page + 1);
+    };
 
-  const handleSelectAll = () => {
-    const currentPageIds = testCases.map((testCase) => testCase.automationId);
-    const allSelected = currentPageIds.every((id) =>
-        selectedCases.includes(id)
-    );
+    // Handle page size change
+    const handlePageSizeChange = (e) => {
+        setItemsPerPage(Number(e.target.value));
+        setPage(1); // Reset to first page on page size change
+    };
 
-    setSelectedCases((prevSelected) => {
-      if (allSelected) {
-        // Remove current page IDs if already selected
-        return prevSelected.filter((id) => !currentPageIds.includes(id));
-      } else {
-        // Add current page IDs if not already selected
-        return [...prevSelected, ...currentPageIds.filter((id) => !prevSelected.includes(id))];
-      }
-    });
-  };
+
+
+    const handleSelectedCasesAdding = (newIds) => {
+        setSelectedCases(visitedPages.includes(page) ? selectedCases : (prevIds) => [...new Set([...prevIds, ...newIds])]);
+        setTestCasesInRun((prevIds) => [...new Set([...prevIds, ...newIds])]);
+    }
+
+    useEffect(() => {
+        const fetchTestCases = () => {
+            try {
+                getTestCasesToEditTestRun(testRun.id, project.id, page - 1, itemsPerPage).then(response => {
+                    console.log("Response:", response)
+                    setTestCases(response.data.data.testCases);
+                    setTotalPages(response.data.pagination.totalPages);
+                    setVisitedPages((prevVisitedPages) => [...new Set([...prevVisitedPages, page])]);
+                    handleSelectedCasesAdding(response.data.data.idsOfTestCasesInTestRun)
+                });
+            } catch (error) {
+                console.error("Error fetching test cases:", error);
+            }
+        };
+        // Call the fetch function
+        fetchTestCases();
+
+    }, [testRun.id, project.id, page - 1, itemsPerPage]);
+
+    // Handle individual row selection
+    const handleCheckboxChange = (id) => {
+        setSelectedCases((prevSelected) =>
+            prevSelected.includes(id)
+                ? prevSelected.filter((selectedId) => selectedId !== id)
+                : [...prevSelected, id]
+        );
+        setUnselectedCases((prevUnSelected) =>
+            testCaseInRun.includes(id)
+                ? (prevUnSelected.includes(id)
+                        ? prevUnSelected.filter((unselectedId) => unselectedId !== id)
+                        : [...prevUnSelected, id]
+                )
+                : [...prevUnSelected]
+        );
+    };
+
+    const handleSelectAll = () => {
+        const currentPageIds = testCases.map((testCase) => testCase.automationId);
+        const allSelected = currentPageIds.every((id) =>
+            selectedCases.includes(id)
+        );
+
+        setSelectedCases((prevSelected) => {
+            if (allSelected) {
+                // Remove current page IDs if already selected
+                return prevSelected.filter((id) => !currentPageIds.includes(id));
+            } else {
+                // Add current page IDs if not already selected
+                return [...prevSelected, ...currentPageIds.filter((id) => !prevSelected.includes(id))];
+            }
+        });
+    };
 
     const handleAddToTestRun = () => {
-      if (selectedCases.length === 0) {
-        Swal.fire("Error", "No test cases selected!", "error");
-        return;
-      }
-
-      Swal.fire({
-        title: "Are you sure?",
-        text: "Do you want to add these test cases to the Test Run?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#4f0e83",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, add to Test Run!",
-        customClass: {
-          confirmButton: "custom-confirm-button",
-          cancelButton: "custom-cancel-button",
-        },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Prepare payload for API
-          const payload = {
-            testRunId: testRun.id ||data.id,
-            testRunName: testRun.testRunName||data.testRunName || "Default Test Run Name",
-            testCaseId: selectedCases,
-          };
-
-          addTestCasestoTestRun(payload)
-            .then((response) => {
-              if (response.status === 200 || response.status === 201) {
-                navigate("/userDashboard/testRunView", { state: { payload, project } });
-                Swal.fire(
-                  "Added!",
-                  "Selected test cases have been added to the Test Run.",
-                  "success"
-                );
-                window.location.reload();
-                setSelectedCases([]);
-              } else {
-                Swal.fire(
-                  "Error",
-                  "Failed to add test cases to the Test Run.",
-                  "error"
-                );
-              }
-            })
-            .catch((error) => {
-              console.error("Error adding test cases to the test run:", error);
-            });
+        if (selectedCases.length === 0) {
+            Swal.fire("Error", "No test cases selected!", "error");
+            return;
         }
-      });
-    };
 
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Do you want to add these test cases to the Test Run?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#4f0e83",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, add to Test Run!",
+            customClass: {
+                confirmButton: "custom-confirm-button",
+                cancelButton: "custom-cancel-button",
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Prepare payload for API
+                const payload = {
+                    testRunId: testRun.id || data.id,
+                    testRunName: testRun.testRunName || data.testRunName || "Default Test Run Name",
+                    testCaseId: selectedCases.filter((id) => !testCaseInRun.includes(id)),
+                    testCaseIdsToRemove: unselectedCases
+                };
+
+                addTestCasestoTestRun(payload)
+                    .then((response) => {
+                        if (response.status === 200 || response.status === 201) {
+                            navigate("/userDashboard/testRunView", {state: {payload, project}});
+                            Swal.fire(
+                                "Added!",
+                                "Selected test cases have been added to the Test Run.",
+                                "success"
+                            );
+                            window.location.reload();
+                            setSelectedCases([]);
+                        } else {
+                            Swal.fire(
+                                "Error",
+                                "Failed to add test cases to the Test Run.",
+                                "error"
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error adding test cases to the test run:", error);
+                    });
+            }
+        });
+    };
   const [searchQuery, setSearchQuery] = useState("");
   const handleSearchInput = (e) => {
     const query = e.target.value.toLowerCase();
@@ -214,6 +233,7 @@ function UserTestRunDetails() {
       >
         <style>
           {`
+
       /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
       div::-webkit-scrollbar {
         width: 2px;
@@ -234,74 +254,75 @@ function UserTestRunDetails() {
         scrollbar-color: #4f0e83 #e0e0e0;
       }
     `}
-        </style>
-        <table
-          className="table  table-hover mt-4"
+                </style>
+                <table
+                    className="table  table-hover mt-4"
 
-        >
-          <thead
-            style={{
-              position: "sticky",
-              marginTop:"10px",
-              top: 0,
-              backgroundColor: "#f8f9fa",
-              zIndex: 100,
-              color: "#4f0e83",
-            }}
-          >
-            <tr>
-              <th>
-                <input
-                  type="checkbox"
-                  checked={selectedCases.length === testCases.length}
-                  onChange={handleSelectAll}
-                />
-              </th>
+                >
+                    <thead
+                        style={{
+                            position: "sticky",
+                            marginTop: "10px",
+                            top: 0,
+                            backgroundColor: "#f8f9fa",
+                            zIndex: 100,
+                            color: "#4f0e83",
+                        }}
+                    >
+                    <tr>
+                        <th>
+                            <input
+                                type="checkbox"
+                                checked={selectedCases.length === testCases.length}
+                                onChange={handleSelectAll}
+                            />
+                        </th>
 
-              <th>Test Case Name</th>
-              <th>Automation ID</th>
-              <th>Author</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTestCases.map((testCase, index) => (
-              <tr
-                key={index}
-                style={{
-                  cursor: "pointer",
-                }}
-                onClick={() => handleCheckboxChange(testCase.automationId)}
-              >
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedCases.includes(testCase.automationId)}
-                    onChange={() => {}}
-                    style={{
-                      pointerEvents: "none",
-                    }}
-                  />
-                </td>
+                        <th>Test Case Name</th>
+                        <th>Automation ID</th>
+                        <th>Author</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {filteredTestCases.map((testCase, index) => (
+                        <tr
+                            key={index}
+                            style={{
+                                cursor: "pointer",
+                            }}
+                            onClick={() => handleCheckboxChange(testCase.automationId)}
+                        >
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    checked={selectedCases.includes(testCase.automationId)}
+                                    onChange={() => {
+                                    }}
+                                    style={{
+                                        pointerEvents: "none",
+                                    }}
+                                />
+                            </td>
 
-                <td>{testCase.testCaseName}</td>
-                <td>{testCase.automationId}</td>
-                <td>{testCase.author}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <TablePagination
-          currentPage={page - 1}
-          totalPages={totalPages}
-          handlePageChange={handlePageChange}
-          handlePreviousPage={handlePreviousPage}
-          handleNextPage={handleNextPage}
-          handlePageSizeChange={handlePageSizeChange}
-      />
-    </div>
+                            <td>{testCase.testCaseName}</td>
+                            <td>{testCase.automationId}</td>
+                            <td>{testCase.author}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+            <TablePagination
+                currentPage={page - 1}
+                totalPages={totalPages}
+                handlePageChange={handlePageChange}
+                handlePreviousPage={handlePreviousPage}
+                handleNextPage={handleNextPage}
+                handlePageSizeChange={handlePageSizeChange}
+            />
+        </div>
 
-  );
+    );
 }
 
 

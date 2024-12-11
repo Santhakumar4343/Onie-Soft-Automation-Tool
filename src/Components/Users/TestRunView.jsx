@@ -75,19 +75,21 @@ function UserTestRunView() {
     "SKIP": "orange",
     "FAIL": "red",
     "PASS": "green",}
+
     const [searchQuery, setSearchQuery] = useState("");
     const handleSearchInput = (e) => {
-      const query = e.target.value.toLowerCase();
-      setSearchQuery(query);
+        const query = e.target.value.toLowerCase();
+        setSearchQuery(query);
     };
     const filteredTestCases = testCases.filter(
-      (testcase) =>
-        testcase.testCaseName.toLowerCase().includes(searchQuery) ||
-        testcase.author.toLowerCase().includes(searchQuery)||
-        testcase.feature.toLowerCase().includes(searchQuery)||
-        testcase.automationId.toLowerCase().includes(searchQuery)||
-        testcase.status.toLowerCase().includes(searchQuery)
+        (testcase) =>
+            testcase.testCaseName.toLowerCase().includes(searchQuery) ||
+            testcase.author.toLowerCase().includes(searchQuery) ||
+            testcase.feature.toLowerCase().includes(searchQuery) ||
+            testcase.automationId.toLowerCase().includes(searchQuery) ||
+            testcase.status.toLowerCase().includes(searchQuery)
     );
+
 
     
   
@@ -266,6 +268,7 @@ function UserTestRunView() {
       <div style={{ maxHeight: "530px", overflowY: "auto" }}>
         <style>
           {`
+>
           div::-webkit-scrollbar {
             width: 2px;
           }
@@ -281,40 +284,59 @@ function UserTestRunView() {
             scrollbar-color: #4f0e83 #e0e0e0;
           }
         `}
-        </style>
-        <table
-          className="table table-hover"
-        >
-          <thead
-            style={{
-              position: "sticky",
-              top: 0,
-              backgroundColor: "#f8f9fa",
-              zIndex: 100,
-              color: "#4f0e83",
-            }}
-          >
-            <tr>
-              <th>Test Case Name</th>
-              <th>Automation ID</th>
-              <th>Status</th>
-              <th>Author</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTestCases.map((testCase, index) => (
-              <tr key={index}>
-                <td>{testCase.testCaseName}</td>
-                <td>{testCase.automationId}</td>
-                <td>
+                </style>
+                <table
+                    className="table table-hover"
+                >
+                    <thead
+                        style={{
+                            position: "sticky",
+                            top: 0,
+                            backgroundColor: "#f8f9fa",
+                            zIndex: 100,
+                            color: "#4f0e83",
+                        }}
+                    >
+                    <tr>
+                        <th>Test Case Name</th>
+                        <th>Automation ID</th>
+                        <th>Status</th>
+                        <th>Author</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {filteredTestCases.map((testCase, index) => (
+                        <tr key={index}>
+                            <td>{testCase.testCaseName}</td>
+                            <td>{testCase.automationId}</td>
+                            <td>
                   <span
-                    style={{
-                      color: testCaseColors[testCase.status],
-                      fontWeight: "bold",
-                    }}
+                      style={{
+                          color: testCaseColors[testCase.status],
+                          fontWeight: "bold",
+                      }}
                   >
                     {testCase.status}
                   </span>
+
+                            </td>
+                            <td>{testCase.author}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+            <div><TablePagination
+                currentPage={page - 1}
+                totalPages={totalPages}
+                handlePageChange={handlePageChange}
+                handlePreviousPage={handlePreviousPage}
+                handleNextPage={handleNextPage}
+                handlePageSizeChange={handlePageSizeChange}
+            /></div>
+        </div>
+    );
+
                 </td>
                 <td>{testCase.author}</td>
               </tr>
@@ -545,6 +567,7 @@ function UserTestRunView() {
   </Dialog>
     </div>
   );
+
 }
 
 export default UserTestRunView;

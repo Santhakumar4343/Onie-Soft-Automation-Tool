@@ -7,7 +7,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TablePagination from "../Pagination/TablePagination";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
+import {PlayArrow} from "@mui/icons-material";
+
 const UserTestRuns = () => {
   const [searchText, setSearchText] = useState("");
   const [testRunModal, setTestRunModal] = useState(false);
@@ -220,6 +222,7 @@ const UserTestRuns = () => {
       >
         <style>
           {`
+
       /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
       div::-webkit-scrollbar {
         width: 2px;
@@ -239,6 +242,229 @@ const UserTestRuns = () => {
         scrollbar-color: #4f0e83 #e0e0e0;   
       }
     `}
+                    </style>
+                    <table className="table  table-hover">
+                        <thead
+                            className="thead-dark"
+                            style={{
+                                position: "sticky",
+                                top: 0,
+                                backgroundColor: "#f8f9fa",
+                                zIndex: 100,
+                                color: "#4f0e83",
+                            }}
+                        >
+                        <tr>
+
+                            <th>Test Run Name</th>
+                            <th>Created By</th>
+                            <th>No. of Test Cases</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {filteredTestRuns.map((testRun, index) => (
+                            <tr
+                                key={index}
+                                style={{
+                                    cursor: "pointer",
+                                    backgroundColor: "rgb(79, 103, 228)",
+                                    color: "white",
+                                }}
+                            >
+
+                                <td>{testRun.testRunName}</td>
+                                <td>{testRun.createdBy}</td>
+                                <td>{testRun.testCaseCount}</td>
+                                <div>
+                                    <td>
+                                        <EditIcon
+                                            className="me-2"
+                                            style={{cursor: "pointer", color: "#4f0e83"}}
+                                            onClick={() => handleTestRunClick(testRun)}
+                                        />
+                                    </td>
+                                    <td>
+                                        <RemoveRedEyeIcon
+                                            className="me-2"
+                                            style={{
+                                                cursor: testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
+                                                color: "#4f0e83",
+                                                opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
+                                            }}
+                                            onClick={() => testRun.testCaseCount !== 0 && handleTestRunView(testRun)}
+                                        />
+                                    </td>
+                                    <td>
+                                        <ContentCopyIcon
+                                            style={{
+                                                cursor: testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
+                                                color: "#4f0e83",
+                                                opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
+                                            }}
+                                            onClick={() => testRun.testCaseCount !== 0 && handleCloneTestcases(testRun)}
+                                        />
+                                    </td>
+                                    <td>
+                                        <PlayArrow
+                                            style={{
+                                                cursor: testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
+                                                color: "#4f0e83",
+                                                opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
+                                            }}
+                                            onClick={() => testRun.testCaseCount !== 0 && handleRunExecute(testRun)}
+                                       />
+                                    </td>
+                                </div>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <TablePagination
+                    currentPage={page - 1}
+                    totalPages={totalPages}
+                    handlePageChange={handlePageChange}
+                    handlePreviousPage={handlePreviousPage}
+                    handleNextPage={handleNextPage}
+                    handlePageSizeChange={handlePageSizeChange}
+                />
+
+                <Modal open={testRunModal} onClose={() => setTestRunModal(false)}>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "100vh",
+                        }}
+                    >
+                        <div
+                            className="modal-content p-4"
+                            style={{
+                                maxWidth: "500px",
+                                width: "100%",
+                                backgroundColor: "white",
+                                borderRadius: "20px",
+                            }}
+                        >
+                            <h4 className="modal-title text-center">Add Test Run</h4>
+                            <form onSubmit={handleTestRunSubmit} className="mt-4">
+                                <div className="form-group">
+                                    <input
+                                        type="text"
+                                        name="testRunName"
+                                        className="form-control w-80 mb-3"
+                                        placeholder="Test Run Name"
+                                        onChange={handleTestRunChange}
+                                        value={testRuns.testRunName}
+                                        required
+                                    />
+                                </div>
+                                <div className="text-center">
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary mt-3 "
+                                        style={{
+                                            borderRadius: "20px",
+                                            background: "#4f0e83",
+                                            marginRight: "20px",
+                                            width: "150px",
+                                        }}
+                                        onClick={() => {
+                                            setTestRunModal(false);
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary mt-3 w-20"
+                                        style={{
+                                            borderRadius: "20px",
+                                            background: "#4f0e83",
+                                            width: "150px",
+                                        }}
+                                    >
+                                        Add Test Run
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </Modal>
+
+                <Modal open={testRunCloneModal} onClose={() => setTestRunCloneModal(false)}>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "100vh",
+                        }}
+                    >
+                        <div
+                            className="modal-content p-4"
+                            style={{
+                                maxWidth: "500px",
+                                width: "100%",
+                                backgroundColor: "white",
+                                borderRadius: "20px",
+                            }}
+                        >
+                            <h4 className="modal-title text-center">Clone Test Run</h4>
+                            <form
+                                className="mt-4"
+                                onSubmit={handleCloneFormSubmit}
+                            >
+                                <div className="form-group">
+                                    <input
+                                        type="text"
+                                        name="testRunName"
+                                        className="form-control w-80 mb-3"
+                                        placeholder="Test Run Name"
+                                        onChange={(e) => setTestRun(
+                                            (prevTestRun) => ({...prevTestRun, testRunName: e.target.value}))}
+                                        value={testRun.testRunName}
+                                        required
+                                    />
+                                </div>
+                                <div className="text-center">
+                                    <button
+                                        className="btn btn-primary mt-3 "
+                                        style={{
+                                            borderRadius: "20px",
+                                            background: "#4f0e83",
+                                            marginRight: "20px",
+                                            width: "150px",
+                                        }}
+                                        onClick={() => {
+                                            setTestRunCloneModal(false);
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary mt-3 w-20"
+                                        style={{
+                                            borderRadius: "20px",
+                                            background: "#4f0e83",
+                                            width: "150px",
+                                        }}
+                                    >
+                                        Clone Test Run
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </Modal></div>
+        );
+    }
+;
+
         </style>
         <table className="table  table-hover">
           <thead
@@ -394,5 +620,6 @@ const UserTestRuns = () => {
     </div>
   );
 };
+
 
 export default UserTestRuns;
