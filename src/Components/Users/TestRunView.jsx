@@ -180,12 +180,14 @@ function UserTestRunView() {
             .catch((err) => console.log(err));
     }, [testRun.id || payload.id]);
 
-    const handleNestedChange = (setter) => (key) => (newValue) => {
-        setter((prev) => ({
-            ...prev,
-            [key]: newValue,
-        }));
+    const handleNestedChange = (setter) => (key) => (event) => {
+      const newValue = event.target.value; // Extract the value from the event
+      setter((prev) => ({
+        ...prev,
+        [key]: newValue,
+      }));
     };
+    
 
     const handleSubmit = (startExecution) => {
         const payload = {

@@ -9,6 +9,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TablePagination from "../Pagination/TablePagination";
 import {PlayArrow} from "@mui/icons-material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Configurations from "./Configurations";
 const UserTestRuns = () => {
         const [searchText, setSearchText] = useState("");
         const [testRunModal, setTestRunModal] = useState(false);
@@ -143,10 +144,7 @@ const UserTestRuns = () => {
       });
   };
 
-        const handleRunExecute = (testRun) => {
-            const id = testRun.id;
-            navigate("/userDashboard/configpage", {state: {id, testRun, project}});
-        };
+      
 
         const handleTestRunChange = (e) => {
             const {name, value} = e.target;
@@ -158,6 +156,19 @@ const UserTestRuns = () => {
 
   const handleBackwardClick = () => {
     navigate("/userDashboard/projects");
+  };
+
+  const [selectedTestRun, setSelectedTestRun] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleRunExecute = (testRun) => {
+    setSelectedTestRun(testRun); // Set the selected test run
+    setIsModalOpen(true); // Open the modal
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false); // Close the modal
+    setSelectedTestRun(null); // Clear the selected test run
   };
   return (
     <div className="container ">
@@ -344,6 +355,13 @@ const UserTestRuns = () => {
                         ))}
                         </tbody>
                     </table>
+                    {isModalOpen && selectedTestRun && (
+        <Configurations
+          testRun={selectedTestRun}
+          isModalOpen={isModalOpen}
+          onClose={handleModalClose}
+        />
+      )}
                 </div>
 
                 <TablePagination
