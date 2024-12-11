@@ -8,8 +8,7 @@ import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TablePagination from "../Pagination/TablePagination";
 import {PlayArrow} from "@mui/icons-material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 const UserTestRuns = () => {
         const [searchText, setSearchText] = useState("");
         const [testRunModal, setTestRunModal] = useState(false);
