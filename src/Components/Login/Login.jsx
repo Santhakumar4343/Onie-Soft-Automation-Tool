@@ -67,12 +67,12 @@ const Login = () => {
     {/* Login Form */}
     <div className="col-12 col-md-6 d-flex justify-content-center">
       <div className="w-100 p-4 " style={{ maxWidth: '400px' }}>
-        <h3 className="text-center mb-4" style={{ color: "#4f0e83", fontFamily: "system-ui" }}>Welcome to ONiE TestSuite</h3>
+        <h3 className="text-center mb-4" style={{ color: "#4f0e83", fontFamily: "system-ui" }}>Welcome to ONiE Test</h3>
         <form className="text-center" onSubmit={handleLogin}>
           <input
             type="text"
             className="form-control w-100 mb-3"
-            placeholder="Employee ID"
+            placeholder="Email"
             value={empEmail}
             onChange={(e) => setEmpId(e.target.value)}
           />

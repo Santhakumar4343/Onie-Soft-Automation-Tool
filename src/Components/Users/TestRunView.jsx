@@ -4,12 +4,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { executeTestRun, getTestCasesByTestRunId, testRunConfig, updateRunConfig } from "../API/Api";
 import TablePagination from "../Pagination/TablePagination";
 import Swal from "sweetalert2";
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton, MenuItem, Select, Tab, TextField, Tooltip, Typography } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from 'dayjs';
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 function UserTestRunView() {
   const location = useLocation();
   const testRun = location.state?.testRun || {};
@@ -18,7 +19,7 @@ function UserTestRunView() {
   console.log("Location State is ",location.state)
   const [testCases, setTestCases] = useState([]);
   const pollingInterval = 30000; // Poll every 5 seconds
-
+  const navigate=useNavigate()
   const [page, setPage] = useState(1); // Current page number
 
   const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
@@ -217,11 +218,28 @@ function UserTestRunView() {
     const formattedTime = newValue ? newValue.format('HH:mm') : null;
     handleNestedChange(setScheduleConfig)('scheduleTime')(formattedTime);
   };
+
+  const handleBackwardClick = () => {
+    navigate("/userDashboard/testruns",{state:{project}});
+  };
   return (
     <div className="container">
+       <div className="d-flex align-items-center justify-content-between">
+      <Tooltip title="Back" arrow placement="right">
+        <Tab
+          icon={
+            <ArrowBackIcon
+              sx={{ fontSize: "2rem", color: "#4f0e83" }}
+              onClick={handleBackwardClick}
+            />
+          }
+        ></Tab>
+      </Tooltip>
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
           {project.projectName} : {testRun.testRunName||payload.testRunName} : Test Cases in this run
       </h4>
+      <h4></h4>
+      </div>
       <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
         <button
           onClick={handleTestRun}
@@ -431,36 +449,33 @@ function UserTestRunView() {
         </Grid>
       </Grid>
 
-      {/* Report Configurations */}
-      <Typography variant="h6">Report Configurations</Typography>
+     
+      
       <Grid container spacing={2}>
-        <Grid item xs={6}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={overrideReport}
-                onChange={() => setOverrideReport(!overrideReport)}
-              />
-            }
-            label="Override Report"
-          />
-        </Grid>
-      </Grid>
+  <Grid item xs={6}>
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={overrideReport}
+          onChange={() => setOverrideReport(!overrideReport)}
+        />
+      }
+      label="Override Report"
+    />
+  </Grid>
+  <Grid item xs={6}>
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={createJiraIssues}
+          onChange={() => setCreateJiraIssues(!createJiraIssues)}
+        />
+      }
+      label="Create JIRA Issues"
+    />
+  </Grid>
+</Grid>
 
-      {/* JIRA Configurations */}
-      <Typography variant="h6">JIRA Configurations</Typography>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={createJiraIssues}
-            onChange={() => setCreateJiraIssues(!createJiraIssues)}
-          />
-        }
-        label="Create JIRA Issues"
-      />
-
-      {/* Schedule Configurations */}
-      <Typography variant="h6" >Schedule Configurations</Typography>
       <FormControlLabel
         control={
           <Checkbox
@@ -506,10 +521,12 @@ function UserTestRunView() {
           backgroundColor: "#4f0e83",
           color: "white",
           borderRadius: "20px",
+          width:"20%"
         }}
+       
         onClick={() => handleSubmit(false)}
       >
-        Save Configurations
+        Save
       </Button>
       <Button
         variant="contained"
@@ -517,10 +534,11 @@ function UserTestRunView() {
           backgroundColor: "#4f0e83",
           color: "white",
           borderRadius: "20px",
+            width:"20%"
         }}
         onClick={() => handleSubmit(true)}
       >
-        Save & Start Execution
+        Save & Execute
       </Button>
       
     </DialogActions>

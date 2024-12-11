@@ -7,7 +7,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import TablePagination from "../Pagination/TablePagination";
 const Deparments = () => {
   const [projectModal, setProjectModal] = useState(false);

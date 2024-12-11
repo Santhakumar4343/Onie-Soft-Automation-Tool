@@ -7,9 +7,10 @@ import {
   addTestCasestoTestRun,
   getTestCasesToEditTestRun
 } from "../API/Api";
-import moment from "moment";
-import TablePagination from "../Pagination/TablePagination.jsx";
 
+import TablePagination from "../Pagination/TablePagination.jsx";
+import { Tab, Tooltip } from "@mui/material";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 function UserTestRunDetails() {
   const location = useLocation();
   const project = location.state?.project || {};
@@ -160,12 +161,27 @@ function UserTestRunDetails() {
       testcase.automationId.toLowerCase().includes(searchQuery)
   );
 
-
+  const handleBackwardClick = () => {
+    navigate("/userDashboard/testruns",{state:{project}});
+  };
   return (
     <div className="container">
+       <div className="d-flex align-items-center justify-content-between">
+      <Tooltip title="Back" arrow placement="right">
+        <Tab
+          icon={
+            <ArrowBackIcon
+              sx={{ fontSize: "2rem", color: "#4f0e83" }}
+              onClick={handleBackwardClick}
+            />
+          }
+        ></Tab>
+      </Tooltip>
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
         {project.projectName} : {testRun.testRunName ||data.testRunName} : Select Test Cases to this run{" "}
       </h4>
+      <h1></h1>
+      </div>
       <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
 
         <button
