@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import moment from "moment";
 import {getTestCasesByTestRunId} from "../API/Api";
 import TablePagination from "../Pagination/TablePagination";
 

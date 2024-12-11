@@ -3,11 +3,9 @@ import {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {createTestRun, getTestRunByProjectId, TestRunClone} from "../API/Api";
 import Swal from "sweetalert2";
-import moment from "moment";
 import EditIcon from "@mui/icons-material/Edit";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import PlayArrowSharpIcon from '@mui/icons-material/PlayArrowSharp';
 import TablePagination from "../Pagination/TablePagination";
 import {PlayArrow} from "@mui/icons-material";
 
