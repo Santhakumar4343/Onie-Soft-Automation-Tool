@@ -96,7 +96,7 @@ const UserTestRuns = () => {
                 .then(() => {
                     Swal.fire("Success", "Test cases cloned successfully!", "success");
                     setTestRunCloneModal(false);
-                    getTestRunByProjectId(project.id, page - 1, itemsPerPage).then(
+                    getTestRunByProjectId(project.id, "", page - 1, itemsPerPage).then(
                         response => {
                             setTestRuns(response.data.content)
                             setTotalPages(response.data.totalPages)
