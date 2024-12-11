@@ -25,10 +25,10 @@ const Login = () => {
       if (response.data.jwt) {
         // Save JWT and user details in session storage
         sessionStorage.setItem('jwt_token', response.data.jwt);
-        sessionStorage.setItem('user', JSON.stringify(response.data.register));
+        sessionStorage.setItem('user', JSON.stringify(response.data));
   
         // Navigate based on user role
-        const userRole = response.data.register.empRole;
+        const userRole = response.data.empRole;
         if (userRole === "SuperADMIN") {
           navigate('/adminDashboard');
         } else if (userRole === "Admin") {
