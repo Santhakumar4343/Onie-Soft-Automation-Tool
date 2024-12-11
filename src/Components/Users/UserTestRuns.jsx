@@ -179,67 +179,68 @@ const UserTestRuns = () => {
       <h1></h1>
       </div>
       <div className="d-flex justify-content-between mb-3 align-items-center">
-        <div>
-          <button
-            className="btn btn-primary"
-            style={{
-              height: "40px",
-              color: "white",
-              backgroundColor: "#4f0e83",
-              width: "150px",
-              borderRadius: "20px",
-              marginRight: "10px",
-            }}
-            onClick={handleTestRun}
-          >
-            Add Test Run
-          </button>
-          <button
-            onClick={handleViewAllTestCasesClick}
-            style={{
-              color: "white",
-              backgroundColor: "#4f0e83",
-              borderRadius: "20px",
-              padding: "8px 15px",
-              marginRight: "10px",
-              width: "170px",
-              height: "40px",
-            }}
-            className="btn"
-          >
-            View All Test Cases
-          </button>
-          <button
-            onClick={handleTestRunsSummaryClick}
-            style={{
-              color: "white",
-              backgroundColor: "#4f0e83",
-              borderRadius: "20px",
-              padding: "8px 15px",
-              width: "170px",
-              height: "40px",
-            }}
-            className="btn"
-          >
-           Test Runs Summary
-          </button>
-        </div>
-        <input
-          type="text"
-          value={searchText}
-          placeholder="Search by Test Run Name,Created By"
-          className="form-control "
-          style={{ width: "30%" }}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
+          <div>
+              <button
+                  className="btn btn-primary"
+                  style={{
+                      height: "40px",
+                      color: "white",
+                      backgroundColor: "#4f0e83",
+                      width: "100px",
+                      borderRadius: "20px",
+                      marginRight: "10px",
+                  }}
+                  onClick={handleTestRun}
+              >
+                  Create
+              </button>
+              <button
+                  onClick={handleTestRunsSummaryClick}
+                  style={{
+                      color: "white",
+                      backgroundColor: "#4f0e83",
+                      borderRadius: "20px",
+                      padding: "8px 15px",
+                      width: "100px",
+                      height: "40px",
+                      marginRight: "10px",
+                  }}
+                  className="btn"
+              >
+                  Summary
+              </button>
+              <button
+                  onClick={handleViewAllTestCasesClick}
+                  style={{
+                      color: "white",
+                      backgroundColor: "#4f0e83",
+                      borderRadius: "20px",
+                      padding: "8px 15px",
+                      width: "130px",
+                      height: "40px",
+                  }}
+                  className="btn"
+              >
+                  All Test Cases
+              </button>
+
+          </div>
+          <input
+              type="text"
+              value={searchText}
+              placeholder="Search by Test Run Name,Created By"
+              className="form-control "
+              style={{width: "30%"}}
+              onChange={(e) => setSearchText(e.target.value)}
+          />
       </div>
 
-      <div
-        style={{
-          maxHeight: "520px",
-          overflowY: "auto",
-        }}
-      >
+        <div
+            style={{
+                maxHeight: "520px",
+                overflowY: "auto",
+            }}
+        >
         <style>
           {`
 
@@ -300,7 +301,7 @@ const UserTestRuns = () => {
                                     <td>
                                         <EditIcon
                                             className="me-2"
-                                            style={{cursor: "pointer", color: "#4f0e83"}}
+                                            style={{cursor: "pointer", color: "#4f0e83", marginRight: "5px"}}
                                             onClick={() => handleTestRunClick(testRun)}
                                         />
                                     </td>
@@ -311,6 +312,7 @@ const UserTestRuns = () => {
                                                 cursor: testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
                                                 color: "#4f0e83",
                                                 opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
+                                                marginRight: "5px",
                                             }}
                                             onClick={() => testRun.testCaseCount !== 0 && handleTestRunView(testRun)}
                                         />
@@ -321,6 +323,7 @@ const UserTestRuns = () => {
                                                 cursor: testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
                                                 color: "#4f0e83",
                                                 opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
+                                                marginRight: "5px",
                                             }}
                                             onClick={() => testRun.testCaseCount !== 0 && handleCloneTestcases(testRun)}
                                         />
@@ -331,6 +334,7 @@ const UserTestRuns = () => {
                                                 cursor: testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
                                                 color: "#4f0e83",
                                                 opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
+                                                fontSize: "28px",
                                             }}
                                             onClick={() => testRun.testCaseCount !== 0 && handleRunExecute(testRun)}
                                        />
