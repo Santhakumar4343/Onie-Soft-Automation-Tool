@@ -1,53 +1,70 @@
 import { useEffect, useState } from "react";
 
-import { Button, MenuItem, Modal, Select, TextField, Tooltip } from "@mui/material";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { Button, Modal, TextField } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import swal from "sweetalert2";
 import {
+  addProject,
   deleteProjectById,
-  getAssignProjectsByRegId,
-  getConfigsByUseId,
+  getAssignedUserProjects,
+  getConfigDetailsForUser,
   updateConfig,
+  
 } from "../API/Api";
-import { useNavigate } from "react-router-dom";
+import TablePagination from "../Pagination/TablePagination";
 
 const Config = () => {
   const user = JSON.parse(sessionStorage.getItem("user"));
-  const navigate = useNavigate();
+
   const [projects, setProjects] = useState([]);
-  const [configs, setConfigs] = useState([]);
   const [modalData, setModalData] = useState({
     projectName: "",
     ipAddress: "",
     projectPath: "",
-    id: "",
   });
   const [isEditMode, setEditMode] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    fetchPorjects();
+    fetchProjects();
   }, [user.id]);
 
-  useEffect(() => {
-    userConfigs();
-  }, [user.id]);
-  const userConfigs = () => {
-    getConfigsByUseId(user.id)
-      .then((response) => setConfigs(response.data))
+
+
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+
+  const fetchProjects = () => {
+    getConfigDetailsForUser(user.id,page-1,itemsPerPage)
+      .then((response) => {setProjects(response.data.content)
+    setTotalPages(response.data.totalPages)})
       .catch((err) => console.log(err));
   };
 
-  const fetchPorjects = () => {
-    getAssignProjectsByRegId(user.id)
-      .then((response) => setProjects(response.data))
-      .catch((err) => console.log(err));
+
+   // Handle page change
+   const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
   };
 
-  const handleProjectConfig = (project) => {
-    navigate("/userDashboard/configpage", { state: { project } });
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
   };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
+
   const openModal = (project = null) => {
     if (project) {
       setModalData(project);
@@ -69,26 +86,32 @@ const Config = () => {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Prepare the data for submission
-    const data = {
-      userId: user.id,
-      projectId: modalData.id, // Make sure projectId is set correctly
-      projectName: modalData.projectName,
-      ipAddress: modalData.ipAddress,
-      projectPath: modalData.projectPath,
-    };
-
-    console.log(modalData); // Log the modalData to verify
-
-    // Call the updateConfig function with the data
-    updateConfig(data)
-      .then(() => {
-        userConfigs();
-        closeModal();
-        swal.fire("Success", "Project Config added successfully!", "success");
-      })
-      .catch((err) => console.log(err));
+    if (isEditMode) {
+      
+      const data={
+        id:modalData.id,
+        userId:user.id,
+        projectId:modalData.id,
+        ipAddress:modalData.ipAddress,
+        projectPath:modalData.projectPath
+      }
+      updateConfig( data)
+        .then(() => {
+          fetchProjects();
+          closeModal();
+          swal("Success", "Project updated successfully!", "success");
+        })
+        .catch((err) => console.log(err));
+    } else {
+      // Add Project
+      addProject(modalData)
+        .then(() => {
+          fetchProjects();
+          closeModal();
+          swal("Success", "Project added successfully!", "success");
+        })
+        .catch((err) => console.log(err));
+    }
   };
 
   const handleDelete = (projectId) => {
@@ -102,7 +125,7 @@ const Config = () => {
       if (willDelete) {
         deleteProjectById(projectId)
           .then(() => {
-            userConfigs();
+            fetchProjects();
             swal(
               "Deleted!",
               "Project has been deleted successfully!",
@@ -116,23 +139,9 @@ const Config = () => {
 
   return (
     <div className="container">
-      <div className="">
-        {/* <Button
-          variant="contained"
-          color="primary"
-          onClick={() => openModal()}
-          style={{
-            height: "40px",
-            color: "white",
-            backgroundColor: "#4f0e83",
-            width: "13%",
-            borderRadius: "20px",
-          }}
-        >
-          Add Project
-        </Button> */}
-        <h4 style={{ color: "#4f0e83" ,textAlign:"center"}}>Project Configurations</h4>
-        <h1></h1>
+      <div className="d-flex justify-content-between align-items-center my-3">
+        <h4 style={{color:"#4f0e83"}}>Device Configurations</h4>
+       
       </div>
       <div
         style={{
@@ -161,18 +170,16 @@ const Config = () => {
             </tr>
           </thead>
           <tbody>
-            {configs.map((project, index) => (
+            {projects.map((project, index) => (
               <tr key={index}>
                 <td>{project.projectName}</td>
                 <td>{project.ipAddress}</td>
                 <td>{project.projectPath}</td>
                 <td>
-                  <Tooltip title="Add Configurations"  arrow>
-                  <AddCircleIcon
+                  <EditIcon
                     style={{ cursor: "pointer", color: "#4f0e83" }}
-                    onClick={() => handleProjectConfig(project)}
+                    onClick={() => openModal(project)}
                   />
-                  </Tooltip>
                   &nbsp;
                   <DeleteIcon
                     style={{ cursor: "pointer", color: "red" }}
@@ -185,6 +192,14 @@ const Config = () => {
         </table>
       </div>
 
+      <div> <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        /></div>
       {/* Modal */}
       <Modal open={showModal} onClose={closeModal}>
         <div
@@ -232,31 +247,16 @@ const Config = () => {
             {/* Modal Form */}
             <form onSubmit={handleSubmit} className="mt-4">
               <div className="form-group">
-                <Select
+                <TextField
                   fullWidth
                   margin="dense"
+                  label="Project Name"
                   value={modalData.projectName}
                   onChange={(e) =>
-                    setModalData({
-                      ...modalData,
-                      projectName: e.target.value,
-                      id: projects.find((p) => p.projectName === e.target.value)
-                        ?.id, // Save project ID
-                    })
+                    setModalData({ ...modalData, projectName: e.target.value })
                   }
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>
-                    Select a Project
-                  </MenuItem>
-                  {projects.map((project) => (
-                    <MenuItem key={project.id} value={project.projectName}>
-                      {project.projectName}
-                    </MenuItem>
-                  ))}
-                </Select>
+                />
               </div>
-
               <div className="form-group">
                 <TextField
                   fullWidth

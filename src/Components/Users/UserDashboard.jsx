@@ -14,6 +14,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import UserProfile from './UserProfile';
 import Swal from 'sweetalert2';
 import Configurations from './Configurations';
+import TestRunsSummary from './TestRunsSummary';
+import TestRunSummary from './TestRunSummary';
 
 const UserDashboard = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -84,6 +86,8 @@ const UserDashboard = () => {
           <Route path="/testrunView" element={<UserTestRunView />} />
           <Route path="/config" element={<Config />} />
           <Route path="/configpage" element={<Configurations />} />
+          <Route path='/testRunsSummary/*' element={<TestRunsSummary/>}/>
+          <Route path='/testRunSummary/*' element={<TestRunSummary/>}/>
         </Routes>
       </div>
     </div>

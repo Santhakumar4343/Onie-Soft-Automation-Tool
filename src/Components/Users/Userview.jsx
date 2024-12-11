@@ -308,8 +308,7 @@ const UserView = () => {
 
                         <th>Test Run Name</th>
                         <th>Status</th>
-                        <th>Created Date </th>
-                        <th>Update Date</th>
+                       
                       </tr>
                     </thead>
                     <tbody>
@@ -319,8 +318,7 @@ const UserView = () => {
                             <td>{testrun.id}</td>
                             <td>{testrun.testRunName}</td>
                             <td>{testrun.status}</td>
-                            <td>{testrun.createdAt}</td>
-                            <td>{testrun.updatedAt}</td>
+                            
                           </tr>
                         ))
                       ) : (

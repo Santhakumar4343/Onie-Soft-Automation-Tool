@@ -95,9 +95,11 @@ export const updateProject = (data) => {
     const headers = getApiHeaders();
     return Api.put(`/projects/v1/update`, data, headers);
 };
-export const updateConfig = (data) => {
-    const headers = getApiHeaders();
-    return Api.post(`/userconfig/v1/save`, data, headers);
+
+export const updateConfig =(data) =>{
+  const headers = getApiHeaders();
+  return Api.post(`/userconfig/v1/save`, data, headers);
+
 };
 export const getProjectById = (id) => {
     const headers = getApiHeaders();
@@ -117,9 +119,15 @@ export const getAssignedUserProjects = (usedId) => {
     return Api.get(`/projectusers/v1/getassignprojects/${usedId}`, headers);
 };
 
-export const getProjectsByProjectId = (projectId) => {
-    const headers = getApiHeaders();
-    return Api.get(`/projects/v1/getProject/${projectId}`, headers);
+
+export const getConfigDetailsForUser = (userId,page,itemsPerPage) => {
+  const headers = getApiHeaders();
+  return Api.get(`/userconfig/v1/getconfigsbyuid/${userId}?page=${page}&size=${itemsPerPage}`, headers);
+};
+
+export const getProjectsByProjectId= (projectId) => {
+  const headers = getApiHeaders();
+  return Api.get(`/projects/v1/getProject/${projectId}`, headers);
 };
 
 export const getConfigsByUseId = (usedId) => {
@@ -165,17 +173,24 @@ export const deleteTestcase = (id) => {
 };
 
 // Test Run Api's
+
 export const createTestRun = (data) => {
     const headers = getApiHeaders();
     return Api.post(`/testrun/v1/createtestrun`, data, headers);
+};
+export const TestRunsSummaryApi = (id) => {
+  const headers = getApiHeaders();
+  return Api.get(`/chart/v1/gettestrunresultsbyprojectid/${id}`, headers);
 };
 export const addTestCasestoTestRun = (data) => {
     const headers = getApiHeaders();
     return Api.post(`/testrun/v1/addtestrun`, data, headers);
 };
-export const getTestRunByProjectId = (id, page, itemsPerPage) => {
-    const headers = getApiHeaders();
-    return Api.get(`/testrun/v1/gettestrunbyid?projectId=${id}&page=${page}&size=${itemsPerPage}`, headers);
+
+export const getTestRunByProjectId = (id,status,page,itemsPerPage) => {
+  const headers = getApiHeaders();
+  return Api.get(`/testrun/v1/gettestrunbyid?projectId=${id}&query=${status}&page=${page}&size=${itemsPerPage}`, headers);
+
 };
 
 export const getTestCasesByTestRunId = (id, page, itemsPerPage) => {
