@@ -83,68 +83,61 @@ const TestRunsSummary = () => {
     navigate("/userDashboard/testRunSummary", { state: { project, testRun } });
   return (
     <div>
-    <div
+      <h4>Test Runs Summary</h4>
+      <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  {/* Pie Chart */}
+  <PieChart width={400} height={420}>
+    <Pie
+      data={data}
+      dataKey="value"
+      nameKey="name"
+      cx="50%"
+      cy="50%"
+      outerRadius={150}
+      fill="#8884d8"
+      label
+    >
+      {data.map((entry, index) => (
+        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+      ))}
+    </Pie>
+    <Tooltip />
+  </PieChart>
+
+  {/* Legend */}
+  <div
     style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-       
-      }}>
-      <h2>Test Runs Summary</h2>
-      <PieChart width={400} height={420}>
-        <Pie
-          data={data}
-          dataKey="value"
-          nameKey="name"
-          cx="100%"
-          cy="50%"
-          outerRadius={150}
-          fill="#8884d8"
-          label
-        >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend
-            layout="vertical"
-            align="right"
-            verticalAlign="bottom"
-            wrapperStyle={{
-                position: "absolute",
-                right: -200,
-                bottom: 50,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            content={({ payload }) => (
-              <div>
-               
-                <div style={{ marginBottom: "10px", fontWeight: "bold" }}>
-                  Total Test Runs: {totalTestRuns}
-                </div>
-                
-                {payload.map((entry, index) => (
-                  <div key={`item-${index}`} style={{ display: "flex", alignItems: "center" }}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: "10px",
-                        height: "10px",
-                        backgroundColor: entry.color,
-                        marginRight: "5px",
-                      }}
-                    />
-                    {entry.value}
-                  </div>
-                ))}
-              </div>
-            )}
-          />
-      </PieChart>
+      marginLeft: "30px", // Add space between the chart and legend
+      display: "flex",
+      flexDirection: "column",
+    }}
+  >
+    <div style={{ marginBottom: "10px", fontWeight: "bold" }}>
+      Total Test Runs: {totalTestRuns}
     </div>
+    {data.map((entry, index) => (
+      <div key={`item-${index}`} style={{ display: "flex", alignItems: "center" }}>
+        <span
+          style={{
+            display: "inline-block",
+            width: "10px",
+            height: "10px",
+            backgroundColor: COLORS[index % COLORS.length],
+            marginRight: "5px",
+          }}
+        />
+        {entry.name}: {entry.value}
+      </div>
+    ))}
+  </div>
+</div>
+
     <h4 className="">Test Runs </h4>
       <div>
       <div
