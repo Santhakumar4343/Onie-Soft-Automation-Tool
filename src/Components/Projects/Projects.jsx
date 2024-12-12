@@ -28,9 +28,26 @@ const Projects = () => {
   const branchId = user.branchId;
   const [projectData, setProjectData] = useState({
     projectName: "",
-
     branchId: branchId,
+    url: "",
+    apiBaseURL: "",
+    basicAuth: false,
+    basicAuthUser: "",
+    basicAuthPassword: "",
+    enableLiveReporting: false,
+    elasticSearchURL: "",
+    notifyTeams: false,
+    notifyBlockerCount: 0,
+    notifyCriticalCount: 0,
+    notifyMajorCount: 0,
+    sendEmailReport: false,
+    emailReportTo: "",
+    jiraUserName: "",
+    jiraPassword: "",
+    jiraURL: "",
+    jiraProjectKey: "",
   });
+
   const [isEditMode, setIsEditMode] = useState(false);
   const handleClearProject = () => {
     setProjectData({
@@ -130,9 +147,12 @@ const Projects = () => {
     if (projectId) {
       const projectToEdit = filteredProjects.find((p) => p.id === projectId);
       if (projectToEdit) {
-        setProjectData(projectToEdit); // Prepopulate form with selected project
-        setIsEditMode(true); // Enable edit mode
-        setProjectModal(true); // Open the modal
+        setProjectData({
+          ...projectData,
+          ...projectToEdit, // Populate all fields from the project to edit
+        });
+        setIsEditMode(true);
+        setProjectModal(true);
       }
     }
   };
@@ -145,8 +165,24 @@ const Projects = () => {
       const updateData = {
         id: projectData.id,
         projectName: projectData.projectName,
-
         branchId: branchId,
+        url: projectData.url,
+        apiBaseURL: projectData.apiBaseURL,
+        basicAuth: projectData.basicAuth,
+        basicAuthUser: projectData.basicAuthUser,
+        basicAuthPassword: projectData.basicAuthPassword,
+        enableLiveReporting: projectData.enableLiveReporting,
+        elasticSearchURL: projectData.elasticSearchURL,
+        notifyTeams: projectData.notifyTeams,
+        notifyBlockerCount: projectData.notifyBlockerCount,
+        notifyCriticalCount: projectData.notifyCriticalCount,
+        notifyMajorCount: projectData.notifyMajorCount,
+        sendEmailReport: projectData.sendEmailReport,
+        emailReportTo: projectData.emailReportTo,
+        jiraUserName: projectData.jiraUserName,
+        jiraPassword: projectData.jiraPassword,
+        jiraURL: projectData.jiraURL,
+        jiraProjectKey: projectData.jiraProjectKey,
       };
       updateProject(updateData)
         .then((response) => {
@@ -155,7 +191,11 @@ const Projects = () => {
             title: "Project Updated",
             text: "Your project has been updated successfully!",
           });
-          setProjects((prev) => [...prev, response.data]);
+          setProjects((prev) =>
+            prev.map((project) =>
+              project.id === response.data.id ? response.data : project
+            )
+          ); // Update the project in the state
           console.log(response);
         })
         .catch((err) => {
@@ -168,10 +208,8 @@ const Projects = () => {
         });
     } else {
       // Add new project
-
       const addData = {
         projectName: projectData.projectName,
-
         branchId: branchId,
       };
       addProject(addData)
@@ -181,7 +219,7 @@ const Projects = () => {
             title: "Project Saved",
             text: "Your project has been created successfully!",
           });
-          setProjects((prev) => [...prev, response.data]);
+          setProjects((prev) => [...prev, response.data]); // Add the new project to the state
           console.log(response);
         })
         .catch((err) => {
@@ -547,7 +585,7 @@ const Projects = () => {
           <div
             className="modal-content p-4"
             style={{
-              maxWidth: "500px",
+              maxWidth: "700px",
               width: "100%",
               backgroundColor: "white",
               borderRadius: "20px",
@@ -567,28 +605,317 @@ const Projects = () => {
                 cursor: "pointer",
               }}
             >
-              &#10005; {/* X Icon */}
+              &#10005;
             </button>
             <h4> {isEditMode ? "Update Project" : "Add Project"}</h4>
             <form onSubmit={handleProjectSubmit} className="mt-4">
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="projectName"
-                  className="form-control w-80 mb-3"
-                  placeholder="Project Name"
-                  onChange={handleProjectChange}
-                  value={projectData.projectName}
-                  required
-                />
+              <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+                {/* Project Name */}
+                <div className="form-group" style={{ flex: "1 1 45%" }}>
+                  <input
+                    type="text"
+                    name="projectName"
+                    className="form-control"
+                    placeholder="Project Name"
+                    onChange={handleProjectChange}
+                    value={projectData.projectName}
+                    required
+                  />
+                </div>
               </div>
+              {/* URL */}
+              {isEditMode && (
+                <div style={{ display: "flex", gap: "20px" }}>
+                  <div className="form-group mt-3" style={{ flex: "1 1 45%" }}>
+                    <input
+                      type="text"
+                      name="url"
+                      className="form-control"
+                      placeholder="URL"
+                      onChange={handleProjectChange}
+                      value={projectData.url}
+                    />
+                  </div>
+                  <div className="form-group mt-3" style={{ flex: "1 1 45%" }}>
+                    <input
+                      type="text"
+                      name="apiBaseURL"
+                      className="form-control"
+                      placeholder="apiBaseURL"
+                      onChange={handleProjectChange}
+                      value={projectData.apiBaseURL}
+                    />
+                  </div>
+                </div>
+              )}
 
+              {/* Basic Auth Configuration */}
+              {isEditMode && (
+                <div style={{ marginTop: "20px" }}>
+                  <div
+                    className="form-group"
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <input
+                      type="checkbox"
+                      name="basicAuth"
+                      checked={projectData.basicAuth}
+                      onChange={(e) =>
+                        handleProjectChange({
+                          target: {
+                            name: "basicAuth",
+                            value: e.target.checked,
+                          },
+                        })
+                      }
+                    />
+                    <label style={{ marginLeft: "10px" }}>
+                      Basic Auth Enabled
+                    </label>
+                  </div>
+
+                  {projectData.basicAuth && (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "20px",
+                        flexWrap: "wrap",
+                        marginTop: "10px",
+                      }}
+                    >
+                      <div className="form-group" style={{ flex: "1 1 45%" }}>
+                        <input
+                          type="text"
+                          name="basicAuthUser"
+                          className="form-control"
+                          placeholder="Basic Auth User"
+                          onChange={handleProjectChange}
+                          value={projectData.basicAuthUser}
+                        />
+                      </div>
+                      <div className="form-group" style={{ flex: "1 1 45%" }}>
+                        <input
+                          type="password"
+                          name="basicAuthPassword"
+                          className="form-control"
+                          placeholder="Basic Auth Password"
+                          onChange={handleProjectChange}
+                          value={projectData.basicAuthPassword}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Enable Live Reporting */}
+              {isEditMode && (
+                <div style={{ marginTop: "20px" }}>
+                  <div
+                    className="form-group"
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <input
+                      type="checkbox"
+                      name="enableLiveReporting"
+                      checked={projectData.enableLiveReporting}
+                      onChange={(e) =>
+                        handleProjectChange({
+                          target: {
+                            name: "enableLiveReporting",
+                            value: e.target.checked,
+                          },
+                        })
+                      }
+                    />
+                    <label style={{ marginLeft: "10px" }}>
+                      Enable Live Reporting
+                    </label>
+                  </div>
+
+                  {projectData.enableLiveReporting && (
+                    <div className="form-group" style={{ marginTop: "10px" }}>
+                      <input
+                        type="text"
+                        name="elasticSearchURL"
+                        className="form-control"
+                        placeholder="Elastic Search URL"
+                        onChange={handleProjectChange}
+                        value={projectData.elasticSearchURL}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Notify Teams */}
+              {isEditMode && (
+                <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+                  <div
+                    className="form-group"
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <input
+                      type="checkbox"
+                      name="notifyTeams"
+                      checked={projectData.notifyTeams}
+                      onChange={(e) =>
+                        handleProjectChange({
+                          target: {
+                            name: "notifyTeams",
+                            value: e.target.checked,
+                          },
+                        })
+                      }
+                    />
+                    <label style={{ marginLeft: "10px" }}>Notify Teams</label>
+                  </div>
+
+                  {projectData.notifyTeams && (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "20px",
+                        flexWrap: "wrap",
+                        marginTop: "10px",
+                      }}
+                    >
+                      <div className="form-group" style={{ flex: "1 1 30%" }}>
+                        <input
+                          type="number"
+                          name="notifyBlockerCount"
+                          className="form-control"
+                          placeholder="Notify Blocker Count"
+                          onChange={handleProjectChange}
+                          value={projectData.notifyBlockerCount}
+                        />
+                      </div>
+
+                      <div className="form-group" style={{ flex: "1 1 30%" }}>
+                        <input
+                          type="number"
+                          name="notifyCriticalCount"
+                          className="form-control"
+                          placeholder="Notify Critical Count"
+                          onChange={handleProjectChange}
+                          value={projectData.notifyCriticalCount}
+                        />
+                      </div>
+
+                      <div className="form-group" style={{ flex: "1 1 30%" }}>
+                        <input
+                          type="number"
+                          name="notifyMajorCount"
+                          className="form-control"
+                          placeholder="Notify Major Count"
+                          onChange={handleProjectChange}
+                          value={projectData.notifyMajorCount}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isEditMode && (
+                <div>
+                  <div className="form-group d-flex align-items-center">
+                    <input
+                      type="checkbox"
+                      name="sendEmailReport"
+                      onChange={(e) =>
+                        handleProjectChange({
+                          target: {
+                            name: "sendEmailReport",
+                            value: e.target.checked,
+                          },
+                        })
+                      }
+                      checked={projectData.sendEmailReport}
+                    />
+                    <label style={{ marginRight: "20px", marginLeft: "10px" }}>
+                      Send Email Report
+                    </label>
+                  </div>
+
+                  {projectData.sendEmailReport && (
+                    <div className="form-group" style={{ marginTop: "10px" }}>
+                      <input
+                        type="text"
+                        name="emailReportTo"
+                        className="form-control"
+                        placeholder="Email Addresses (comma-separated)"
+                        onChange={handleProjectChange}
+                        value={projectData.emailReportTo}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isEditMode && (
+                <div className="mt-4">
+                  {/* JIRA Configuration */}
+                 
+
+                  
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "20px",
+                        flexWrap: "wrap",
+                        marginTop: "5px",
+                      }}
+                    >
+                      <div className="form-group" style={{ flex: "1 1 45%" }}>
+                        <input
+                          type="text"
+                          name="jiraUserName"
+                          className="form-control mb-2"
+                          placeholder="JIRA Username"
+                          onChange={handleProjectChange}
+                          value={projectData.jiraUserName}
+                        />
+                      </div>
+                      <div className="form-group" style={{ flex: "1 1 45%" }}>
+                        <input
+                          type="password"
+                          name="jiraPassword"
+                          className="form-control mb-2"
+                          placeholder="JIRA Password"
+                          onChange={handleProjectChange}
+                          value={projectData.jiraPassword}
+                        />
+                      </div>
+                      <div className="form-group" style={{ flex: "1 1 45%" }}>
+                        <input
+                          type="text"
+                          name="jiraURL"
+                          className="form-control mb-2"
+                          placeholder="JIRA URL"
+                          onChange={handleProjectChange}
+                          value={projectData.jiraURL}
+                        />
+                      </div>
+                      <div className="form-group" style={{ flex: "1 1 45%" }}>
+                        <input
+                          type="text"
+                          name="jiraProjectKey"
+                          className="form-control"
+                          placeholder="JIRA Project Key"
+                          onChange={handleProjectChange}
+                          value={projectData.jiraProjectKey}
+                        />
+                      </div>
+                    </div>
+                  
+                </div>
+              )}
               <div className="text-center">
                 <button
-                  className="btn btn-secondary mt-3 "
+                  className="btn btn-secondary mt-3"
                   style={{
                     borderRadius: "20px",
-
                     marginRight: "20px",
                     width: "150px",
                   }}
@@ -598,7 +925,7 @@ const Projects = () => {
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary mt-3 w-20"
+                  className="btn btn-primary mt-3"
                   style={{
                     borderRadius: "20px",
                     background: "#4f0e83",

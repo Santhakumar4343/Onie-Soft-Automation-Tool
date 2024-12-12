@@ -182,6 +182,11 @@ export const TestRunsSummaryApi = (id) => {
   const headers = getApiHeaders();
   return Api.get(`/chart/v1/gettestrunresultsbyprojectid/${id}`, headers);
 };
+
+export const TestRunSummaryApi = (id) => {
+    const headers = getApiHeaders();
+    return Api.get(`/chart/v1/gettestcaseresults/${id}`, headers);
+  };
 export const addTestCasestoTestRun = (data) => {
     const headers = getApiHeaders();
     return Api.post(`/testrun/v1/addtestrun`, data, headers);
