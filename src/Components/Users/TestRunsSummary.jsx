@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { getTestRunByProjectId, TestRunsSummaryApi } from "../API/Api";
 import TablePagination from "../Pagination/TablePagination";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -81,6 +81,38 @@ const TestRunsSummary = () => {
 
   const handleTestRunView = (testRun) =>
     navigate("/userDashboard/testRunSummary", { state: { project, testRun } });
+
+
+  const convertToMinutes = (executeTimeInMillis) => {
+    const milliseconds = parseInt(executeTimeInMillis, 10); // Ensure it's a number
+    const minutes = Math.floor(milliseconds / 60000); // Convert to minutes
+    const seconds = Math.floor((milliseconds % 60000) / 1000); // Remaining seconds
+    return `${minutes} min ${seconds} sec`;
+  };
+
+  const [isCompareMode, setIsCompareMode] = useState(false);
+const [selectedTestRuns, setSelectedTestRuns] = useState([]);
+
+const toggleCompareMode = () => {
+  if (isCompareMode && selectedTestRuns.length === 2) {
+    // Handle the submission logic here
+    console.log("Comparing:", selectedTestRuns);
+    // Reset state after submission
+    setIsCompareMode(false);
+    setSelectedTestRuns([]);
+  } else {
+    setIsCompareMode(!isCompareMode);
+  }
+};
+
+const handleTestRunSelection = (testRun) => {
+  if (selectedTestRuns.includes(testRun)) {
+    setSelectedTestRuns(selectedTestRuns.filter((run) => run !== testRun));
+  } else if (selectedTestRuns.length < 2) {
+    setSelectedTestRuns([...selectedTestRuns, testRun]);
+  }
+};
+
   return (
     <div>
       <h4>Test Runs Summary</h4>
@@ -113,7 +145,7 @@ const TestRunsSummary = () => {
   {/* Legend */}
   <div
     style={{
-      marginLeft: "30px", // Add space between the chart and legend
+      marginLeft: "30px",
       display: "flex",
       flexDirection: "column",
     }}
@@ -138,20 +170,33 @@ const TestRunsSummary = () => {
   </div>
 </div>
 
-    <h4 className="">Test Runs </h4>
-      <div>
-      <div
-        style={{
-          maxHeight: "520px",
-          overflowY: "auto",
-        }}
-      >
-        <style>
-          {`
+<h4 className="">Completed Test Runs </h4>
+<button
+  style={{
+    marginLeft: "10px",
+    backgroundColor: "#4f0e83",
+    color: "white",
+    border: "none",
+    padding: "5px 10px",
+    cursor: "pointer",
+    borderRadius: "5px",
+  }}
+  onClick={toggleCompareMode}
+>
+  {isCompareMode ? "Submit" : "Compare"}
+</button>
+<div>
+  <div
+    style={{
+      maxHeight: "520px",
+      overflowY: "auto",
+    }}
+  >
+    <style>
+      {`
       /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
       div::-webkit-scrollbar {
         width: 2px;
-       
       }
       div::-webkit-scrollbar-thumb {
         background-color: #4f0e83;
@@ -167,74 +212,83 @@ const TestRunsSummary = () => {
         scrollbar-color: #4f0e83 #e0e0e0;   
       }
     `}
-        </style>
-        <table className="table  table-hover">
-          <thead
-            className="thead-dark"
+    </style>
+    <table className="table table-hover">
+      <thead
+        className="thead-dark"
+        style={{
+          position: "sticky",
+          top: 0,
+          backgroundColor: "#f8f9fa",
+          zIndex: 100,
+          color: "#4f0e83",
+        }}
+      >
+        <tr>
+          {isCompareMode && <th>Select</th>}
+          <th>Test Run Name</th>
+          <th>Created By</th>
+          <th>No. of Test Cases</th>
+          <th>Execution Time</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {testRuns.map((testRun, index) => (
+          <tr
+            key={index}
             style={{
-              position: "sticky",
-              top: 0,
-              backgroundColor: "#f8f9fa",
-              zIndex: 100,
-              color: "#4f0e83",
+              cursor: "pointer",
+              backgroundColor: "rgb(79, 103, 228)",
+              color: "white",
             }}
           >
-            <tr>
-              <th>Test Run Name</th>
-              <th>Created By</th>
-              <th>No. of Test Cases</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {testRuns.map((testRun, index) => (
-              <tr
-                key={index}
+            {isCompareMode && (
+              <td>
+                <input
+                  type="checkbox"
+                  onChange={() => handleTestRunSelection(testRun)}
+                  checked={selectedTestRuns.includes(testRun)}
+                  disabled={
+                    selectedTestRuns.length === 2 &&
+                    !selectedTestRuns.includes(testRun)
+                  }
+                />
+              </td>
+            )}
+            <td>{testRun.testRunName}</td>
+            <td>{testRun.createdBy}</td>
+            <td>{testRun.testCaseCount}</td>
+            <td>{convertToMinutes(testRun.executeTimeInMillis)}</td>
+            <td>
+              <RemoveRedEyeIcon
+                className="me-2"
                 style={{
-                  cursor: "pointer",
-                  backgroundColor: "rgb(79, 103, 228)",
-                  color: "white",
+                  cursor:
+                    testRun.testCaseCount === 0 ? "not-allowed" : "pointer",
+                  color: "#4f0e83",
+                  opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
                 }}
-              >
-                <td>{testRun.testRunName}</td>
-                <td>{testRun.createdBy}</td>
-                <td>{testRun.testCaseCount}</td>
-                <div>
-                 
-                  <td>
-                    <RemoveRedEyeIcon
-                      className="me-2"
-                      style={{
-                        cursor:
-                          testRun.testCaseCount === 0
-                            ? "not-allowed"
-                            : "pointer",
-                        color: "#4f0e83",
-                        opacity: testRun.testCaseCount === 0 ? 0.5 : 1,
-                      }}
-                      onClick={() =>
-                        testRun.testCaseCount !== 0 &&
-                        handleTestRunView(testRun)
-                      }
-                    />
-                  </td>
-                 
-                </div>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                onClick={() =>
+                  testRun.testCaseCount !== 0 && handleTestRunView(testRun)
+                }
+              />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <TablePagination
+    currentPage={page - 1}
+    totalPages={totalPages}
+    handlePageChange={handlePageChange}
+    handlePreviousPage={handlePreviousPage}
+    handleNextPage={handleNextPage}
+    handlePageSizeChange={handlePageSizeChange}
+  />
+</div>
 
-      <TablePagination
-        currentPage={page - 1}
-        totalPages={totalPages}
-        handlePageChange={handlePageChange}
-        handlePreviousPage={handlePreviousPage}
-        handleNextPage={handleNextPage}
-        handlePageSizeChange={handlePageSizeChange}
-      />
-      </div>
     </div>
   );
 };

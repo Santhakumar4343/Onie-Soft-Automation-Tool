@@ -107,15 +107,21 @@ const handleSubmit = (startExecution) => {
   console.log(payload);
   updateRunConfig(payload).then((response) => {
       if (response.status === 200 || response.status === 201) {
-         
-          Swal.fire({
-              icon: "success",
-              title: "Update Successful",
-              text: "Configuration updated successfully!",
-          });
+        Swal.fire({
+          icon: "success",
+          title: "Update Successful",
+          text: "Configuration updated successfully!",
+      });
           if (startExecution) {
               executeTestRun(testRun.id);
+
+              Swal.fire({
+                icon: "success",
+                title: "Execution Started Successfully!!",
+                text: "Test Run Execution Started Successfully!!",
+            });
           }
+          onClose()
           // navigate("/userDashboard/configpage", {state: {testRun, project}});
       } else {
           Swal.fire({

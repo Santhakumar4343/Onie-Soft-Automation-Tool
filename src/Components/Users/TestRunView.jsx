@@ -38,7 +38,7 @@ function UserTestRunView() {
     const testRun = location.state?.testRun || {};
     const payload = location.state?.payload || {};
     const project = location.state?.project || {};
-    console.log("Location State is ", location.state);
+   
     const [testCases, setTestCases] = useState([]);
     const pollingInterval = 30000; // Poll every 5 seconds
     const navigate = useNavigate();
@@ -218,6 +218,11 @@ function UserTestRunView() {
                 });
                 if (startExecution) {
                     executeTestRun(testRun.id);
+                    Swal.fire({
+                      icon: "success",
+                      title: "Execution Started Successfully!!",
+                      text: "Test Run Execution Started Successfully!!",
+                  });
                 }
                 // navigate("/userDashboard/configpage", {state: {testRun, project}});
             } else {

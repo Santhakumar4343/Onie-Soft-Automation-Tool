@@ -624,14 +624,14 @@ const Projects = () => {
                 </div>
               </div>
               {/* URL */}
-              {isEditMode && (
+             
                 <div style={{ display: "flex", gap: "20px" }}>
                   <div className="form-group mt-3" style={{ flex: "1 1 45%" }}>
                     <input
                       type="text"
                       name="url"
                       className="form-control"
-                      placeholder="URL"
+                      placeholder="Project URL"
                       onChange={handleProjectChange}
                       value={projectData.url}
                     />
@@ -641,16 +641,16 @@ const Projects = () => {
                       type="text"
                       name="apiBaseURL"
                       className="form-control"
-                      placeholder="apiBaseURL"
+                      placeholder="Project API Base URL"
                       onChange={handleProjectChange}
                       value={projectData.apiBaseURL}
                     />
                   </div>
                 </div>
-              )}
+              
 
               {/* Basic Auth Configuration */}
-              {isEditMode && (
+              
                 <div style={{ marginTop: "20px" }}>
                   <div
                     className="form-group"
@@ -670,7 +670,7 @@ const Projects = () => {
                       }
                     />
                     <label style={{ marginLeft: "10px" }}>
-                      Basic Auth Enabled
+                      Basic Auth
                     </label>
                   </div>
 
@@ -706,10 +706,10 @@ const Projects = () => {
                     </div>
                   )}
                 </div>
-              )}
+              
 
               {/* Enable Live Reporting */}
-              {isEditMode && (
+             
                 <div style={{ marginTop: "20px" }}>
                   <div
                     className="form-group"
@@ -729,7 +729,7 @@ const Projects = () => {
                       }
                     />
                     <label style={{ marginLeft: "10px" }}>
-                      Enable Live Reporting
+                     Live Reporting
                     </label>
                   </div>
 
@@ -746,10 +746,10 @@ const Projects = () => {
                     </div>
                   )}
                 </div>
-              )}
+              
 
               {/* Notify Teams */}
-              {isEditMode && (
+             
                 <div style={{ marginTop: "20px", marginBottom: "20px" }}>
                   <div
                     className="form-group"
@@ -768,7 +768,7 @@ const Projects = () => {
                         })
                       }
                     />
-                    <label style={{ marginLeft: "10px" }}>Notify Teams</label>
+                    <label style={{ marginLeft: "10px" }}>Notify Via Teams</label>
                   </div>
 
                   {projectData.notifyTeams && (
@@ -815,9 +815,9 @@ const Projects = () => {
                     </div>
                   )}
                 </div>
-              )}
+              
 
-              {isEditMode && (
+             
                 <div>
                   <div className="form-group d-flex align-items-center">
                     <input
@@ -834,7 +834,7 @@ const Projects = () => {
                       checked={projectData.sendEmailReport}
                     />
                     <label style={{ marginRight: "20px", marginLeft: "10px" }}>
-                      Send Email Report
+                      Email Report
                     </label>
                   </div>
 
@@ -851,9 +851,9 @@ const Projects = () => {
                     </div>
                   )}
                 </div>
-              )}
+              
 
-              {isEditMode && (
+              
                 <div className="mt-4">
                   {/* JIRA Configuration */}
                  
@@ -910,7 +910,7 @@ const Projects = () => {
                     </div>
                   
                 </div>
-              )}
+              
               <div className="text-center">
                 <button
                   className="btn btn-secondary mt-3"

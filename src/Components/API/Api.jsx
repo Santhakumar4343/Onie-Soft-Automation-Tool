@@ -172,6 +172,11 @@ export const deleteTestcase = (id) => {
     return Api.delete(`/testcases/v1/delete/${id}`, headers);
 };
 
+export const TestcaseSummary = (id) => {
+    const headers = getApiHeaders();
+    return Api.get(`/chart/v1/getTestCaseSummary/${id}`, headers);
+};
+
 // Test Run Api's
 
 export const createTestRun = (data) => {
