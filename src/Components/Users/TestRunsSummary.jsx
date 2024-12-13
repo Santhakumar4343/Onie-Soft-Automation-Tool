@@ -95,8 +95,14 @@ const [selectedTestRuns, setSelectedTestRuns] = useState([]);
 
 const toggleCompareMode = () => {
   if (isCompareMode && selectedTestRuns.length === 2) {
-    // Handle the submission logic here
-    console.log("Comparing:", selectedTestRuns);
+    const runOne = selectedTestRuns[0]; 
+    const runTwo = selectedTestRuns[1]; 
+
+    // Navigate to ComparisonPage and pass state
+    navigate("/userDashboard/comparison", {
+      state: { runOne, runTwo },
+    });
+
     // Reset state after submission
     setIsCompareMode(false);
     setSelectedTestRuns([]);
@@ -172,14 +178,17 @@ const handleTestRunSelection = (testRun) => {
 
 <h4 className="">Completed Test Runs </h4>
 <button
+
   style={{
     marginLeft: "10px",
+    
     backgroundColor: "#4f0e83",
     color: "white",
     border: "none",
-    padding: "5px 10px",
+    padding: " 5px 10px",
     cursor: "pointer",
-    borderRadius: "5px",
+    borderRadius: "20px",
+    width:"10%"
   }}
   onClick={toggleCompareMode}
 >

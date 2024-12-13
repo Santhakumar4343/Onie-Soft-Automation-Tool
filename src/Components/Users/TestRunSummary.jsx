@@ -26,6 +26,9 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TablePagination from "../Pagination/TablePagination";
+import BarChartComponent from "../Charts/BarChartComponent";
+import PieChartComponent from "../Charts/PieChartComponent";
+import TestResultsChart from "../Charts/TestResultsChart";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 const TestRunSummary = () => {
@@ -193,100 +196,31 @@ const TestRunSummary = () => {
         </div>
 
         <Box display="flex" justifyContent="space-between">
+       
           <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-            <Typography variant="h6" gutterBottom>
-              Overall Status Report
-            </Typography>
-            <BarChart width={300} height={300} data={barChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <YAxis />
-              <XAxis dataKey="name" />
-              <Tooltip formatter={(value) => [`${value} test cases`]} />
-              <Legend
-                layout="horizontal"
-                verticalAlign="bottom"
-                align="center"
-                payload={[
-                  {
-                    value: `Total Test Cases (${summaryData.totalTestCases})`,
-                    type: "square",
-                    id: "total",
-                    color: "#0000FF", // Blue color for the total legend item
-                  },
-                  ...barChartData.map((item) => ({
-                    value: `${item.name} (${item.value})`,
-                    type: "square",
-                    id: item.name,
-                    color: item.color,
-                  })),
-                ]}
-              />
-              <Bar dataKey="value" name="Overall Status">
-                {barChartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </Paper>
+          <BarChartComponent
+            data={barChartData}
+            colors={barChartData.map((item) => item.color)}
+            dataKey="value"
+            title="Overall Status Report"
+            totalCases={summaryData.totalTestCases}
+          />
+        </Paper>
+        
+          <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
+          <PieChartComponent
+            data={pieChartData}
+            
+            title="Feature of Pass Percentage"
+          />
+        </Paper>
+          
 
-          <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-            <Typography variant="h6" gutterBottom>
-              Feature of Pass Percentage
-            </Typography>
-            <PieChart width={300} height={300}>
-              <Pie
-                data={pieChartData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-              >
-                {pieChartData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend
-                layout="horizontal"
-                verticalAlign="bottom"
-                align="center"
-                wrapperStyle={{
-                  maxHeight: "100px", // Limit the legend's height
-                  overflowY: "auto", // Add vertical scrolling
-                  padding: "5px", // Optional for aesthetics
-                }}
-                formatter={(value) => (
-                  <span>
-                    {value} (
-                    {pieChartData.find((data) => data.name === value)?.value ||
-                      0}
-                    )
-                  </span>
-                )}
-              />
-            </PieChart>
-          </Paper>
+         
 
-          <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-            <Typography variant="h6" gutterBottom>
-              Test Results by Test Type
-            </Typography>
-            <BarChart width={300} height={300} data={testTypeBarData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="PASS" fill="#09ed92" name="Pass" barSize={30} />
-              <Bar dataKey="FAIL" fill="#FF0000" name="Fail" barSize={30} />
-              <Bar dataKey="SKIP" fill="#FFA500" name="Skip" barSize={30} />
-            </BarChart>
-          </Paper>
+          <TestResultsChart data={testTypeBarData}  title="Test Results By Test Type"/>
+         
+       
         </Box>
       </Box>
       <h4 className="mb-2">Test Cases</h4>
@@ -467,6 +401,22 @@ const TestRunSummary = () => {
               }}
             >
               <h4 className="text-center">Test Case Summary</h4>
+              <button
+              onClick={closeModal}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "30px",
+                background: "none",
+                border: "none",
+                fontSize: "35px",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+              aria-label="Close"
+            >
+              ×
+            </button>
               <div
                 className="d-flex justify-content-between"
                 style={{ gap: "5px" }}
@@ -522,6 +472,7 @@ const TestRunSummary = () => {
                 />
               </LineChart>
             </div>
+            
           </div>
         ) : (
           <p>Loading...</p>
