@@ -1,4 +1,4 @@
-import { Modal } from "@mui/material";
+import { Modal, Tab, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from "sweetalert2";
@@ -6,6 +6,8 @@ import { createBranch, getAllBranchesByCompany, updateBranch } from "../API/Api"
 import { useLocation, useNavigate } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import TablePagination from "../Pagination/TablePagination";
 const Deparments = () => {
   const [projectModal, setProjectModal] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -25,7 +27,9 @@ const Deparments = () => {
   const handleBranchClick = (branch) => {
     navigate("/adminDashboard/admins", { state: { branch,company} });
   };
-
+ const handleBackwardClick=()=>{
+    navigate("/adminDashboard/companies")
+ }
   const handleProject = () => {
     setProjectModal(true);
     setIsEditing(false); // Reset to Add mode
@@ -39,13 +43,38 @@ const Deparments = () => {
     setProjectModal(true);
   };
 
+  
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+  
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
   useEffect(() => {
-    getAllBranchesByCompany(company.id)
+    getAllBranchesByCompany(company.id,page-1,itemsPerPage)
       .then((response) => {
-        setBranches(response.data);
+        setBranches(response.data.content);
+        setTotalPages(response.data.totalPages)
       })
       .catch((err) => console.log(err));
-  }, [company.id]);
+  }, [company.id,page-1,itemsPerPage]);
 
   const handleProjectSubmit = (e) => {
     e.preventDefault();
@@ -85,7 +114,7 @@ const Deparments = () => {
       const data = {
         branchName: branchData.branchName,
         branchId: branchData.branchId,
-        cmpId: company.cmpId,
+        cmpId: company.id,
       };
       createBranch(data)
         .then((response) => {
@@ -154,7 +183,7 @@ const Deparments = () => {
   return (
     <div className="container-fluid">
       <h4 className="text-center" style={{ color: "#4f0e83" }}>
-        {location.state?.company?.cmpName} Branches
+        {location.state?.company?.cmpName} - Branches
       </h4>
       <div className="d-flex justify-content-between mb-4">
         <button
@@ -179,7 +208,34 @@ const Deparments = () => {
         />
       </div>
 
-      <div className="table-responsive">
+      <div
+          style={{
+            maxHeight: "520px",
+            overflowY: "auto",
+          }}
+        >
+          <style>
+            {`
+      /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
+      div::-webkit-scrollbar {
+        width: 2px;
+       
+      }
+      div::-webkit-scrollbar-thumb {
+        background-color: #4f0e83;
+        border-radius: 4px;
+      }
+      div::-webkit-scrollbar-track {
+        background-color: #e0e0e0;
+      }
+
+      /* Scrollbar styling for Firefox */
+      div {
+        scrollbar-width: thin; 
+        scrollbar-color: #4f0e83 #e0e0e0;   
+      }
+    `}
+          </style>
         <table className="table  table-hover ">
           <thead>
             <tr>
@@ -195,26 +251,50 @@ const Deparments = () => {
                 <td>{branch.branchId}</td>
                 <td>{branch.branchName}</td>
                 <td>
+                <Tooltip title="View" arrow placement="left" >
                   <VisibilityIcon
                     style={{ cursor: "pointer",color: "#4f0e83"  }}
                     onClick={() => handleBranchClick(branch)}
                   ></VisibilityIcon>
+                  </Tooltip>
                 </td>
                 <td>
+                <Tooltip title="Edit" arrow placement="left" >
                   <EditIcon
                     style={{ cursor: "pointer", marginRight: "10px",color: "#4f0e83"  }}
                     onClick={() => handleEditClick(branch)}
                   />
+                   </Tooltip>
+                   <Tooltip title="Delete" arrow placement="right" >
                   <DeleteIcon
                     style={{ cursor: "pointer", color: "red" }}
                     // onClick={() => handleDeleteClick(branch.id)}
                   />
+                   </Tooltip>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        <div>
+        <Tooltip title="Back" arrow placement="right" >
+          <Tab icon={<ArrowBackIcon sx={{ fontSize: "2rem" ,color:"#4f0e83"}}  onClick={handleBackwardClick}/>}  
+          ></Tab>
+           </Tooltip>
+              
+          
+    
+        </div>
       </div>
+      <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        />
+
 
       <Modal open={projectModal} onClose={() => setProjectModal(false)}>
         <div
@@ -259,7 +339,7 @@ const Deparments = () => {
                   placeholder="Branch Id"
                   onChange={handleProjectChange}
                   value={branchData.branchId}
-                  disabled={isEditing}
+                
                   required
                 />
               </div>

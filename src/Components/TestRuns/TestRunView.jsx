@@ -1,204 +1,126 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import "./TestRunDetails.css";
 
-import Swal from "sweetalert2";
-import {
-  addTestCasestoTestRun,
-  executeTestRun,
-  getTestCasesByTestRunId,
-} from "../API/Api";
+
 import moment from "moment";
+import {  getTestCasesByTestRunId } from "../API/Api";
+import TablePagination from "../Pagination/TablePagination";
 
-function TestRunView() {
+function UserTestRunView() {
   const location = useLocation();
-
-  const project = location.state?.project || {};
   const testRun = location.state?.testRun || {};
-  console.log(testRun.id);
   const [testCases, setTestCases] = useState([]);
+  
+  const pollingInterval = 30000; // Poll every 5 seconds
 
+  
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+   // Handle page change
+   const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
+
+   // Fetch test cases from API
+   const fetchTestCases = async () => {
+    try {
+      const response = await getTestCasesByTestRunId(testRun.id, page-1 , itemsPerPage);
+    
+      setTestCases(response.data.content); // Extract content for the test cases
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Error fetching test cases:", error);
+    }
+  };
+  
   useEffect(() => {
-    getTestCasesByTestRunId(testRun.id)
-      .then((response) => setTestCases(response.data))
-      .catch((err) => console.log(err));
-  }, [testRun.id]);
+    // Fetch immediately on mount
+    fetchTestCases();
 
-  const [selectedCases, setSelectedCases] = useState([]);
+    // Set up polling using setInterval
+    const intervalId = setInterval(() => {
+      fetchTestCases();
+    }, pollingInterval);
 
-  // Handle individual row selection
-  const handleCheckboxChange = (id) => {
-    setSelectedCases((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((id) => id !== id)
-        : [...prevSelected, id]
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [testRun.id,page, itemsPerPage]);
+
+ 
+
+  const testCaseColors = {
+    "In Progress": "blue",
+    "SKIP": "orange",
+    "FAIL": "red",
+    "PASS": "green",}
+    const [searchQuery, setSearchQuery] = useState("");
+    const handleSearchInput = (e) => {
+      const query = e.target.value.toLowerCase();
+      setSearchQuery(query);
+    };
+    const filteredTestCases = testCases.filter(
+      (testcase) =>
+        testcase.testCaseName.toLowerCase().includes(searchQuery) ||
+        testcase.author.toLowerCase().includes(searchQuery)||
+        testcase.feature.toLowerCase().includes(searchQuery)||
+        testcase.automationId.toLowerCase().includes(searchQuery)||
+        testcase.status.toLowerCase().includes(searchQuery)
     );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedCases.length === testCases.length) {
-      setSelectedCases([]);
-    } else {
-      setSelectedCases(testCases.map((testCase) => testCase.id)); // Select all
-    }
-  };
-
-  const handleAddToTestRun = () => {
-    if (selectedCases.length === 0) {
-      Swal.fire("Error", "No test cases selected!", "error");
-      return;
-    }
-
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to add these test cases to the Test Run?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#4f0e83",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, add to Test Run!",
-      customClass: {
-        confirmButton: "custom-confirm-button",
-        cancelButton: "custom-cancel-button",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const payload = {
-          testRunId: testRun.id,
-          testRunName: testRun.testRunName || "Default Test Run Name",
-          testCaseId: selectedCases,
-        };
-
-        addTestCasestoTestRun(payload)
-          .then((response) => {
-            if (response.status === 200 || response.status === 201) {
-              Swal.fire(
-                "Added!",
-                "Selected test cases have been added to the Test Run.",
-                "success"
-              );
-              setSelectedCases([]);
-            } else {
-              Swal.fire(
-                "Error",
-                "Failed to add test cases to the Test Run.",
-                "error"
-              );
-            }
-          })
-          .catch((error) => {
-            console.error("Error adding test cases to the test run:", error);
-          });
-      }
-    });
-  };
-  const handleTestRun = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to  Execute Test Run?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#4f0e83",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Execute Test Run!",
-      customClass: {
-        confirmButton: "custom-confirm-button",
-        cancelButton: "custom-cancel-button",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        executeTestRun(testRun.id)
-          .then((response) => {
-            const { status } = response;
-
-            if (status === 200 || status === 201) {
-              Swal.fire({
-                title: "Executed!",
-                text: "Test Run Executed Successfully.",
-                icon: "success",
-              });
-            } else {
-              Swal.fire({
-                title: "Oops...!",
-                text: "Something Went Wrong.",
-                icon: "error",
-              });
-            }
-          })
-          .catch((error) => {
-            console.error("Error executing test run:", error);
-            Swal.fire({
-              title: "Error!",
-              text: "An unexpected error occurred. Please try again later.",
-              icon: "error",
-            });
-          });
-      }
-    });
-  };
-
   return (
     <div className="container">
       <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
-        {testRun.testRunName}-Test Run{" "}
+        {testRun.testRunName} - Test Run
       </h4>
-      <div className="TestRun">
-        {/* <button
-          onClick={handleTestRun}
-          style={{
-            borderRadius: "20px",
-            backgroundColor: "#4f0e83",
-            color: "white",
-            width: "14%",
-            maxHeight: "50px",
-          }}
-        >
-          Execute Test Run
-        </button> */}
-        {/* <button
-          onClick={handleAddToTestRun}
-          disabled={selectedCases.length === 0}
-          style={{
-            borderRadius: "20px",
-            backgroundColor: "#4f0e83",
-            color: "white",
-            width: "14%",
-            height: "35px",
-          }}
-        >
-          Add to Test Run
-        </button> */}
+      <div className="d-flex justify-content-end align-items-center mt-3 mb-3">
+       
+
+        <input
+                type="text"
+                value={searchQuery}
+                style={{width:"40%"}}
+                onChange={handleSearchInput}
+                placeholder="Search by Test Case Name, Author,Automation ID"
+                className="form-control "
+              />
       </div>
-      <div
-        style={{
-          maxHeight: "620px",
-          overflowY: "auto",
-        }}
-      >
+      <div style={{ maxHeight: "530px", overflowY: "auto" }}>
         <style>
           {`
-      /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
-      div::-webkit-scrollbar {
-        width: 2px;
-       
-      }
-      div::-webkit-scrollbar-thumb {
-        background-color: #4f0e83;
-        border-radius: 4px;
-      }
-      div::-webkit-scrollbar-track {
-        background-color: #e0e0e0;
-      }
-
-      /* Scrollbar styling for Firefox */
-      div {
-        scrollbar-width: thin; 
-        scrollbar-color: #4f0e83 #e0e0e0;   
-      }
-    `}
+          div::-webkit-scrollbar {
+            width: 2px;
+          }
+          div::-webkit-scrollbar-thumb {
+            background-color: #4f0e83;
+            border-radius: 4px;
+          }
+          div::-webkit-scrollbar-track {
+            background-color: #e0e0e0;
+          }
+          div {
+            scrollbar-width: thin;
+            scrollbar-color: #4f0e83 #e0e0e0;
+          }
+        `}
         </style>
         <table
-          className="table  table-hover mt-4"
+          className="table table-hover mt-4"
           style={{ textAlign: "center" }}
         >
           <thead
@@ -211,14 +133,6 @@ function TestRunView() {
             }}
           >
             <tr>
-              {/* <th>
-                <input
-                  type="checkbox"
-                  checked={selectedCases.length === testCases.length}
-                  onChange={handleSelectAll}
-                />
-              </th> */}
-
               <th>Test Case Name</th>
               <th>Automation ID</th>
               <th>Status</th>
@@ -228,19 +142,20 @@ function TestRunView() {
             </tr>
           </thead>
           <tbody>
-            {testCases.map((testCase, index) => (
+            {filteredTestCases.map((testCase, index) => (
               <tr key={index}>
-                {/* <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedCases.includes(testCase.id)}
-                    onChange={() => handleCheckboxChange(testCase.id)}
-                  />
-                </td> */}
-
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
-                <td>{testCase.status}</td>
+                <td>
+                  <span
+                    style={{
+                      color: testCaseColors[testCase.status],
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {testCase.status}
+                  </span>
+                </td>
                 <td>{testCase.author}</td>
                 <td>
                   {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}
@@ -251,8 +166,16 @@ function TestRunView() {
           </tbody>
         </table>
       </div>
+      <div> <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        /></div>
     </div>
   );
 }
 
-export default TestRunView;
+export default UserTestRunView;

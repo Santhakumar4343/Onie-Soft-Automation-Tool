@@ -8,8 +8,11 @@ import {
   addProject,
   deleteProjectById,
   getAssignedUserProjects,
-  updateProject,
+  getConfigDetailsForUser,
+  updateConfig,
+  
 } from "../API/Api";
+import TablePagination from "../Pagination/TablePagination";
 
 const Config = () => {
   const user = JSON.parse(sessionStorage.getItem("user"));
@@ -18,7 +21,7 @@ const Config = () => {
   const [modalData, setModalData] = useState({
     projectName: "",
     ipAddress: "",
-    projectDir: "",
+    projectPath: "",
   });
   const [isEditMode, setEditMode] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -27,10 +30,39 @@ const Config = () => {
     fetchProjects();
   }, [user.id]);
 
+
+
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+
   const fetchProjects = () => {
-    getAssignedUserProjects(user.id)
-      .then((response) => setProjects(response.data))
+    getConfigDetailsForUser(user.id,page-1,itemsPerPage)
+      .then((response) => {setProjects(response.data.content)
+    setTotalPages(response.data.totalPages)})
       .catch((err) => console.log(err));
+  };
+
+
+   // Handle page change
+   const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
   };
 
   const openModal = (project = null) => {
@@ -38,7 +70,7 @@ const Config = () => {
       setModalData(project);
       setEditMode(true);
     } else {
-      setModalData({ projectName: "", ipAddress: "", projectDir: "" });
+      setModalData({ projectName: "", ipAddress: "", projectPath: "" });
       setEditMode(false);
     }
     setShowModal(true);
@@ -46,23 +78,24 @@ const Config = () => {
 
   const closeModal = () => {
     setShowModal(false);
-    setModalData({ projectName: "", ipAddress: "", projectDir: "" });
+    setModalData({ projectName: "", ipAddress: "", projectPath: "" });
   };
 
   const clearModal = () => {
-    setModalData({ projectName: "", ipAddress: "", projectDir: "" });
+    setModalData({ projectName: "", ipAddress: "", projectPath: "" });
   };
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isEditMode) {
-      // Update Project
+      
       const data={
         id:modalData.id,
-        projectName:modalData.projectName,
+        userId:user.id,
+        projectId:modalData.id,
         ipAddress:modalData.ipAddress,
-        projectDir:modalData.projectDir
+        projectPath:modalData.projectPath
       }
-      updateProject( data)
+      updateConfig( data)
         .then(() => {
           fetchProjects();
           closeModal();
@@ -107,21 +140,8 @@ const Config = () => {
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center my-3">
-        <h4 style={{color:"#4f0e83"}}>Project Configurations</h4>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => openModal()}
-          style={{
-            height: "40px",
-            color: "white",
-            backgroundColor: "#4f0e83",
-            width: "13%",
-            borderRadius: "20px",
-          }}
-        >
-          Add Project
-        </Button>
+        <h4 style={{color:"#4f0e83"}}>Device Configurations</h4>
+       
       </div>
       <div
         style={{
@@ -154,7 +174,7 @@ const Config = () => {
               <tr key={index}>
                 <td>{project.projectName}</td>
                 <td>{project.ipAddress}</td>
-                <td>{project.projectDir}</td>
+                <td>{project.projectPath}</td>
                 <td>
                   <EditIcon
                     style={{ cursor: "pointer", color: "#4f0e83" }}
@@ -172,6 +192,14 @@ const Config = () => {
         </table>
       </div>
 
+      <div> <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        /></div>
       {/* Modal */}
       <Modal open={showModal} onClose={closeModal}>
         <div
@@ -245,9 +273,9 @@ const Config = () => {
                   fullWidth
                   margin="dense"
                   label="Project Path"
-                  value={modalData.projectDir}
+                  value={modalData.projectPath}
                   onChange={(e) =>
-                    setModalData({ ...modalData, projectDir: e.target.value })
+                    setModalData({ ...modalData, projectPath: e.target.value })
                   }
                 />
               </div>

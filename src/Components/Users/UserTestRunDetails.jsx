@@ -1,26 +1,86 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../TestRuns/TestRunDetails.css";
 
 import Swal from "sweetalert2";
-import { addTestCasestoTestRun, edittestrun } from "../API/Api";
-import moment from "moment";
+import { addTestCasestoTestRun, getTestCasesToEditTestRun } from "../API/Api";
 
+import TablePagination from "../Pagination/TablePagination.jsx";
+
+import { Tab, Tooltip } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 function UserTestRunDetails() {
   const location = useLocation();
-
   const project = location.state?.project || {};
   const testRun = location.state?.testRun || {};
-  console.log(testRun.id);
+  const data = location.state?.data || {};
+
   const [testCases, setTestCases] = useState([]);
 
-  useEffect(() => {
-    edittestrun(testRun.id, project.id)
-      .then((response) => setTestCases(response.data))
-      .catch((err) => console.log(err));
-  }, [testRun.id, project.id]);
+  const navigate = useNavigate();
+
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
 
   const [selectedCases, setSelectedCases] = useState([]);
+  const [unselectedCases, setUnselectedCases] = useState([]);
+  const [visitedPages, setVisitedPages] = useState([]);
+  const [testCaseInRun, setTestCasesInRun] = useState([]);
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
+
+  const handleSelectedCasesAdding = (newIds) => {
+    setSelectedCases(
+      visitedPages.includes(page)
+        ? selectedCases
+        : (prevIds) => [...new Set([...prevIds, ...newIds])]
+    );
+    setTestCasesInRun((prevIds) => [...new Set([...prevIds, ...newIds])]);
+  };
+
+  useEffect(() => {
+    const fetchTestCases = () => {
+      try {
+        getTestCasesToEditTestRun(
+          testRun.id,
+          project.id,
+          page - 1,
+          itemsPerPage
+        ).then((response) => {
+          console.log("Response:", response);
+          setTestCases(response.data.data.testCases);
+          setTotalPages(response.data.pagination.totalPages);
+          setVisitedPages((prevVisitedPages) => [
+            ...new Set([...prevVisitedPages, page]),
+          ]);
+          handleSelectedCasesAdding(response.data.data.idsOfTestCasesInTestRun);
+        });
+      } catch (error) {
+        console.error("Error fetching test cases:", error);
+      }
+    };
+    // Call the fetch function
+    fetchTestCases();
+  }, [testRun.id, project.id, page - 1, itemsPerPage]);
 
   // Handle individual row selection
   const handleCheckboxChange = (id) => {
@@ -29,14 +89,33 @@ function UserTestRunDetails() {
         ? prevSelected.filter((selectedId) => selectedId !== id)
         : [...prevSelected, id]
     );
+    setUnselectedCases((prevUnSelected) =>
+      testCaseInRun.includes(id)
+        ? prevUnSelected.includes(id)
+          ? prevUnSelected.filter((unselectedId) => unselectedId !== id)
+          : [...prevUnSelected, id]
+        : [...prevUnSelected]
+    );
   };
 
   const handleSelectAll = () => {
-    if (selectedCases.length === testCases.length) {
-      setSelectedCases([]);
-    } else {
-      setSelectedCases(testCases.map((testCase) => testCase.id)); // Select all
-    }
+    const currentPageIds = testCases.map((testCase) => testCase.automationId);
+    const allSelected = currentPageIds.every((id) =>
+      selectedCases.includes(id)
+    );
+
+    setSelectedCases((prevSelected) => {
+      if (allSelected) {
+        // Remove current page IDs if already selected
+        return prevSelected.filter((id) => !currentPageIds.includes(id));
+      } else {
+        // Add current page IDs if not already selected
+        return [
+          ...prevSelected,
+          ...currentPageIds.filter((id) => !prevSelected.includes(id)),
+        ];
+      }
+    });
   };
 
   const handleAddToTestRun = () => {
@@ -61,14 +140,19 @@ function UserTestRunDetails() {
       if (result.isConfirmed) {
         // Prepare payload for API
         const payload = {
-          testRunId: testRun.id,
-          testRunName: testRun.testRunName || "Default Test Run Name",
-          testCaseId: selectedCases,
+          testRunId: testRun.id || data.id,
+          testRunName:
+            testRun.testRunName || data.testRunName || "Default Test Run Name",
+          testCaseId: selectedCases.filter((id) => !testCaseInRun.includes(id)),
+          testCaseIdsToRemove: unselectedCases,
         };
 
         addTestCasestoTestRun(payload)
           .then((response) => {
             if (response.status === 200 || response.status === 201) {
+              navigate("/userDashboard/testRunView", {
+                state: { payload, project },
+              });
               Swal.fire(
                 "Added!",
                 "Selected test cases have been added to the Test Run.",
@@ -90,44 +174,42 @@ function UserTestRunDetails() {
       }
     });
   };
-  const handleTestRun = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to  Execute Test Run?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#4f0e83",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Execute Test Run!",
-      customClass: {
-        confirmButton: "custom-confirm-button",
-        cancelButton: "custom-cancel-button",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire("Executed!", "Test Run Executed Successfully.", "success");
-      }
-    });
+  const [searchQuery, setSearchQuery] = useState("");
+  const handleSearchInput = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
   };
+  const filteredTestCases = testCases.filter(
+    (testcase) =>
+      testcase.testCaseName.toLowerCase().includes(searchQuery) ||
+      testcase.author.toLowerCase().includes(searchQuery) ||
+      testcase.feature.toLowerCase().includes(searchQuery) ||
+      testcase.automationId.toLowerCase().includes(searchQuery)
+  );
 
+  const handleBackwardClick = () => {
+    navigate("/userDashboard/testruns", { state: { project } });
+  };
   return (
     <div className="container">
-      <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
-        {testRun.testRunName}-Test Run{" "}
-      </h4>
-      <div className="TestRun">
-        {/* <button
-          onClick={handleTestRun}
-          style={{
-            borderRadius: "20px",
-            backgroundColor: "#4f0e83",
-            color: "white",
-            width: "14%",
-            maxHeight: "50px",
-          }}
-        >
-          Execute Test Run
-        </button> */}
+      <div className="d-flex align-items-center justify-content-between">
+        <Tooltip title="Back" arrow placement="right">
+          <Tab
+            icon={
+              <ArrowBackIcon
+                sx={{ fontSize: "2rem", color: "#4f0e83" }}
+                onClick={handleBackwardClick}
+              />
+            }
+          ></Tab>
+        </Tooltip>
+        <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
+          {project.projectName} : {testRun.testRunName || data.testRunName} :
+          Select Test Cases to this run{" "}
+        </h4>
+        <h1></h1>
+      </div>
+      <div className="d-flex justify-content-between align-items-center mt-3 mb-3">
         <button
           onClick={handleAddToTestRun}
           disabled={selectedCases.length === 0}
@@ -141,19 +223,29 @@ function UserTestRunDetails() {
         >
           Add to Test Run
         </button>
+        <input
+          type="text"
+          value={searchQuery}
+          style={{ width: "40%" }}
+          onChange={handleSearchInput}
+          placeholder="Search by Test Case Name, Author......"
+          className="form-control "
+        />
       </div>
       <div
         style={{
-          maxHeight: "620px",
+          maxHeight: "520px",
           overflowY: "auto",
         }}
       >
         <style>
           {`
+
       /* Scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
       div::-webkit-scrollbar {
         width: 2px;
-       
+
+
       }
       div::-webkit-scrollbar-thumb {
         background-color: #4f0e83;
@@ -165,18 +257,16 @@ function UserTestRunDetails() {
 
       /* Scrollbar styling for Firefox */
       div {
-        scrollbar-width: thin; 
-        scrollbar-color: #4f0e83 #e0e0e0;   
+        scrollbar-width: thin;
+        scrollbar-color: #4f0e83 #e0e0e0;
       }
     `}
         </style>
-        <table
-          className="table  table-hover mt-4"
-          style={{ textAlign: "center" }}
-        >
+        <table className="table  table-hover mt-4">
           <thead
             style={{
               position: "sticky",
+              marginTop: "10px",
               top: 0,
               backgroundColor: "#f8f9fa",
               zIndex: 100,
@@ -195,33 +285,44 @@ function UserTestRunDetails() {
               <th>Test Case Name</th>
               <th>Automation ID</th>
               <th>Author</th>
-              <th>Created Date</th>
-              <th>Updated Date</th>
             </tr>
           </thead>
           <tbody>
-            {testCases.map((testCase, index) => (
-              <tr key={index}>
+            {filteredTestCases.map((testCase, index) => (
+              <tr
+                key={index}
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={() => handleCheckboxChange(testCase.automationId)}
+              >
                 <td>
                   <input
                     type="checkbox"
-                    checked={selectedCases.includes(testCase.id)}
-                    onChange={() => handleCheckboxChange(testCase.id)}
+                    checked={selectedCases.includes(testCase.automationId)}
+                    onChange={() => {}}
+                    style={{
+                      pointerEvents: "none",
+                    }}
                   />
                 </td>
 
                 <td>{testCase.testCaseName}</td>
                 <td>{testCase.automationId}</td>
                 <td>{testCase.author}</td>
-                <td>
-                  {moment(testCase.createdAt).format("DD-MMM-YYYY ,HH:MM:SS")}
-                </td>
-                <td>{testCase.updatedAt}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <TablePagination
+        currentPage={page - 1}
+        totalPages={totalPages}
+        handlePageChange={handlePageChange}
+        handlePreviousPage={handlePreviousPage}
+        handleNextPage={handleNextPage}
+        handlePageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 }

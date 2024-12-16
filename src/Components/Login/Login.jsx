@@ -25,10 +25,10 @@ const Login = () => {
       if (response.data.jwt) {
         // Save JWT and user details in session storage
         sessionStorage.setItem('jwt_token', response.data.jwt);
-        sessionStorage.setItem('user', JSON.stringify(response.data.register));
+        sessionStorage.setItem('user', JSON.stringify(response.data));
   
         // Navigate based on user role
-        const userRole = response.data.register.empRole;
+        const userRole = response.data.empRole;
         if (userRole === "SuperADMIN") {
           navigate('/adminDashboard');
         } else if (userRole === "Admin") {
@@ -67,12 +67,12 @@ const Login = () => {
     {/* Login Form */}
     <div className="col-12 col-md-6 d-flex justify-content-center">
       <div className="w-100 p-4 " style={{ maxWidth: '400px' }}>
-        <h3 className="text-center mb-4" style={{ color: "#4f0e83", fontFamily: "system-ui" }}>Welcome to ONiE TestSuite</h3>
+        <h3 className="text-center mb-4" style={{ color: "#4f0e83", fontFamily: "system-ui" }}>Welcome to ONiE Test</h3>
         <form className="text-center" onSubmit={handleLogin}>
           <input
             type="text"
             className="form-control w-100 mb-3"
-            placeholder="Employee ID"
+            placeholder="Email"
             value={empEmail}
             onChange={(e) => setEmpId(e.target.value)}
           />

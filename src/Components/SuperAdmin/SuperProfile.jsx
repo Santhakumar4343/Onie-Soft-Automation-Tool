@@ -84,10 +84,7 @@ const SuperProfile = () => {
               <td>Role</td>
               <td>{formData.empRole}</td>
             </tr>
-            <tr>
-              <td>Status</td>
-              <td>{formData.status ? "Active" : "Inactive"}</td>
-            </tr>
+            
           </tbody>
           <tfoot>
             <tr>
@@ -101,6 +98,7 @@ const SuperProfile = () => {
                     backgroundColor: "#4f0e83",
                     width: "15%",
                     borderRadius: "20px",
+                    marginTop:"20px"
                   }}
                 >
                   Edit Profile
@@ -181,30 +179,21 @@ const SuperProfile = () => {
                   />
                 </td>
               </tr>
-              <tr>
-                <td>Status</td>
-                <td>
-                  <input
-                    type="checkbox"
-                    name="status"
-                    checked={formData.status}
-                    onChange={handleInputChange}
-                  />{" "}
-                  Active
-                </td>
-              </tr>
+             <tr></tr>
             </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan="2" className="text-center " style={{border:"none"}}>
-                  <button
+          
+             
+           
+          </table>
+          <div className="d-flex justify-content-center align-items-center mt-4">
+            
+          <button 
                     type="button"
                     className="btn btn-secondary me-2"
                     onClick={() => setIsEditing(false)}
                     style={{
                       height: "40px",
-                      color: "white",
-                     
+                      color: "white", 
                       width: "10%",
                       borderRadius: "20px",
                     }}
@@ -221,10 +210,7 @@ const SuperProfile = () => {
                     }}>
                     Save Changes
                   </button>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+          </div>
         </form>
       )}
     </div>

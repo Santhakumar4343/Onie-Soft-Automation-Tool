@@ -7,36 +7,27 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../TestCases/Testcases.css";
 
-import axios from "axios";
 import {
   addTestcase,
-  API_URL,
   getTestcaseByProjectId,
   updateTestcase,
 } from "../API/Api";
 import Swal from "sweetalert2";
-import moment from "moment";
+
 import EditIcon from "@mui/icons-material/Edit";
+import TablePagination from "../Pagination/TablePagination";
+import { Tab, Tooltip } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const UserTestcases = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+
   const [editTestCase, setEditTestCase] = useState(null);
-  const navigate = useNavigate();
   const location = useLocation();
   const { project } = location.state || {};
 
   const [testCases, setTestCases] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  useEffect(() => {
-    getTestcaseByProjectId(project.id)
-      .then((response) => {
-        setTestCases(response.data);
-        console.log(response.data);
-      })
-      .catch((err) => console.log(err));
-  }, [project.id]);
+  const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
       projectId: project.id,
@@ -93,15 +84,21 @@ const UserTestcases = () => {
         }
       }
 
-      // Refresh and close modal
       formik.resetForm();
       setShowModal(false);
-      setEditTestCase(null);
+      setEditTestCase(false);
     },
   });
 
   const handleClose = () => {
     setShowModal(false);
+    formik.resetForm();
+  };
+  const handleAddTestCase = () => {
+    setEditTestCase(null);
+    setShowModal(true);
+  };
+  const handleClear = () => {
     formik.resetForm();
   };
   const handleEdit = (testCase) => {
@@ -115,41 +112,80 @@ const UserTestcases = () => {
     });
     setShowModal(true);
   };
-  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
-  const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-    setCurrentPage(0);
-  };
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 0) setCurrentPage(currentPage - 1);
-  };
   const handleSearchInput = (e) => {
     const query = e.target.value.toLowerCase();
+    setPage(1);
     setSearchQuery(query);
   };
   const filteredTestCases = testCases.filter(
     (testcase) =>
       testcase.testCaseName.toLowerCase().includes(searchQuery) ||
-      testcase.author.toLowerCase().includes(searchQuery)
+      testcase.author.toLowerCase().includes(searchQuery) ||
+      testcase.feature.toLowerCase().includes(searchQuery) ||
+      testcase.automationId.toLowerCase().includes(searchQuery)
   );
-  const handleTestRun = () => {
+
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+  useEffect(() => {
+    getTestcaseByProjectId(project.id, page - 1, itemsPerPage)
+      .then((response) => {
+        setTestCases(response.data.content); // Extract content for the test cases
+        setTotalPages(response.data.totalPages); // Set the total pages
+      })
+      .catch((err) => console.log(err));
+  }, [project.id, page, itemsPerPage]);
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
+
+  const handleBackwardClick = () => {
     navigate("/userDashboard/testruns", { state: { project } });
   };
   return (
     <div className=" container-fluid ">
       <div className="content">
-        <div style={{ position: "sticky", top: "0", zIndex: "100" }}>
+        <div
+          className="d-flex align-items-center justify-content-between"
+          style={{ position: "sticky", top: "0", zIndex: "100" }}
+        >
+          <Tooltip title="Back" arrow placement="right">
+            <Tab
+              icon={
+                <ArrowBackIcon
+                  sx={{ fontSize: "2rem", color: "#4f0e83" }}
+                  onClick={handleBackwardClick}
+                />
+              }
+            ></Tab>
+          </Tooltip>
           <h4
             className="text-center mb-4"
-            style={{ color: "#4f0e83", boxShadow: "grey" }}
+            style={{ color: "#4f0e83", boxShadow: "grey", marginRight: "70px" }}
           >
-            Test Cases for - {project.projectName}
+            {project.projectName} : Test Cases
           </h4>
+          <h1></h1>
         </div>
 
         <div
@@ -162,75 +198,39 @@ const UserTestcases = () => {
           }}
         >
           <div className="d-flex justify-content-between align-items-center">
-            <select
-              className="form-control"
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              style={{
-                width: "150px",
-                appearance: "auto",
-                marginRight: "10px",
-                fontSize: "14px",
-              }}
-            >
-              {[5, 10, 15, 20].map((size) => (
-                <option key={size} value={size}>
-                  {size} per page
-                </option>
-              ))}
-            </select>
-
-            <div
-              className="flex-grow-1 mx-3"
-              style={{ position: "relative", borderRadius: "20px" }}
-            >
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchInput}
-                placeholder="Search by Test Case Name, Author......"
-                className="form-control w-50"
-              />
+            <div>
+              <button
+                onClick={handleAddTestCase}
+                style={{
+                  color: "white",
+                  backgroundColor: "#4f0e83",
+                  borderRadius: "20px",
+                  padding: "8px 15px",
+                  fontSize: "14px",
+                  marginRight: "10px",
+                  width: "130px",
+                  height: "40px",
+                }}
+                className="btn"
+              >
+                Add Test Case
+              </button>
             </div>
 
-            <button
-              onClick={() => setShowModal(true)}
-              style={{
-                color: "white",
-                backgroundColor: "#4f0e83",
-                borderRadius: "20px",
-                padding: "8px 15px",
-                fontSize: "14px",
-                marginRight: "10px",
-                width: "130px",
-                height: "40px",
-              }}
-              className="btn"
-            >
-              Add Test Case
-            </button>
-
-            <button
-              onClick={handleTestRun}
-              style={{
-                color: "white",
-                backgroundColor: "#4f0e83",
-                borderRadius: "20px",
-                padding: "8px 15px",
-                fontSize: "14px",
-                width: "130px",
-                height: "40px",
-              }}
-              className="btn"
-            >
-              View Test Runs
-            </button>
+            <input
+              type="text"
+              value={searchQuery}
+              style={{ width: "40%" }}
+              onChange={handleSearchInput}
+              placeholder="Search by Test Case Name, Author......"
+              className="form-control "
+            />
           </div>
         </div>
 
         <div
           style={{
-            maxHeight: "550px",
+            maxHeight: "520px",
             overflowY: "auto",
           }}
         >
@@ -256,10 +256,7 @@ const UserTestcases = () => {
       }
     `}
           </style>
-          <table
-            className="table  table-hover mt-3"
-            style={{ textAlign: "center" }}
-          >
+          <table className="table  table-hover mt-3">
             <thead
               style={{
                 position: "sticky",
@@ -270,34 +267,21 @@ const UserTestcases = () => {
               }}
             >
               <tr>
-                <th>Test Case ID</th>
                 <th>Automation ID</th>
                 <th>Test Case Name</th>
 
                 <th>Feature</th>
                 <th>Author</th>
-                <th>Created Date</th>
-                <th>Updated Date</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredTestCases.map((testCase, index) => (
                 <tr key={index}>
-                  <td>{testCase.id}</td>
                   <td>{testCase.automationId}</td>
                   <td>{testCase.testCaseName}</td>
-
                   <td>{testCase.feature}</td>
                   <td>{testCase.author}</td>
-
-                  <td>
-                    {moment(testCase.createdAt).format("DD-MM-YYYY (HH:mm:ss)")}
-                  </td>
-                  <td>
-                    {moment(testCase.updatedAt).format("DD-MM-YYYY (HH:mm:ss)")}
-                  </td>
-
                   <td>
                     <EditIcon
                       onClick={() => handleEdit(testCase)}
@@ -310,6 +294,15 @@ const UserTestcases = () => {
             </tbody>
           </table>
         </div>
+
+        <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        />
 
         {/* Modal Popup */}
         <Modal show={showModal} onHide={handleClose} centered backdrop="static">
@@ -397,19 +390,30 @@ const UserTestcases = () => {
                   </div>
                 )}
               </div>
-
-              <Button
-                type="submit"
-                style={{
-                  color: "white",
-                  backgroundColor: "#4f0e83",
-                  borderRadius: "20px",
-                  width: "50%",
-                  marginLeft: "120px",
-                }}
-              >
-                Submit
-              </Button>
+              <div className="d-flex align-items-center justify-content-center">
+                <Button
+                  className="btn btn-secondary"
+                  onClick={handleClear}
+                  style={{
+                    borderRadius: "20px",
+                    width: "20%",
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button
+                  type="submit"
+                  style={{
+                    color: "white",
+                    backgroundColor: "#4f0e83",
+                    borderRadius: "20px",
+                    width: "20%",
+                    marginLeft: "15px",
+                  }}
+                >
+                  Submit
+                </Button>
+              </div>
             </form>
           </Modal.Body>
         </Modal>

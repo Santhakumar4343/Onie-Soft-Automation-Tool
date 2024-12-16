@@ -13,8 +13,10 @@ import {
   API_URL,
   assignProjects,
   assignUser,
+  deleteRegister,
   getAllRegister,
   getAssignedUserProjects,
+  getRegisterForBranch,
   getUnMapProjects,
   updateRegister,
 } from "../API/Api";
@@ -26,6 +28,8 @@ import Projects from "../Projects/Projects";
 import { useLocation } from "react-router-dom";
 import { ConstructionOutlined } from "@mui/icons-material";
 import Swal from "sweetalert2";
+import { Tooltip } from "@mui/material";
+import TablePagination from "../Pagination/TablePagination";
 const Users = () => {
   const [show, setShow] = useState(false);
   const [users, setUsers] = useState([]);
@@ -76,16 +80,51 @@ const Users = () => {
     setShow(false);
   };
 
+ const handllClear=()=>{
+    setFormData({
+      empId: "",
+      empName: "",
+      empEmail: "",
+      empMob: "",
+      empRole: "",
+      empDepartment: "",
+      status: true,
+      password: "",
+    });
+  }
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  const [page, setPage] = useState(1); // Current page number
+
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
+  const [totalPages, setTotalPages] = useState(0); // To store total number of pages
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage + 1); // Since pagination is 1-indexed
+  };
+
+  // Handle previous page
+  const handlePreviousPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setPage(1); // Reset to first page on page size change
+  };
   useEffect(() => {
-    getAllRegister()
-      .then((response) => setUsers(response.data))
-      .catch((err) => console.log(err));
-  }, []);
+    getRegisterForBranch(branchId,page-1,itemsPerPage)
+      .then((response) => {
+        setUsers(response.data.content)
+      setTotalPages(response.data.totalPages)}).catch((err) => console.log(err));
+  }, [branchId,page,itemsPerPage]);
 
   const handleSaveUser = async () => {
     const data={
@@ -108,6 +147,7 @@ const Users = () => {
           .then((response) => {
             if (response.status === 200 || response.status === 201) {
               Swal.fire("Success!", "User updated successfully.", "success");
+              setUsers(prev=>[...prev,response.data])
               isLoading(false)
             } else {
               Swal.fire("Error!", "Failed to update user.", "error");
@@ -123,6 +163,7 @@ const Users = () => {
           .then((response) => {
             if (response.status === 200 || response.status === 201) {
               Swal.fire("Success!", "User added successfully.", "success");
+              setUsers(prev=>[...prev,response.data])
               isLoading(false)
             } else {
               Swal.fire("Error!", "Failed to add user.", "error");
@@ -135,9 +176,7 @@ const Users = () => {
       }
     
       handleClose(); // Close modal or reset form
-      // Refresh the users list
-      const updatedUsers = await getAllRegister();
-      setUsers(updatedUsers.data);
+    
     
     } catch (error) {
       console.error("An error occurred:", error);
@@ -154,14 +193,30 @@ const Users = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this user? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+  
+    if (result.isConfirmed) {
       try {
-        await axios.delete(`${API_URL}/register/v1/delete/${userId}`);
+        await deleteRegister(userId);
         // Refresh users list after deletion
         const updatedUsers = await getAllRegister();
         setUsers(updatedUsers.data);
+  
+        // Success alert
+        Swal.fire("Deleted!", "The user has been deleted.", "success");
       } catch (error) {
         console.error("Failed to delete user", error);
+        // Error alert
+        Swal.fire("Error!", "Failed to delete the user. Please try again.", "error");
       }
     }
   };
@@ -215,7 +270,7 @@ const Users = () => {
       Array.from(new Set([...prevIds, ...selectedIds]))
     );
   };
-  const onlyUsers=users.filter(user=>user.empRole.toLowerCase()==="user")
+  const onlyUsers=users.filter(user=>user.empRole.toLowerCase()==="user"&&user.branchId===branchId)
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between mb-3">
@@ -232,7 +287,7 @@ const Users = () => {
         >
           Add User
         </Button>
-        <InputGroup className="w-50">
+        <InputGroup style={{width:"40%"}}>
           <FormControl
             placeholder="Search users"
             value={searchTerm}
@@ -252,12 +307,17 @@ const Users = () => {
             <th>Role</th>
             <th>Department</th>
             <th>Actions</th>
+            <th>Add Project</th>
           </tr>
         </thead>
         <tbody>
           {onlyUsers
             .filter((user) =>
-              user.empName.toLowerCase().includes(searchTerm.toLowerCase())
+              user.empName.toLowerCase().includes(searchTerm.toLowerCase())||
+            user.empEmail.toLowerCase().includes(searchTerm.toLowerCase())||
+            user.empMob.toLowerCase().includes(searchTerm.toLowerCase())||
+            user.empDepartment.toLowerCase().includes(searchTerm.toLowerCase())
+
             )
             .map((user, index) => (
               <tr key={index}>
@@ -269,27 +329,41 @@ const Users = () => {
                 <td>{user.empRole}</td>
                 <td>{user.empDepartment}</td>
                 <td>
-                  <AddCircleIcon
-                    className=" me-3"
-                    style={{ cursor: "pointer", color: "#4f0e83" }}
-                    onClick={() => handleShowProjectModal(user.id)}
-                  />
+                <Tooltip title="Edit" arrow placement="bottom">
                   <EditIcon
                     className=" me-3"
                     style={{ cursor: "pointer", color: "#4f0e83" }}
                     onClick={() => handleEditUser(user)}
                   />
+                  </Tooltip>
+                  <Tooltip title="Delete" arrow placement="bottom">
                   <DeleteIcon
                     className="text-danger"
                     style={{ cursor: "pointer" }}
                     onClick={() => handleDeleteUser(user.id)}
                   />
+                  </Tooltip>
                 </td>
+                <td>
+                <Tooltip title="Assign Project" arrow placement="bottom">
+                   <AddCircleIcon
+                    className=" me-3"
+                    style={{ cursor: "pointer", color: "#4f0e83" }}
+                    onClick={() => handleShowProjectModal(user.id)}
+                  />
+                  </Tooltip></td>
               </tr>
             ))}
         </tbody>
       </Table>
-
+      <TablePagination
+          currentPage={page - 1}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+          handlePreviousPage={handlePreviousPage}
+          handleNextPage={handleNextPage}
+          handlePageSizeChange={handlePageSizeChange}
+        />
       <Modal show={showModal} onClose={handleCancel}>
         <div
           style={{
@@ -470,16 +544,16 @@ const Users = () => {
         <Modal.Footer className="d-flex justify-content-center align-items-center">
           <Button
             variant="secondary"
-            onClick={handleClose}
+            onClick={handllClear}
             style={{
               height: "40px",
               color: "white",
-              backgroundColor: "#4f0e83",
+            
               width: "20%",
               borderRadius: "20px",
             }}
           >
-            Close
+            Clear
           </Button>
           <Button
             variant="primary"

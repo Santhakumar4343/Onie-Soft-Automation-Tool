@@ -27,12 +27,15 @@ const Companies = () => {
     setProjectModal(true);
   };
 
+const fetchCompanies=()=>{
+  getAllCompany()
+  .then((response) => {
+    setCompanies(response.data);
+  })
+  .catch((err) => console.log(err));
+}
   useEffect(() => {
-    getAllCompany()
-      .then((response) => {
-        setCompanies(response.data);
-      })
-      .catch((err) => console.log(err));
+    fetchCompanies();
   }, []);
 
   const handleProjectSubmit = (e) => {
@@ -47,11 +50,7 @@ const Companies = () => {
       updateCompany(data)
         .then((response) => {
           // Update the list and show success alert
-          setCompanies((prev) =>
-            prev.map((comp) =>
-              comp.cmpId === response.data.cmpId ? response.data : comp
-            )
-          );
+          fetchCompanies();
           Swal.fire({
             icon: "success",
             title: "Company Updated",
@@ -70,7 +69,7 @@ const Companies = () => {
       // Call create API
       CreateCompany(companyData)
         .then((response) => {
-          setCompanies((prev) => [...prev, response.data]);
+          fetchCompanies();
           Swal.fire({
             icon: "success",
             title: "Company Saved",
@@ -228,7 +227,7 @@ const Companies = () => {
                   onChange={handleProjectChange}
                   value={companyData.cmpId}
                   required
-                  readOnly={isEdit}
+                  
                 />
               </div>
               <div className="form-group">
