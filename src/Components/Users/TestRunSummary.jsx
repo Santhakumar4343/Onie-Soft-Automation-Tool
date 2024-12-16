@@ -1,35 +1,15 @@
-import React, { useEffect, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  Line,
-  LineChart,
-} from "recharts";
-import { getTestCasesByTestRunId, TestRunSummaryApi } from "../API/Api";
+import React, {useEffect, useState} from "react";
+import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis,} from "recharts";
+import {downloadFailImage, getTestCasesByTestRunIdVthout, TestRunSummaryApi} from "../API/Api";
 
-import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Paper,
-  CircularProgress,
-  IconButton,
-  Modal,
-} from "@mui/material";
+import {useLocation, useNavigate} from "react-router-dom";
+import {Box, CircularProgress, IconButton, Modal, Paper, Typography,} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TablePagination from "../Pagination/TablePagination";
 import BarChartComponent from "../Charts/BarChartComponent";
 import PieChartComponent from "../Charts/PieChartComponent";
 import TestResultsChart from "../Charts/TestResultsChart";
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
 
 const TestRunSummary = () => {
   const location = useLocation();
@@ -43,6 +23,7 @@ const TestRunSummary = () => {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [testCaseSummaryData, setTestCaseSummaryData] = useState(null);
+  const [downloadImage, setDownloadImage] = useState('');
 
   const dummyData = {
     totalRuns: {
@@ -69,8 +50,9 @@ const TestRunSummary = () => {
     setModalIsOpen(false);
   };
 
-  const handleRowClick = (index) => {
+  const handleRowClick = async (index, imageKey) => {
     setExpandedRow(expandedRow === index ? null : index);
+    await handleDownloadImage(imageKey);
   };
   const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
   const [totalPages, setTotalPages] = useState(0); // To store total number of pages
@@ -97,18 +79,29 @@ const TestRunSummary = () => {
   // Fetch test cases from API
   const fetchTestCases = async () => {
     try {
-      const response = await getTestCasesByTestRunId(
-        testRun.id,
-        page - 1,
-        itemsPerPage
+      const response = await getTestCasesByTestRunIdVthout(
+        testRun.id
+        // page - 1,
+        // itemsPerPage
       );
 
-      setTestCases(response.data.content);
-      setTotalPages(response.data.totalPages);
+      setTestCases(response.data);
+      // setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error("Error fetching test cases:", error);
     }
   };
+
+  const handleDownloadImage = async (key) => {
+    try {
+      const response = await downloadFailImage(key);
+      console.log("REsopnse: ", response);
+      const url = URL.createObjectURL(response.data);
+      setDownloadImage(url);
+    } catch (error) {
+      console.error("Error fetching failed image:", error);
+    }
+  }
 
   useEffect(() => {
     fetchTestCases();
@@ -277,7 +270,7 @@ const TestRunSummary = () => {
                         fontWeight: "bold",
                         cursor: "pointer",
                       }}
-                      onClick={() => handleRowClick(index)}
+                      onClick={() => handleRowClick(index, testCase.image)}
                     >
                       {testCase.status}
                     </span>
@@ -300,9 +293,9 @@ const TestRunSummary = () => {
                         {/* Render for FAIL: Both image and stack trace */}
                         {testCase.status === "FAIL" && (
                           <>
-                            {testCase.image && (
+                            {downloadImage && (
                               <img
-                                src={testCase.image}
+                                src={downloadImage}
                                 alt="Test Case Screenshot"
                                 style={{
                                   maxWidth: "100%",
