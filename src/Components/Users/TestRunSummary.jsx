@@ -1,36 +1,15 @@
-import React, { useEffect, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  Line,
-  LineChart,
-} from "recharts";
-import { getTestCasesByTestRunId, TestRunSummaryApi } from "../API/Api";
+import React, {useEffect, useState} from "react";
+import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis,} from "recharts";
+import {downloadFailImage, getTestCasesByTestRunIdVthout, TestRunSummaryApi} from "../API/Api";
 
-import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Paper,
-  CircularProgress,
-  IconButton,
-  Modal,
-  Tab,
-} from "@mui/material";
+import {useLocation, useNavigate} from "react-router-dom";
+import {Box, CircularProgress, IconButton, Modal, Paper, Typography,} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TablePagination from "../Pagination/TablePagination";
 import BarChartComponent from "../Charts/BarChartComponent";
 import PieChartComponent from "../Charts/PieChartComponent";
 import TestResultsChart from "../Charts/TestResultsChart";
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
 
 const TestRunSummary = () => {
   const location = useLocation();
@@ -44,6 +23,7 @@ const TestRunSummary = () => {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [testCaseSummaryData, setTestCaseSummaryData] = useState(null);
+  const [downloadImage, setDownloadImage] = useState('');
 
   const dummyData = {
     totalRuns: {
@@ -69,8 +49,9 @@ const TestRunSummary = () => {
     setModalIsOpen(false);
   };
 
-  const handleRowClick = (index) => {
+  const handleRowClick = async (index, imageKey) => {
     setExpandedRow(expandedRow === index ? null : index);
+    await handleDownloadImage(imageKey);
   };
   const [itemsPerPage, setItemsPerPage] = useState(10); // Default page size
   const [totalPages, setTotalPages] = useState(0); // To store total number of pages
@@ -97,18 +78,29 @@ const TestRunSummary = () => {
   // Fetch test cases from API
   const fetchTestCases = async () => {
     try {
-      const response = await getTestCasesByTestRunId(
-        testRun.id,
-        page - 1,
-        itemsPerPage
+      const response = await getTestCasesByTestRunIdVthout(
+        testRun.id
+        // page - 1,
+        // itemsPerPage
       );
 
-      setTestCases(response.data.content);
-      setTotalPages(response.data.totalPages);
+      setTestCases(response.data);
+      // setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error("Error fetching test cases:", error);
     }
   };
+
+  const handleDownloadImage = async (key) => {
+    try {
+      const response = await downloadFailImage(key);
+      console.log("REsopnse: ", response);
+      const url = URL.createObjectURL(response.data);
+      setDownloadImage(url);
+    } catch (error) {
+      console.error("Error fetching failed image:", error);
+    }
+  }
 
   useEffect(() => {
     fetchTestCases();
@@ -166,7 +158,7 @@ const TestRunSummary = () => {
     })
   );
   const handleBackwardClick = () => {
-    navigate(`/userDashboard/testRunsSummary/${project.id}`,{ state: { project } });
+    navigate(`/userDashboard/testRunsSummary/${project.id}`);
   };
 
   const convertToMinutes = (executeTime) => {
@@ -183,18 +175,13 @@ const TestRunSummary = () => {
 
   return (
     <div>
-    
       <Box p={3}>
-      <div className="d-flex align-items-center justify-contnet-center">
-
-        <Tab
-          icon={
-            <ArrowBackIcon
-              sx={{ fontSize: "2rem", color: "#4f0e83" }}
-              onClick={handleBackwardClick}
-            />
-          }
-        ></Tab>
+        <div className="d-flex">
+          <Tooltip title="Back" arrow placement="right">
+            <IconButton onClick={handleBackwardClick}>
+              <ArrowBackIcon sx={{ fontSize: "2rem", color: "#4f0e83" }} />
+            </IconButton>
+          </Tooltip>
           <Typography variant="h5" gutterBottom>
             {testRun.testRunName} : Summary
           </Typography>
@@ -214,19 +201,25 @@ const TestRunSummary = () => {
           </Paper>
 
           <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-            <Typography variant="h6" className="mb-2">
-              Feature of Pass Percentage
+          <Typography variant="h6" className="mb-2">
+          Feature of Pass Percentage
             </Typography>
-            <PieChartComponent data={pieChartData} />
-          </Paper>
-
-          <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-          <Typography variant="h6" className="mb-2">Test Results By Test Type</Typography>
-          <TestResultsChart
-            data={testTypeBarData}
-          
+          <PieChartComponent
+            data={pieChartData}
+            
+           
           />
-          </Paper>
+        </Paper>
+          
+
+         
+        <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
+        <Typography variant="h6" className="mb-2">
+        Test Results By Test Type
+            </Typography>
+          <TestResultsChart data={testTypeBarData}  />
+         </Paper>
+       
         </Box>
       </Box>
       <h4 className="mb-2">Test Cases</h4>
@@ -283,7 +276,7 @@ const TestRunSummary = () => {
                         fontWeight: "bold",
                         cursor: "pointer",
                       }}
-                      onClick={() => handleRowClick(index)}
+                      onClick={() => handleRowClick(index, testCase.image)}
                     >
                       {testCase.status}
                     </span>
@@ -306,9 +299,9 @@ const TestRunSummary = () => {
                         {/* Render for FAIL: Both image and stack trace */}
                         {testCase.status === "FAIL" && (
                           <>
-                            {testCase.image && (
+                            {downloadImage && (
                               <img
-                                src={testCase.image}
+                                src={downloadImage}
                                 alt="Test Case Screenshot"
                                 style={{
                                   maxWidth: "100%",
