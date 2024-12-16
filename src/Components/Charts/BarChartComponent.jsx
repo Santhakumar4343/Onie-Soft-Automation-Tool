@@ -10,7 +10,7 @@ import {
   Cell,
 } from "recharts";
 
-const BarChartComponent = ({ data, colors, dataKey, title, totalCases }) => {
+const BarChartComponent = ({ data, colors, dataKey,  totalCases }) => {
   // Constructing the payload for the legend
   const legendPayload = [
     {
@@ -29,7 +29,7 @@ const BarChartComponent = ({ data, colors, dataKey, title, totalCases }) => {
 
   return (
     <div>
-      <h4>{title}</h4>
+    
       <BarChart width={300} height={300} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
@@ -41,7 +41,7 @@ const BarChartComponent = ({ data, colors, dataKey, title, totalCases }) => {
           align="center"
           payload={legendPayload}
         />
-        <Bar dataKey={dataKey} name={title}>
+        <Bar dataKey={dataKey} >
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
           ))}

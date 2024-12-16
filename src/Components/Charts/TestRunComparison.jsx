@@ -1,15 +1,9 @@
 // ComparisonPage.js
 import { useEffect, useState } from "react";
-import { Tooltip } from "recharts";
+
 import { TestRunSummaryApi } from "../API/Api";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Paper,
-  CircularProgress,
-  IconButton,
-} from "@mui/material";
+import { Box, Typography, Paper, CircularProgress, Tab } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import BarChartComponent from "../Charts/BarChartComponent";
 import PieChartComponent from "../Charts/PieChartComponent";
@@ -18,7 +12,7 @@ import TestResultsChart from "../Charts/TestResultsChart";
 const TestRuncomparison = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const project = location.state?.project || {};
   const runOne = location.state?.runOne || {};
   const runTwo = location.state?.runTwo || {};
 
@@ -84,64 +78,79 @@ const TestRuncomparison = () => {
 
   const dataOne = prepareChartData(summaryDataOne);
   const dataTwo = prepareChartData(summaryDataTwo);
-
+  
   const handleBackwardClick = () => {
-    navigate(`/userDashboard/testRunsSummary/${runOne.projectId}`);
+    navigate(`/userDashboard/testRunsSummary/${project.id}`,{ state: { project } });
   };
-
   return (
     <Box p={3}>
-      <div className="d-flex">
-        <Tooltip title="Back" arrow placement="right">
-          <IconButton onClick={handleBackwardClick}>
-            <ArrowBackIcon sx={{ fontSize: "2rem", color: "#4f0e83" }} />
-          </IconButton>
-        </Tooltip>
-        <Typography variant="h5" gutterBottom>
-          Comparing Test Runs: {runOne.testRunName} vs {runTwo.testRunName}
+      <div className="d-flex align-items-center justify-contnet-center">
+        <Tab
+          icon={
+            <ArrowBackIcon
+              sx={{ fontSize: "2rem", color: "#4f0e83" }}
+              onClick={handleBackwardClick}
+            />
+          }
+        ></Tab>
+
+        <Typography variant="h5" className="mb-2" gutterBottom>
+          Comparing Test Runs: ({runOne.testRunName}) vs ({runTwo.testRunName})
         </Typography>
       </div>
 
-      {[dataOne, dataTwo].map((data, index) => (
-        <Box
-          key={index}
-          display="flex"
-          justifyContent="space-between"
-          marginBottom={3}
-        >
-          <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-            <BarChartComponent
-              data={data.barChartData}
-              colors={data.barChartData.map((item) => item.color)}
-              dataKey="value"
-              title={
-                index === 0
-                  ? `Overall Status Report`
-                  : `Overall Status Report`
-              }
-              totalCases={index === 0 ? summaryDataOne.totalTestCases : summaryDataTwo.totalTestCases}
-            />
-          </Paper>
+      {[
+        {
+          name: runOne.testRunName,
+          data: dataOne,
+          summaryData: summaryDataOne,
+        },
+        {
+          name: runTwo.testRunName,
+          data: dataTwo,
+          summaryData: summaryDataTwo,
+        },
+      ].map((run, index) => (
+        <Box key={index} mb={5}>
+          <Typography variant="h6" gutterBottom>
+            Test Run: {run.name}
+          </Typography>
+          <Box display="flex" justifyContent="space-between" marginBottom={3}>
+            <Paper
+              elevation={3}
+              sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}
+            >
+              <Typography variant="h6" className="mb-2">
+                Overall Status Report
+              </Typography>
+              <BarChartComponent
+                data={run.data.barChartData}
+                colors={run.data.barChartData.map((item) => item.color)}
+                dataKey="value"
+                totalCases={run.summaryData.totalTestCases}
+              />
+            </Paper>
 
-          <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-            <PieChartComponent
-              data={data.pieChartData}
-              title={
-                index === 0
-                  ? `Feature of Pass Percentage`
-                  : `Feature of Pass Percentage`
-              }
-            />
-          </Paper>
+            <Paper
+              elevation={3}
+              sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}
+            >
+              <Typography variant="h6" className="mb-2">
+                Feature of Pass Percentage
+              </Typography>
+              <PieChartComponent data={run.data.pieChartData} />
+            </Paper>
 
-          <TestResultsChart
-            data={data.testTypeBarData}
-            title={
-              index === 0
-                ? `Test Results By Test Type`
-                : `Test Results By Test Type`
-            }
-          />
+            <Paper
+              elevation={3}
+              sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}
+            >
+              <Typography variant="h6" className="mb-2">
+                Test Results By Test Type
+              </Typography>
+              <TestResultsChart data={run.data.testTypeBarData} />
+            </Paper>
+          </Box>
         </Box>
       ))}
     </Box>

@@ -23,6 +23,7 @@ import {
   CircularProgress,
   IconButton,
   Modal,
+  Tab,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TablePagination from "../Pagination/TablePagination";
@@ -47,7 +48,6 @@ const TestRunSummary = () => {
   const dummyData = {
     totalRuns: {
       Completed: 1,
-     
     },
     totalPassed: 1,
     totalFailed: 2,
@@ -166,7 +166,7 @@ const TestRunSummary = () => {
     })
   );
   const handleBackwardClick = () => {
-    navigate(`/userDashboard/testRunsSummary/${project.id}`);
+    navigate(`/userDashboard/testRunsSummary/${project.id}`,{ state: { project } });
   };
 
   const convertToMinutes = (executeTime) => {
@@ -183,44 +183,50 @@ const TestRunSummary = () => {
 
   return (
     <div>
+    
       <Box p={3}>
-        <div className="d-flex">
-          <Tooltip title="Back" arrow placement="right">
-            <IconButton onClick={handleBackwardClick}>
-              <ArrowBackIcon sx={{ fontSize: "2rem", color: "#4f0e83" }} />
-            </IconButton>
-          </Tooltip>
+      <div className="d-flex align-items-center justify-contnet-center">
+
+        <Tab
+          icon={
+            <ArrowBackIcon
+              sx={{ fontSize: "2rem", color: "#4f0e83" }}
+              onClick={handleBackwardClick}
+            />
+          }
+        ></Tab>
           <Typography variant="h5" gutterBottom>
             {testRun.testRunName} : Summary
           </Typography>
         </div>
 
         <Box display="flex" justifyContent="space-between">
-       
           <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-          <BarChartComponent
-            data={barChartData}
-            colors={barChartData.map((item) => item.color)}
-            dataKey="value"
-            title="Overall Status Report"
-            totalCases={summaryData.totalTestCases}
-          />
-        </Paper>
-        
+            <Typography variant="h6" className="mb-2">
+              Overall Status Report
+            </Typography>
+            <BarChartComponent
+              data={barChartData}
+              colors={barChartData.map((item) => item.color)}
+              dataKey="value"
+              totalCases={summaryData.totalTestCases}
+            />
+          </Paper>
+
           <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
-          <PieChartComponent
-            data={pieChartData}
-            
-            title="Feature of Pass Percentage"
-          />
-        </Paper>
+            <Typography variant="h6" className="mb-2">
+              Feature of Pass Percentage
+            </Typography>
+            <PieChartComponent data={pieChartData} />
+          </Paper>
+
+          <Paper elevation={3} sx={{ padding: 2, margin: 1, flex: "1 1 30%" }}>
+          <Typography variant="h6" className="mb-2">Test Results By Test Type</Typography>
+          <TestResultsChart
+            data={testTypeBarData}
           
-
-         
-
-          <TestResultsChart data={testTypeBarData}  title="Test Results By Test Type"/>
-         
-       
+          />
+          </Paper>
         </Box>
       </Box>
       <h4 className="mb-2">Test Cases</h4>
@@ -402,21 +408,21 @@ const TestRunSummary = () => {
             >
               <h4 className="text-center">Test Case Summary</h4>
               <button
-              onClick={closeModal}
-              style={{
-                position: "absolute",
-                top: "10px",
-                right: "30px",
-                background: "none",
-                border: "none",
-                fontSize: "35px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-              aria-label="Close"
-            >
-              ×
-            </button>
+                onClick={closeModal}
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "30px",
+                  background: "none",
+                  border: "none",
+                  fontSize: "35px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+                aria-label="Close"
+              >
+                ×
+              </button>
               <div
                 className="d-flex justify-content-between"
                 style={{ gap: "5px" }}
@@ -472,7 +478,6 @@ const TestRunSummary = () => {
                 />
               </LineChart>
             </div>
-            
           </div>
         ) : (
           <p>Loading...</p>

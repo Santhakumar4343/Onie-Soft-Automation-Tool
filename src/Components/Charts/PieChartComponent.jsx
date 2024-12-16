@@ -1,6 +1,6 @@
 import { PieChart, Pie, Tooltip, Legend, Cell } from "recharts";
 
-const PieChartComponent = ({ data, title }) => {
+const PieChartComponent = ({ data }) => {
   // Generate a dynamic color palette based on the number of features
   const generateColors = (numColors) => {
     const colors = [];
@@ -14,7 +14,7 @@ const PieChartComponent = ({ data, title }) => {
 
   return (
     <div>
-      <h4>{title}</h4>
+      
       <PieChart width={300} height={300}>
         <Pie
           data={data}

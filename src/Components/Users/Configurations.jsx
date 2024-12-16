@@ -335,7 +335,7 @@ const handleScheduleTimeChange = (newValue) => {
                                         label="Schedule Time"
                                         value={
                                             scheduleConfig.scheduleTime
-                                                ? dayjs(scheduleConfig.scheduleTime, "HH:mm:ss")
+                                                ? dayjs(scheduleConfig.scheduleTime, "HH:mm")
                                                 : null
                                         }
                                         onChange={handleScheduleTimeChange}

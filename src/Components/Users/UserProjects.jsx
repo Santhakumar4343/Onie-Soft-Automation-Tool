@@ -144,7 +144,7 @@ const UserProjects = () => {
                     value={searchText}
                     placeholder="Search by Project Name"
                     className="form-control "
-                    style={{width: "40%"}}
+                    style={{width: "20%"}}
                     onChange={(e) => setSearchText(e.target.value)}
                 />
             </div>

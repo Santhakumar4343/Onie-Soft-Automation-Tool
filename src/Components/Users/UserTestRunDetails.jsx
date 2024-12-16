@@ -13,6 +13,7 @@ function UserTestRunDetails() {
   const location = useLocation();
   const project = location.state?.project || {};
   const testRun = location.state?.testRun || {};
+  const payload=location.state?.payload||{};
   const data = location.state?.data || {};
 
   const [testCases, setTestCases] = useState([]);
@@ -61,7 +62,7 @@ function UserTestRunDetails() {
     const fetchTestCases = () => {
       try {
         getTestCasesToEditTestRun(
-          testRun.id,
+          testRun.id|payload.id,
           project.id,
           page - 1,
           itemsPerPage
@@ -80,7 +81,7 @@ function UserTestRunDetails() {
     };
     // Call the fetch function
     fetchTestCases();
-  }, [testRun.id, project.id, page - 1, itemsPerPage]);
+  }, [testRun.id||payload.id, project.id, page - 1, itemsPerPage]);
 
   // Handle individual row selection
   const handleCheckboxChange = (id) => {
@@ -140,7 +141,7 @@ function UserTestRunDetails() {
       if (result.isConfirmed) {
         // Prepare payload for API
         const payload = {
-          testRunId: testRun.id || data.id,
+          testRunId: testRun.id || data.id||payload.id,
           testRunName:
             testRun.testRunName || data.testRunName || "Default Test Run Name",
           testCaseId: selectedCases.filter((id) => !testCaseInRun.includes(id)),
@@ -204,7 +205,7 @@ function UserTestRunDetails() {
           ></Tab>
         </Tooltip>
         <h4 style={{ color: "#4f0e83", textAlign: "center" }}>
-          {project.projectName} : {testRun.testRunName || data.testRunName} :
+          {project.projectName} : {testRun.testRunName || data.testRunName ||payload.testRunName} :
           Select Test Cases to this run{" "}
         </h4>
         <h1></h1>
@@ -226,7 +227,7 @@ function UserTestRunDetails() {
         <input
           type="text"
           value={searchQuery}
-          style={{ width: "40%" }}
+          style={{ width: "20%" }}
           onChange={handleSearchInput}
           placeholder="Search by Test Case Name, Author......"
           className="form-control "
