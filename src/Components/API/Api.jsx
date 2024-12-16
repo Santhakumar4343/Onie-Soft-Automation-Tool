@@ -318,3 +318,9 @@ export const TestRunClone = (testRunId, projectId, data) => {
     const headers = getApiHeaders();
     return Api.post(`/testrun/v1/cloneTestRun/${testRunId}?projectId=${projectId}`,data, headers);
 }
+
+
+export const downloadFailImage = (imageKey) => {
+    const headers = getApiHeaders();
+    return Api.get(`/chart/v1/download?key=${imageKey}`, {...headers, responseType: 'blob'});
+};
